@@ -145,10 +145,10 @@ def dim_splitting_SV_All_weight_Short(k):
     """
     k = ZZ(k)
     if k == 0 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' = 0, 'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 0, 'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1}
 
     if k == 2 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'char_orbit' = 0, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'char_orbit' : 0, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0}
 
     if (k % 2) == 1:
         return dim_splitting_SV_odd_weight(k)
