@@ -5,6 +5,9 @@ aux_fname = "smf_newspaces_table.dat"
 def make_label(e):
     return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1]]])
 
+def make_id(e):
+    return hash(e['label'])
+
 def write_data(entries):
     keys = [k for k in db.smf_newspaces.col_type.keys()]
     types = [db.smf_newspaces.col_type[k] for k in keys]
@@ -13,6 +16,7 @@ def write_data(entries):
     e_data = []
     for e in entries:
         e['label'] = make_label(e)
+        e['id'] = make_id(e)
         e_datum = '|'.join([str(e[k]) for k in keys])
         e_datum = e_datum.replace('[', '{').replace(']','}')
         e_data.append(e_datum)
