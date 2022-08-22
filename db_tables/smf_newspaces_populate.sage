@@ -3,7 +3,7 @@ from lmfdb import db
 aux_fname = "smf_newspaces_table.dat"
 
 def make_label(e):
-    return '.'.join([e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1]])
+    return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1]]])
 
 def write_data(entries):
     keys = [k for k in db.smf_newspaces.col_type.keys()]
