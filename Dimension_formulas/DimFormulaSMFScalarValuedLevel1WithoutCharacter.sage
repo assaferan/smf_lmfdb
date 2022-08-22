@@ -78,6 +78,7 @@ def dim_splitting_SV_even_weight(k):
     L['type'] = 'S'
     L['level'] = 1
     L['weight'] = [k,0]
+    L['char_orbit'] = 0
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
     L['eis_dim'] = dnoncusp
@@ -114,6 +115,7 @@ def dim_splitting_SV_odd_weight(k):
     L['type'] = 'S'
     L['level'] = 1
     L['weight'] = [k,0]
+    L['char_orbit'] = 0
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
     L['eis_dim'] = dnoncusp
@@ -143,10 +145,10 @@ def dim_splitting_SV_All_weight_Short(k):
     """
     k = ZZ(k)
     if k == 0 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0],'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' = 0, 'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1}
 
     if k == 2 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'char_orbit' = 0, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0}
 
     if (k % 2) == 1:
         return dim_splitting_SV_odd_weight(k)
