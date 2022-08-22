@@ -6,8 +6,8 @@ def make_label(e):
     return '.'.join([e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1]])
 
 def write_data(entries):
-    keys = [k for k in db.smf_spaces.col_type.keys()]
-    types = [db.smf_spaces.col_type[k] for k in keys]
+    keys = [k for k in db.smf_newspaces.col_type.keys()]
+    types = [db.smf_newspaces.col_type[k] for k in keys]
     column_names = '|'.join(keys)
     column_types = '|'.join(types)
     e_data = []
@@ -22,7 +22,8 @@ def write_data(entries):
     f.close()
     return
 
-def table_reload(entries):    
-    db.smf_newforms.reload(aux_fname, null="")
-    db.smf_newforms.cleanup_from_reload()
+def table_reload(entries):
+    write_data(entries)
+    db.smf_newspaces.reload(aux_fname, null="")
+    db.smf_newspaces.cleanup_from_reload()
     return
