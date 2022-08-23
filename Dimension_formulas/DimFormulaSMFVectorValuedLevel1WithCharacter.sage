@@ -89,7 +89,7 @@ def dim_VV_sp4Z_j_4_with_charac(j):    # k=4
     return d    
 
 
-##### uniform formula for k >4 
+##### uniform formula for k > 4 
 
 def dimension_V(j, k):
     if (k % 2) == 0:
@@ -102,7 +102,7 @@ def dimension_V(j, k):
 
     return d1 + d2
 
-def dimension_cusp_forms_sp4z_with_charac(j, k):  # k>4
+def dimension_cusp_forms_sp4z_with_charac(j, k):  # k > 4
     d1 = dimension_cusp_forms_SP4Z(j, k+5)
     d2 = dimension_V(j, k+5)
     return d1-d2
@@ -193,7 +193,7 @@ def dim_splitting_VV_All_weight_charac(k,j):
                 'cusp_G_dim': dim_VV_sp4Z_j_4_with_charac(j)-dimension_yoshida_lift(j, k)}
 
 
-    elif k > 5 :
+    elif k > 4 :
         return {
 'degree': 2, 
 'type': 'S', 
