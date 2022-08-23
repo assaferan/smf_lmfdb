@@ -81,7 +81,11 @@ def dim_splitting_SV_even_weight(k):
     L['char_orbit'] = 0
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
-    L['eis_dim'] = dnoncusp
+    L['eis_dim'] = dnoncusp  
+    L['siegel_eis_dim'] = deis  
+    L['klingen_eis_dim'] = dklingeneis 
+    L['saito_kurokawa_dim'] = dsaitokurokawa
+    L['remaining_dim'] = dgenuine
     #L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
     return L 
 
@@ -118,7 +122,11 @@ def dim_splitting_SV_odd_weight(k):
     L['char_orbit'] = 0
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
-    L['eis_dim'] = dnoncusp
+    L['eis_dim'] = dnoncusp 
+    L['siegel_eis_dim'] = deis  
+    L['klingen_eis_dim'] = dklingeneis
+    L['saito_kurokawa_dim'] = dsaitokurokawa
+    L['remaining_dim'] = dgenuine
     #L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
     return L 
 
@@ -145,10 +153,14 @@ def dim_splitting_SV_All_weight_Short(k):
     """
     k = ZZ(k)
     if k == 0 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 0, 'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 0, 'total_dim': 1, 'cusp_dim': 0, 'eis_dim': 1, 'siegel_eis_dim': 1,
+ 'klingen_eis_dim': 0,
+ 'saito_kurokawa_dim': 0, 'remaining_dim': 0}
 
     if k == 2 :
-        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'char_orbit' : 0, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0}
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [2, 0], 'char_orbit' : 0, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0, 'siegel_eis_dim': 0,
+ 'klingen_eis_dim': 0,
+ 'saito_kurokawa_dim': 0, 'remaining_dim': 0}
 
     if (k % 2) == 1:
         return dim_splitting_SV_odd_weight(k)
