@@ -1,4 +1,8 @@
+import os
+cwd = os.getcwd()
+os.chdir("~/lmfdb")
 from lmfdb import db
+os.chdir(cwd)
 
 aux_fname = "smf_newspaces_table.dat"
 
@@ -30,4 +34,13 @@ def table_reload(entries):
     write_data(entries)
     db.smf_newspaces.reload(aux_fname, null="")
     db.smf_newspaces.cleanup_from_reload()
+    return
+
+def generate_dimensions(weight_list):
+    entries = []
+    for weight in weight_list:
+       k = weight[0]
+       j = weight[1]
+       entries.append(dim_splitting_VV_All_weight(k,j))
+    table_reload(entries)
     return

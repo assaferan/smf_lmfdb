@@ -1,6 +1,0 @@
-# Here we list the column for the table smf_newspaces
-
-dim_columns = {'total_dim', 'eis_dim', 'cusp_dim', 'klingen_eis_dim', 'saito_kurokawa_dim', 'yoshida_dim', 'remaining_dim'}
-old_dim_columns = {'old_' + col for col in dim_columns}
-new_dim_columns = {'new_' + col for col in new_dim_columns}
-columns = {'degree', 'type', 'level', 'weight', 'char_orbit'}
