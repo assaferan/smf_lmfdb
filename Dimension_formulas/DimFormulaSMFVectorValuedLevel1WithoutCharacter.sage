@@ -75,83 +75,56 @@ def dim_splitting_VV_All_weight(k,j):
     k = ZZ(k)
     j = ZZ(j)
     
-    if (j % 2) == 1:
-              return {
-'degree': 2, 
-'type': 'S', 
-'level': 1, 
-'weight': [0, j], 
-'char_orbit' : 0, 
-'total_dim': 0, 
-'cusp_dim': 0,
-'eis_dim': 0,
-'siegel_eis_dim': 0,
-'klingen_eis_dim': 0,
-'saito_kurokawa_dim': 0, 
-'remaining_dim': 0}
-
-
-    if k == 0 :
+    if (j % 2) == 1 or k == 0 or k == 1:
         return {
-'degree': 2, 
-'type': 'S', 
-'level': 1, 
-'weight': [0, j], 
-'char_orbit' : 0, 
-'total_dim': 0, 
-'cusp_dim': 0,
-'eis_dim': 0,
-'siegel_eis_dim': 0,
-'klingen_eis_dim': 0,
-'saito_kurokawa_dim': 0, 
-'remaining_dim': 0}
+                      'degree': 2, 
+                      'type': 'S', 
+                      'level': 1, 
+                      'weight': [k, j], 
+                      'char_orbit' : 0, 
+                      'total_dim': 0, 
+                      'cusp_dim': 0,
+                      'eis_dim': 0,
+                      'siegel_eis_dim': 0,
+                      'klingen_eis_dim': 0,
+                      'saito_kurokawa_dim': 0, 
+                      'remaining_dim': 0}
 
-    if k == 1 :
+
+
+
+    elif k == 2 :
+        assert j < 54 
         return {
-'degree': 2, 
-'type': 'S', 
-'level': 1, 
-'weight': [1, j], 
-'char_orbit' : 0, 
-'total_dim': 0, 
-'cusp_dim': 0,
-'eis_dim': 0,
-'siegel_eis_dim': 0,
-'klingen_eis_dim': 0,
-'saito_kurokawa_dim': 0, 
-'remaining_dim': 0}
+                'degree': 2, 
+                'type': 'S', 
+                'level': 1, 
+                'weight': [2, j], 
+                'char_orbit' : 0, 
+                'total_dim': 0, 
+                'cusp_dim': 0, 
+                'eis_dim': 0, 
+                'siegel_eis_dim': 0,
+                'klingen_eis_dim': 0,
+                'saito_kurokawa_dim': 0, 
+                'remaining_dim': 0}
 
-    if k == 2 :  # we need to add that j in [2, 4, ..., 52] for j>52 we don't know 
+    elif k == 3 and (j % 2) == 0:  
         return {
-'degree': 2, 
-'type': 'S', 
-'level': 1, 
-'weight': [2, j], 
-'char_orbit' : 0, 
-'total_dim': 0, 
-'cusp_dim': 0, 
-'eis_dim': 0, 
-'siegel_eis_dim': 0,
-'klingen_eis_dim': 0,
-'saito_kurokawa_dim': 0, 
-'remaining_dim': 0}
+                'degree': 2, 
+                'type': 'S', 
+                'level': 1, 
+                'weight': [2, j], 
+                'char_orbit' : 0, 
+                'total_dim': dim_VV_sp4Z_j_3_without_charac(j), 
+                'cusp_dim': dim_VV_sp4Z_j_3_without_charac(j), 
+                'eis_dim': 0, 
+                'siegel_eis_dim': 0,
+                'klingen_eis_dim': 0,
+                'saito_kurokawa_dim': 0, 
+                'remaining_dim': dim_VV_sp4Z_j_3_without_charac(j)}
 
-    if k == 3 and (j % 2) == 0:  
-        return {
-'degree': 2, 
-'type': 'S', 
-'level': 1, 
-'weight': [2, j], 
-'char_orbit' : 0, 
-'total_dim': dim_VV_sp4Z_j_3_without_charac(j), 
-'cusp_dim': dim_VV_sp4Z_j_3_without_charac(j), 
-'eis_dim': 0, 
-'siegel_eis_dim': 0,
-'klingen_eis_dim': 0,
-'saito_kurokawa_dim': 0, 
-'remaining_dim': dim_VV_sp4Z_j_3_without_charac(j)}
-
-    if k > 3 :
+    elif k > 3 :
         return {
 'degree': 2, 
 'type': 'S', 
