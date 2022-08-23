@@ -130,24 +130,9 @@ def dim_splitting_SV_odd_weight(k):
     #L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
     return L 
 
+
+
 def dim_splitting_SV_All_weight(k):
-    """
-    Put everything together
-    """
-    k = ZZ(k)
-    if k == 0 :
-        return [1,1,0,0,0,0,0]
-
-    if k == 2 :
-        return [0,0,0,0,0,0,0]
-
-    if (k % 2) == 1:
-        return dim_splitting_SV_odd_weight(k)
-
-    if (k % 2) == 0 and  k > 2:
-        return dim_splitting_SV_even_weight(k)
-
-def dim_splitting_SV_All_weight_Short(k):
     """
     Put everything together
     """

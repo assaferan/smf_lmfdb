@@ -31,7 +31,20 @@ def dim_splitting_SV_even_weight_charac(k):
     dgenuine = dtotal
     dcusp = dsaitokurokawa+dgenuine
     dnoncusp = deis + dklingeneis
-    L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
+    L={}
+    L['degree'] = 2
+    L['type'] = 'S'
+    L['level'] = 1
+    L['weight'] = [k,0]
+    L['char_orbit'] = 1
+    L['total_dim'] = dtotal
+    L['cusp_dim'] = dcusp
+    L['eis_dim'] = dnoncusp 
+    L['siegel_eis_dim'] = deis  
+    L['klingen_eis_dim'] = dklingeneis
+    L['saito_kurokawa_dim'] = dsaitokurokawa
+    L['remaining_dim'] = dgenuine
+    #L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
     return L 
 
 def dim_SV_sp4Z_odd_weight_with_charac(k):
@@ -59,7 +72,20 @@ def dim_splitting_SV_odd_weight_charac(k):
     dgenuine = dtotal-dsaitokurokawa
     dcusp = dtotal
     dnoncusp = deis + dklingeneis
-    L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
+    L={}
+    L['degree'] = 2
+    L['type'] = 'S'
+    L['level'] = 1
+    L['weight'] = [k,0]
+    L['char_orbit'] = 1
+    L['total_dim'] = dtotal
+    L['cusp_dim'] = dcusp
+    L['eis_dim'] = dnoncusp 
+    L['siegel_eis_dim'] = deis  
+    L['klingen_eis_dim'] = dklingeneis
+    L['saito_kurokawa_dim'] = dsaitokurokawa
+    L['remaining_dim'] = dgenuine
+    #L=[dtotal,dnoncusp,dcusp,deis,dklingeneis,dsaitokurokawa,dgenuine] 
     return L 
 
 def dim_splitting_SV_All_weight_charac(k):
@@ -68,13 +94,19 @@ def dim_splitting_SV_All_weight_charac(k):
     """
     k = ZZ(k)
     if k == 0 :
-        return [0,0,0,0,0,0,0]
+         return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 1, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0, 'siegel_eis_dim': 0,
+ 'klingen_eis_dim': 0,
+ 'saito_kurokawa_dim': 0, 'remaining_dim': 0}
     
     if k == 1 :
-        return [0,0,0,0,0,0,0]
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 1, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0, 'siegel_eis_dim': 0,
+ 'klingen_eis_dim': 0,
+ 'saito_kurokawa_dim': 0, 'remaining_dim': 0}
     
     if k == 2 :
-        return [0,0,0,0,0,0,0]
+        return {'degree': 2, 'type': 'S', 'level': 1, 'weight': [0, 0], 'char_orbit' : 1, 'total_dim': 0, 'cusp_dim': 0, 'eis_dim': 0, 'siegel_eis_dim': 0,
+ 'klingen_eis_dim': 0,
+ 'saito_kurokawa_dim': 0, 'remaining_dim': 0}
 
     if (k % 2) == 1:
         return dim_splitting_SV_odd_weight_charac(k)
