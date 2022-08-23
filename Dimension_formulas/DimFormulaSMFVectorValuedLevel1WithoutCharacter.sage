@@ -85,10 +85,11 @@ def dim_splitting_VV_All_weight(k,j):
                       'total_dim': 0, 
                       'cusp_dim': 0,
                       'eis_dim': 0,
-                      'siegel_eis_dim': 0,
-                      'klingen_eis_dim': 0,
-                      'saito_kurokawa_dim': 0, 
-                      'remaining_dim': 0}
+                      'eis_P_dim': 0,
+                      'eis_Q_dim': 0,
+                      'cusp_P_dim': 0, 
+                      'cusp_Y_dim': 0, 
+                      'cusp_G_dim': 0}
 
 
 
@@ -105,10 +106,11 @@ def dim_splitting_VV_All_weight(k,j):
                 'total_dim': 0, 
                 'cusp_dim': 0, 
                 'eis_dim': 0, 
-                'siegel_eis_dim': 0,
-                'klingen_eis_dim': 0,
-                'saito_kurokawa_dim': 0, 
-                'remaining_dim': 0}
+                'eis_P_dim': 0,
+                'eis_Q_dim': 0,
+                'cusp_P_dim': 0, 
+                'cusp_Y_dim': 0, 
+                'cusp_G_dim': 0}
 
     elif k == 3 and (j % 2) == 0:  
         return {
@@ -120,10 +122,11 @@ def dim_splitting_VV_All_weight(k,j):
                 'total_dim': dim_VV_sp4Z_j_3_without_charac(j), 
                 'cusp_dim': dim_VV_sp4Z_j_3_without_charac(j), 
                 'eis_dim': 0, 
-                'siegel_eis_dim': 0,
-                'klingen_eis_dim': 0,
-                'saito_kurokawa_dim': 0, 
-                'remaining_dim': dim_VV_sp4Z_j_3_without_charac(j)}
+                'eis_P_dim': 0,
+                'eis_Q_dim': 0,
+                'cusp_P_dim': 0,
+                'cusp_Y_dim': 0, 
+                'cusp_G_dim': dim_VV_sp4Z_j_3_without_charac(j)}
 
     elif k > 3 :
         return {
@@ -135,19 +138,14 @@ def dim_splitting_VV_All_weight(k,j):
 'total_dim': dimension_cusp_forms_SP4Z(j,k)+ dimension(CuspForms(SL2Z,k+j)), 
 'cusp_dim': dimension_cusp_forms_SP4Z(j,k), 
 'eis_dim': dimension(CuspForms(SL2Z,k+j)), 
-'siegel_eis_dim': 0,
-'klingen_eis_dim': dimension(CuspForms(SL2Z,k+j)),
-'saito_kurokawa_dim': 0, 
-'remaining_dim': dimension_cusp_forms_SP4Z(j,k)
+'eis_P_dim': 0,
+'eis_Q_dim': dimension(CuspForms(SL2Z,k+j)),
+'cusp_P_dim': 0,
+'cusp_Y_dim': 0, 
+'cusp_G_dim': dimension_cusp_forms_SP4Z(j,k)
 }
 
 
-
-
-
-
-    #if (k % 2) == 0 and  k > 2 :
-    #    return dim_splitting_SV_even_weight(k) 
 
 
         
