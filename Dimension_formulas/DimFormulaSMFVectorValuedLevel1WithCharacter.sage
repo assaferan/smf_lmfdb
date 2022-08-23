@@ -167,7 +167,7 @@ def dim_splitting_VV_All_weight_charac(k,j):
                 'type': 'S', 
                 'level': 1, 
                 'weight': [3, j], 
-                'char_orbit' : 0, 
+                'char_orbit' : 1, 
                 'total_dim': dim_VV_sp4Z_j_3_with_charac(j), 
                 'cusp_dim': dim_VV_sp4Z_j_3_with_charac(j), 
                 'eis_dim': 0, 

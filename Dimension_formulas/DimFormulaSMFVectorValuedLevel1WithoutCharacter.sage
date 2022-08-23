@@ -117,7 +117,7 @@ def dim_splitting_VV_All_weight(k,j):
                 'degree': 2, 
                 'type': 'S', 
                 'level': 1, 
-                'weight': [2, j], 
+                'weight': [3, j], 
                 'char_orbit' : 0, 
                 'total_dim': dim_VV_sp4Z_j_3_without_charac(j), 
                 'cusp_dim': dim_VV_sp4Z_j_3_without_charac(j), 
