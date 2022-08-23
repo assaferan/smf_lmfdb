@@ -1,13 +1,15 @@
+load('../Dimension_formulas/DimFormulaSMFVectorValuedLevel1WithoutChara\
+cter.sage')
 import os
 cwd = os.getcwd()
-os.chdir("~/lmfdb")
+os.chdir("../../lmfdb")
 from lmfdb import db
 os.chdir(cwd)
 
 aux_fname = "smf_newspaces_table.dat"
 
 def make_label(e):
-    return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1]]])
+    return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit']]])
 
 def make_id(e):
     return hash(e['label'])
