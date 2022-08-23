@@ -94,7 +94,8 @@ def dim_splitting_VV_All_weight(k,j):
 
 
     elif k == 2 :
-        assert j < 54 
+        if j > 53:
+                  raise ValueError("we do not know")
         return {
                 'degree': 2, 
                 'type': 'S', 
