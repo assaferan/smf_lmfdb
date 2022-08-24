@@ -1,7 +1,7 @@
-load('../Dimension_formulas/DimFormulaSMFVectorValuedLevel1WithoutChara\
-cter.sage')
 import os
 cwd = os.getcwd()
+os.chdir("../Dimension_formulas")
+load('dimformula_smf_degree2_level_1.sage')
 os.chdir("../../lmfdb")
 from lmfdb import db
 os.chdir(cwd)
@@ -9,7 +9,7 @@ os.chdir(cwd)
 aux_fname = "smf_newspaces_table.dat"
 
 def make_label(e):
-    return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit']]])
+    return '.'.join([str(x) for x in [e['degree'], e['type'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_label']]])
 
 def make_id(e):
     return hash(e['label'])
@@ -21,6 +21,7 @@ def write_data(entries):
     column_types = '|'.join(types)
     e_data = []
     for e in entries:
+        e['char_orbit_label'] = chr(ord('a') + e['char_orbit'])
         e['label'] = make_label(e)
         e['id'] = make_id(e)
         e_datum = '|'.join([str(e[k]) for k in keys])
@@ -38,11 +39,13 @@ def table_reload(entries):
     db.smf_newspaces.cleanup_from_reload()
     return
 
-def generate_dimensions(weight_list):
+# triple_list consists of triples (k,j,e) of weight and character
+def generate_dimensions(triple_list):
     entries = []
-    for weight in weight_list:
-       k = weight[0]
-       j = weight[1]
-       entries.append(dim_splitting_VV_All_weight(k,j))
+    for triple in triple_list:
+       k = triple[0]
+       j = triple[1]
+       e = triple[2]
+       entries.append(dim_splitting_smf_degree_2_level_1(j,k,e))
     table_reload(entries)
     return
