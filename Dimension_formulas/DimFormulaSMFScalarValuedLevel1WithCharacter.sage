@@ -1,4 +1,4 @@
- load('DimFormulaPlusMinusNewFormGamma0.sage')
+load('DimFormulaPlusMinusNewFormGamma0.sage')
 
 def dim_SV_sp4Z_even_weight_with_charac(k):
     """
