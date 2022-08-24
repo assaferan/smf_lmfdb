@@ -22,6 +22,9 @@ def write_data(entries):
     e_data = []
     for e in entries:
         e['char_orbit_label'] = chr(ord('a') + e['char_orbit'])
+        e['char_order'] = 1 + e['char_orbit']
+        e['char_degree'] = 1
+        e['conrey_indexes'] = [1+2*e['char_orbit']]
         e['label'] = make_label(e)
         e['id'] = make_id(e)
         e_datum = '|'.join([str(e[k]) for k in keys])
