@@ -33,14 +33,14 @@ def dim_splitting_SV_even_weight_charac(k):
     dnoncusp = deis + dklingeneis
     L={}
     L['degree'] = 2
-    L['type'] = 'S'
+    L['family'] = 'S'
     L['level'] = 1
     L['weight'] = [k,0]
     L['char_orbit'] = 1
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
     L['eis_dim'] = dnoncusp 
-    L['eis_P_dim'] = deis  
+    L['eis_F_dim'] = deis  
     L['eis_Q_dim'] = dklingeneis
     L['cusp_P_dim'] = dsaitokurokawa
     L['cusp_Y_dim'] = 0
@@ -74,14 +74,14 @@ def dim_splitting_SV_odd_weight_charac(k):
     dnoncusp = deis + dklingeneis
     L={}
     L['degree'] = 2
-    L['type'] = 'S'
+    L['family'] = 'S'
     L['level'] = 1
     L['weight'] = [k,0]
     L['char_orbit'] = 1
     L['total_dim'] = dtotal
     L['cusp_dim'] = dcusp
     L['eis_dim'] = dnoncusp 
-    L['eis_P_dim'] = deis  
+    L['eis_F_dim'] = deis  
     L['eis_Q_dim'] = dklingeneis
     L['cusp_P_dim'] = dsaitokurokawa
     L['cusp_Y_dim'] = 0
@@ -96,14 +96,14 @@ def dim_splitting_SV_All_weight_charac(k):
     if k in [0, 1, 2]:
          return {
     'degree': 2, 
-    'type': 'S',
+    'family': 'S',
     'level': 1, 
     'weight': [k, 0], 
     'char_orbit' : 1, 
     'total_dim': 0, 
     'cusp_dim': 0, 
     'eis_dim': 0, 
-    'eis_P_dim': 0,
+    'eis_F_dim': 0,
     'eis_Q_dim': 0,
     'cusp_P_dim': 0, 
     'cusp_Y_dim': 0, 
