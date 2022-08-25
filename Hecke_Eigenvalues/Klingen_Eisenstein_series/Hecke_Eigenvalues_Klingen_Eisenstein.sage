@@ -20,11 +20,11 @@ def klingen_eis_Hecke_p_square(k,j):
     results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
     L={}
     for p in prime_range(sqrt(200)):
-        L[p^2]=0
+        L[p]=0
     for res in results:
         Tr = res['traces']
         for p in prime_range(sqrt(200)):
-            L[p^2] = (1+p^(k-2)+p^(2*k-4))*Tr[p^2-1]+p^(2*k+j-4)*(p-1)
+            L[p] = (1+p^(k-2)+p^(2*k-4))*Tr[p^2-1]+p^(2*k+j-4)*(p-1)
     return L
     
 def klingen_eis_Hecke_p_square_0(k,j):
@@ -32,11 +32,11 @@ def klingen_eis_Hecke_p_square_0(k,j):
     results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
     L={}
     for p in prime_range(sqrt(200)):
-        L[p^2]=0
+        L[p]=0
     for res in results:
         Tr = res['traces']
         for p in prime_range(sqrt(200)):
-            L[p^2] = (1+(p-1)*p^(k-3)+p^(2*k-4))*Tr[p^2-1]+p^(k+j-2)*(p^(k-2)*(p-1)-p^(2*k-4)-1)
+            L[p] = (1+(p-1)*p^(k-3)+p^(2*k-4))*Tr[p^2-1]+p^(k+j-2)*(p^(k-2)*(p-1)-p^(2*k-4)-1)
     return L
 
 def klingen_eis_Hecke_p_square_1(k,j):
@@ -44,11 +44,11 @@ def klingen_eis_Hecke_p_square_1(k,j):
     results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
     L={}
     for p in prime_range(sqrt(200)):
-        L[p^2]=0
+        L[p]=0
     for res in results:
         Tr = res['traces']
         for p in prime_range(sqrt(200)):
-            L[p^2] = p^(k-3)*Tr[p^2-1]+p^(k+j-2)*(1-p^(k-4)+p^(2*k-4))
+            L[p] = p^(k-3)*Tr[p^2-1]+p^(k+j-2)*(1-p^(k-4)+p^(2*k-4))
     return L
 
 def klingen_eis_Hecke_p_square_2(k,j):
@@ -56,11 +56,11 @@ def klingen_eis_Hecke_p_square_2(k,j):
     results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
     L={}
     for p in prime_range(sqrt(200)):
-        L[p^2]=0
+        L[p]=0
     for res in results:
         Tr = res['traces']
         for p in prime_range(sqrt(200)):
-            L[p^2] = p^(2*k+j-6)
+            L[p] = p^(2*k+j-6)
     return L
 
 
@@ -85,7 +85,7 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac_p():
 def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac_p_square():
     L={}
     for p in prime_range(sqrt(200)):
-        L[p^2]=0
+        L[p]=0
     return L
 
 def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac():
