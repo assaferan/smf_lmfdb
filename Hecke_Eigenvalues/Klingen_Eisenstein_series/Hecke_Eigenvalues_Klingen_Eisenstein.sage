@@ -97,7 +97,11 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac():
     L['lambda_p_square_2'] = Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac_p_square()
     return L
 
-def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac(k,j,e):
+def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac(k,j,e,prime_bound=200):
+    empty_dic = {p : 0 for p in prime_range(prime_bound)}
+    hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
+    if (k < 4):
+       return {'lambda_' + hecke : empty_dic for hecke in hecke_types}
     if e == 1 : 
        return Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_charac()    
     elif e == 0 : 
