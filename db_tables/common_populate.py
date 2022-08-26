@@ -14,10 +14,12 @@ def make_space_label(e, label=True):
 
 def base_26(index):
     res = index - 1
-    ret = ''
+    letter = chr(ord('a') + (res % 26))
+    ret = letter
+    res //= 26
     while (res > 0):
         letter = chr(ord('a') + (res % 26))
-        ret += letter
+        ret = letter + ret
         res //= 26
     return ret
 
