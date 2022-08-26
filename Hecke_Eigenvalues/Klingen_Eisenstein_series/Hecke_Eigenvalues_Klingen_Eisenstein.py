@@ -1,4 +1,4 @@
-from sage.all import prime_range, sqrt
+from sage.all import prime_range, sqrt, ZZ
 
 import os
 os.chdir("/scratch/home/fclery/lmfdb")

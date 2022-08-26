@@ -1,4 +1,4 @@
-from sage.all import prime_range
+from sage.all import prime_range, ZZ, sqrt
 
 def siegel_eis_Hecke_p(p,k):
     """
