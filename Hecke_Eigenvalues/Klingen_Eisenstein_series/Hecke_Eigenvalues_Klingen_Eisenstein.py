@@ -1,3 +1,5 @@
+from sage.all import prime_range, sqrt
+
 import os
 os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db

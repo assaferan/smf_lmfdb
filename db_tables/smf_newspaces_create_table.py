@@ -64,7 +64,7 @@ def generate_col_desc():
     col_desc['char_degree'] = 'Degree of the (cyclotomic) character field'
     col_desc['conrey_indexes'] = 'Sorted list of Conrey indexes of characters in this Galois orbit'
     hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
-    for subspace in ['eis_F']:
+    for subspace in ['eis_F', 'eis_Q']:
         for hecke_type in hecke_types:
             col_desc[subspace + '_lambda_' + hecke_type] = 'List of traces of Hecke operators T_' + hecke_type + ' on the Siegel-Eisenstein (F) space corresponding to the values up to 200'
 #    col_desc['num_forms'] = 'number of Hecke orbits (each corresponds to a Galois conjugacy class of modular forms)'

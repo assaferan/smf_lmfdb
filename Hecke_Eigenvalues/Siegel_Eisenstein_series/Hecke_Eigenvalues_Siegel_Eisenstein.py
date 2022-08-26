@@ -1,3 +1,5 @@
+from sage.all import prime_range
+
 def siegel_eis_Hecke_p(p,k):
     """
     Compute the Hecke eigenvalues of the Siegel Eisenstein series at p
