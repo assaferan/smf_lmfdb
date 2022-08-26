@@ -55,7 +55,7 @@ def entry_add_common_columns(e, ext_data):
     e['conrey_indexes'] = conrey_indexes(e['char_orbit_index'])
     e['id'] = ext_data['id']
     e['level_radical'] = radical(e['level'])
-    e['char_parity'] = (-1)^(e['char_orbit_index']-1)
+    e['char_parity'] = 3-2*e['char_orbit_index']
     e['char_is_minimal'] = True
     e['char_is_real'] = True
     e['char_values'] = "NULL"

@@ -1,14 +1,15 @@
 from sage.all import *
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
-
+from lmfdb import db
 import os
 cwd = os.getcwd()
 os.chdir('smf_lmfdb/Dimension_formulas')
 load('dimformula_smf_degree2_level_1.sage')
+os.chdir("../Hecke_Eigenvalues/Siegel_Eisenstein_series")
+load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
+os.chdir("../Klingen_Eisenstein_series")
+load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
 os.chdir(cwd)
-from smf_lmfdb.Hecke_Eigenvalues.Siegel_Eisenstein_series.Hecke_Eigenvalues_Siegel_Eisenstein import Hecke_Eigenvalues_Siegel_Eisenstein_Series_All
-from smf_lmfdb.Hecke_Eigenvalues.Klingen_Eisenstein_series.Hecke_Eigenvalues_Klingen_Eisenstein import Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac
-from lmfdb import db
 
 def entry_add_columns(e, ext_data):
     e = entry_add_common_columns(e, ext_data)

@@ -1,15 +1,15 @@
 from sage.all import *
-from common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
 
 import os
 cwd = os.getcwd()
-os.chdir("../")
-from Hecke_Eigenvalues import Siegel_Eisenstein_series, Klingen_Eisenstein_series
-from Hecke_Eigenvalues.Siegel_Eisenstein_series.Hecke_Eigenvalues_Siegel_Eisenstein import Hecke_Eigenvalues_Siegel_Eisenstein_Series_All
-from Hecke_Eigenvalues.Klingen_Eisenstein_series.Hecke_Eigenvalues_Klingen_Eisenstein import Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac
-os.chdir("../lmfdb")
-from lmfdb import db
+os.chdir("smf_lmfdb/Hecke_Eigenvalues/Siegel_Eisenstein_series")
+load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
+os.chdir("../Klingen_Eisenstein_series")
+load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
 os.chdir(cwd)
+
+from lmfdb import db
 
 def make_orbit_code(g, F, N, k, j, i, X):
     return g + (ord(F)<<8) + (N<<12) + (k<<20) + (j<<28) + ((i-1)<<36) + ((X-1)<<52)
