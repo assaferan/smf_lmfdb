@@ -1,65 +1,29 @@
+from sage.all import *
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
+
 import os
 cwd = os.getcwd()
-os.chdir("../Dimension_formulas")
+os.chdir('smf_lmfdb/Dimension_formulas')
 load('dimformula_smf_degree2_level_1.sage')
-os.chdir("../Hecke_Eigenvalues/Siegel_Eisenstein_series/")
-load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
-os.chdir("../Klingen_Eisenstein_series/")
-load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
 os.chdir(cwd)
-os.chdir("../../lmfdb")
+from smf_lmfdb.Hecke_Eigenvalues.Siegel_Eisenstein_series.Hecke_Eigenvalues_Siegel_Eisenstein import Hecke_Eigenvalues_Siegel_Eisenstein_Series_All
+from smf_lmfdb.Hecke_Eigenvalues.Klingen_Eisenstein_series.Hecke_Eigenvalues_Klingen_Eisenstein import Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac
 from lmfdb import db
-os.chdir(cwd)
 
-aux_fname = "smf_newspaces_table.dat"
-
-def make_label(e):
-    return '.'.join([str(x) for x in [e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_label']]])
-
-def write_data(entries):
-    keys = [k for k in db.smf_newspaces.col_type.keys()]
-    types = [db.smf_newspaces.col_type[k] for k in keys]
-    column_names = '|'.join(keys)
-    column_types = '|'.join(types)
-    e_data = []
-    for id,e in enumerate(entries):
-        e['char_orbit_label'] = chr(ord('a') + e['char_orbit'])
-        e['char_order'] = 1 + e['char_orbit']
-        if (e['char_order'] == 2):
-           e['level'] = 2
-        e['char_degree'] = 1
-        e['conrey_indexes'] = [1+2*e['char_orbit']]
-        e['label'] = make_label(e)
-        e['id'] = id
-        e_datum = '|'.join([str(e[k]) for k in keys])
-        e_datum = e_datum.replace('[', '{').replace(']','}')
-        e_datum = e_datum.replace('(', '{').replace(')','}')
-        e_data.append(e_datum)
-    write_data = "\n".join([column_names, column_types, ""] + e_data)
-    f = open(aux_fname, "w")
-    f.write(write_data)
-    f.close()
-    return
-
-def table_reload(entries):
-    write_data(entries)
-    db.smf_newspaces.reload(aux_fname, null="")
-    db.smf_newspaces.cleanup_from_reload()
-    return
-
-def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=200):
-    prime_bound = prime_bound^(1/deg)
-    vals = func(k,j,e)['lambda_' + hecke_type]
-    return [vals[p] for p in prime_range(prime_bound)]
+def entry_add_columns(e, ext_data):
+    e = entry_add_common_columns(e, ext_data)
+    e['label'] = make_space_label(e)
+    return e
 
 # triple_list consists of triples (k,j,e) of weight and character
-def generate_dimensions(triple_list):
+def populate_smf_newspaces(triple_list):
+    table = db.smf_newspaces
+    aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
     entries = []
     for triple in triple_list:
-       k = triple[0]
-       j = triple[1]
-       e = triple[2]
+       k,j,e = triple
        entry = dim_splitting_smf_degree_2_level_1(j,k,e)
+       entry.update(common_entry_values(k,j,e))
        hecke_types = {1 : ['p'],
        		      2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
        sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein_Series_All,
@@ -69,5 +33,5 @@ def generate_dimensions(triple_list):
        	      for hecke_type in hecke_types[deg]:
               	  entry[sub + '_lambda_' + hecke_type] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
        entries.append(entry)
-    table_reload(entries)
+    table_reload(table, entries, entry_add_columns, aux_fname)
     return

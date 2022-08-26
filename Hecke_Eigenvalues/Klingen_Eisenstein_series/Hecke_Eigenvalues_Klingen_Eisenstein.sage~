@@ -1,9 +1,6 @@
 from sage.all import prime_range, sqrt, ZZ
 
-import os
-os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
-
 
 def klingen_eis_Hecke_p(k,j):
     w = j+k 

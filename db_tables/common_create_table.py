@@ -1,8 +1,4 @@
-import os
-cwd = os.getcwd()
-os.chdir("../../lmfdb")
 from lmfdb import db
-os.chdir(cwd)
 
 FAMILY_DICT = {
     'paramodular' : 'K',

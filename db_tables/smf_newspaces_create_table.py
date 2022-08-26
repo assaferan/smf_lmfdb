@@ -1,17 +1,12 @@
-import os
-cwd = os.getcwd()
-os.chdir("../../lmfdb")
+from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, hecke_types, generate_table
+
 from lmfdb import db
-os.chdir(cwd)
 
 FAMILY_DICT = {
     'paramodular' : 'K',
     'Siegel'      : 'S',
     'principal'   : 'P'
 }
-
-table_name = "smf_newspaces"
-table_desc = "Spaces of Siegel modular forms" 
 
 # Here we list the columns for the table smf_newspaces
 
@@ -23,46 +18,21 @@ def generate_dim_column_names():
 #    dim_columns.update(new_dim_columns)
     return dim_columns
 
-def generate_column_types(dim_columns):
-    col_type = {}
-    col_type['degree'] = 'smallint'
-    col_type['family'] = 'text'
-    col_type['level'] = 'integer'
-    col_type['weight'] = 'smallint[]'
-    col_type['char_orbit'] = 'smallint'
-    col_type['char_orbit_label'] = 'text'
-    col_type['char_order'] = 'integer'
-    col_type['char_degree'] = 'integer'
-    col_type['conrey_indexes'] = 'integer[]'
+def generate_column_types():
+    col_type = generate_common_column_types()
     hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
-    for subspace in ['eis_F']:
+    for subspace in ['eis_F', 'eis_Q']:
         for hecke_type in hecke_types:
             col_type[subspace + '_lambda_' + hecke_type] = 'numeric[]'
 #    col_type['num_forms'] = 'integer'
 #    col_type['traces'] = 'integer[]'
-    col_type['label'] = 'text'
+    dim_columns = generate_dim_column_names()
     for col_name in dim_columns:
         col_type[col_name] = 'integer'
     return col_type
 
-def generate_search_columns(col_type):
-    search_col = {}
-    types = set(col_type.values())
-    for t in types:
-        search_col[t] = [k for k in col_type.keys() if col_type[k] == t]
-    return search_col
-
-def generate_col_desc():
-    col_desc = {}
-    col_desc['degree'] = 'Degree g of this newform (automorphic with repsect to Sp(2g, Q))'
-    col_desc['family'] = "Family of arithmetic subgroups ('K' = paramodular, 'S' = Siegel, 'P' =  principal)"
-    col_desc['level'] = 'Level N in the family'
-    col_desc['weight'] = 'Weight of this newform (highest weight of the corresponding irreducible representation of GL(g))'
-    col_desc['char_orbit'] = 'ordinal i identifying the Galois orbit of the character of this newform (base26 encoded in the newform label / character orbit label)'
-    col_desc['char_orbit_label'] = 'alphabetic representation of the orbit'
-    col_desc['char_order'] = 'the order of the character chi'
-    col_desc['char_degree'] = 'Degree of the (cyclotomic) character field'
-    col_desc['conrey_indexes'] = 'Sorted list of Conrey indexes of characters in this Galois orbit'
+def generate_column_desc():
+    col_desc = generate_common_col_desc()
     hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
     for subspace in ['eis_F', 'eis_Q']:
         for hecke_type in hecke_types:
@@ -83,12 +53,9 @@ def generate_col_desc():
         col_desc[prefix+'cusp_G_dim'] = 'Dimension of the space of ' + pre + ' cuspforms of general type'
     return col_desc
 
-def generate_table():
-    if table_name in db.tablenames:
-        db.drop_table(table_name)
-    dim_columns = generate_dim_column_names()
-    col_type = generate_column_types(dim_columns)
-    search_col = generate_search_columns(col_type)
-    col_desc = generate_col_desc()
-    db.create_table(table_name, search_col, 'label', table_desc, col_desc)
+def create_table_smf_newspaces():
+    table_name = "smf_newspaces"
+    table_desc = "Spaces of Siegel modular forms" 
+    generate_table(table_name, table_desc,
+                   generate_column_types, generate_column_desc)
     return

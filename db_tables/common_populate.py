@@ -1,10 +1,6 @@
 from sage.all import prime_range, is_prime, is_prime_power, is_square, is_squarefree, prime_divisors, radical
 
-import os
-cwd = os.getcwd()
-os.chdir("../../lmfdb")
 from lmfdb import db
-os.chdir(cwd)
 
 def make_space_label(e, label=True):
     last_key = 'char_orbit'
@@ -42,16 +38,18 @@ def common_entry_values(k,j,e):
     return entry
 
 def entry_add_common_columns(e, ext_data):
+    # we do that because the non-trivial level have level 2
+    if (e['char_orbit'] == 1):
+        e['family'] = 'P'
+        e['level'] = 2
+#        e['char_conductor'] = 4
+#    else:
+    e['char_orbit'] = 0
+    e['char_conductor'] = 1
     e['char_orbit_index'] = e['char_orbit'] + 1
     e['prim_orbit_index'] = e['char_orbit_index']
     e['char_orbit_label'] = base_26(e['char_orbit_index'])
     e['char_order'] = char_order(e['char_orbit_index'])
-    # we do that because the non-trivial level have level 2
-    if (e['char_order'] == 2):
-        e['level'] = 2
-        e['char_conductor'] = 4
-    else:
-        e['char_conductor'] = 1
     # In our cases the degree is always 1
     e['char_degree'] = 1
     e['conrey_indexes'] = conrey_indexes(e['char_orbit_index'])
