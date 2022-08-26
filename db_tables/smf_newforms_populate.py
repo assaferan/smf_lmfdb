@@ -3,7 +3,9 @@ from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_comm
 
 import os
 cwd = os.getcwd()
-os.chdir("smf_lmfdb/Hecke_Eigenvalues/Siegel_Eisenstein_series")
+os.chdir('smf_lmfdb/Dimension_formulas')
+load('dimformula_smf_degree2_level_1.sage')
+os.chdir("../Hecke_Eigenvalues/Siegel_Eisenstein_series")
 load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
 os.chdir("../Klingen_Eisenstein_series")
 load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
@@ -38,8 +40,8 @@ def entry_add_columns(e, ext_data):
     e['analytic_rank'] = 'NULL'
     e['analytic_rank_proved'] = False
     e['qexp_display'] = 'NULL'
-    e['related_objects'] = 'NULL'
-    e['embedded_related_objects'] = 'NULL'
+    e['related_objects'] = []
+    e['embedded_related_objects'] = []
     e['trace_display'] = 'NULL'
     e['traces'] = 'NULL'
     return e
@@ -50,12 +52,17 @@ def populate_smf_newforms(triple_list):
     entries = []
     for triple in triple_list:
        k,j,e = triple
+       if (j % 2 == 1) or (k == 1):
+           continue
        entry = common_entry_values(k,j,e)
        hecke_types = {1 : ['p'],
                       2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
        sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein_Series_All,
                     'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac}
+       dims = dim_splitting_smf_degree_2_level_1(j,k,e)
        for sub in sub_funcs.keys():
+           if dims[sub + '_dim'] == 0:
+               continue
            entry_sub = {key : entry[key] for key in entry.keys()}
            entry_sub['aut_rep_type'] = sub[-1]
            for deg in hecke_types.keys():

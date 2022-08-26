@@ -23,6 +23,8 @@ def populate_smf_newspaces(triple_list):
     entries = []
     for triple in triple_list:
        k,j,e = triple
+       if (j % 2 == 1) or (k == 1):
+           continue
        entry = dim_splitting_smf_degree_2_level_1(j,k,e)
        entry.update(common_entry_values(k,j,e))
        hecke_types = {1 : ['p'],
