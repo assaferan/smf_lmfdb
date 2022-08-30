@@ -119,7 +119,7 @@ def Hecke_Eigenvalues_Yoshida_All(k,j,e):
     if e == 0 or (j % 2) == 1 : 
        return Make_Zero()   
     elif e == 1 : 
-       
+       return Hecke_Eigenvalues_Yoshida(k,j)       
 
 
 
