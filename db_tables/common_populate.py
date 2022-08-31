@@ -7,7 +7,7 @@ MAX_P = 199
 MAX_P_SQUARE = 13
 
 def dict_to_json(d):
-    return "{" + ",".join(['"' + str(k) + '" : "' + str(d[k]) + '"' for k in d.keys()]) + "}"
+    return "{" + ",".join(['"' + str(k) + '" : ' + str(d[k]) for k in d.keys()]) + "}"
 
 def make_space_label(e, label=True):
     last_key = 'char_orbit'
@@ -41,7 +41,7 @@ def common_entry_values(k,j,e):
     entry = {}
     entry['degree'] = 2
     entry['family'] = 'S'
-    entry['weight'] = [k,j]
+    entry['weight'] = str([k,j]).replace('[', '{').replace(']','}')
     entry['char_orbit_index'] = e + 1
     entry['level'] = 1
     return entry
@@ -57,7 +57,7 @@ def entry_add_common_columns(e, ext_data):
     e['char_order'] = char_order(e['char_orbit_index'])
     # In our cases the degree is always 1
     e['char_degree'] = 1
-    e['conrey_indexes'] = conrey_indexes(e['char_orbit_index'])
+    e['conrey_indexes'] = str(conrey_indexes(e['char_orbit_index'])).replace('[', '{').replace(']','}')
     e['id'] = ext_data['id']
     e['level_radical'] = radical(e['level'])
     e['char_parity'] = 3-2*e['char_orbit_index']
@@ -68,7 +68,7 @@ def entry_add_common_columns(e, ext_data):
     e['level_is_prime_power'] = is_prime_power(e['level'])
     e['level_is_square'] = is_square(e['level'])
     e['level_is_squarefree'] = is_squarefree(e['level'])
-    e['level_primes'] = prime_divisors(e['level'])
+    e['level_primes'] = str(prime_divisors(e['level'])).replace('[', '{').replace(']','}')
     return e
 
 def write_data(table, entries, entry_postprocess, aux_fname):
@@ -94,7 +94,6 @@ def write_data(table, entries, entry_postprocess, aux_fname):
         e = entry_postprocess(e, {'id' : i,
                                   'num_forms' : space_num_forms[space_label]})
         e_datum = '|'.join([str(e[k]) for k in keys])
-        e_datum = e_datum.replace('[', '{').replace(']','}')
         e_datum = e_datum.replace('(', '{').replace(')','}')
         e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
@@ -109,10 +108,8 @@ def table_reload(table, entries, entry_postprocess, aux_fname):
     table.cleanup_from_reload()
     return
 
-def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1, ret_type='list'):
+def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1):
     prime_bound = prime_bound**(1/deg)
     vals = func(k,j,e)['lambda_' + hecke_type]
-    if ret_type == 'list':
-        return [vals[p] for p in prime_range(prime_bound)]
-    else:
-        return {p : vals[p] for p in prime_range(prime_bound)}
+    return str([vals[p] for p in prime_range(prime_bound)]).replace('[', '{').replace(']','}')
+
