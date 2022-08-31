@@ -1,4 +1,4 @@
-from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE
+from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, dict_to_json, MAX_P, MAX_P_SQUARE
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein
 
@@ -51,7 +51,7 @@ def populate_smf_hecke_nf(triple_list):
            for deg in hecke_types.keys():
                for hecke_type in hecke_types[deg]:
                    key = 'lambda_' + hecke_type
-                   entry_sub[key] = [get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)]
+                   entry_sub[key] = dict_to_json(get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e,ret_type='dict'))
            entries.append(entry_sub)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return

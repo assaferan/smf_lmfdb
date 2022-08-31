@@ -6,6 +6,9 @@ from lmfdb import db
 MAX_P = 199
 MAX_P_SQUARE = 13
 
+def dict_to_json(d):
+    return "{" + ",".join(['"' + k + '" : "' + d[k] + '"' for k in d.keys()]) + "}"
+
 def make_space_label(e, label=True):
     last_key = 'char_orbit'
     if label:
@@ -106,7 +109,10 @@ def table_reload(table, entries, entry_postprocess, aux_fname):
     table.cleanup_from_reload()
     return
 
-def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1):
+def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1, ret_type='list'):
     prime_bound = prime_bound**(1/deg)
     vals = func(k,j,e)['lambda_' + hecke_type]
-    return [vals[p] for p in prime_range(prime_bound)]
+    if ret_type == 'list':
+        return [vals[p] for p in prime_range(prime_bound)]
+    else:
+        return {p : vals[p] for p in prime_range(prime_bound)}
