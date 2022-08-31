@@ -76,7 +76,7 @@ def write_data(table, entries, entry_postprocess, aux_fname):
     e_data = []
     space_num_forms = {}
     triple_entries = []
-    for e in entries do:
+    for e in entries:
         if e['level'] == 1:
             families = FAMILY_DICT.values()
         else:
