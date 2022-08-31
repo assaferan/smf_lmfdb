@@ -1,3 +1,4 @@
+from smf_lmfdb.db_tables.common_create_table import FAMILY_DICT
 from sage.all import prime_range, is_prime, is_prime_power, is_square, is_squarefree, prime_divisors, radical
 
 from lmfdb import db
@@ -82,7 +83,13 @@ def write_data(table, entries, entry_postprocess, aux_fname):
         e_datum = '|'.join([str(e[k]) for k in keys])
         e_datum = e_datum.replace('[', '{').replace(']','}')
         e_datum = e_datum.replace('(', '{').replace(')','}')
-        e_data.append(e_datum)
+        if e_datum['level'] == 1:
+            families = FAMILY_DICT.values()
+        else:
+            families = [e_datum['family']]
+        for family in families:
+            e_datum['family'] = family
+            e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
     f = open(aux_fname, "w")
     f.write(write_data)
