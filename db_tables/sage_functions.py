@@ -42,7 +42,7 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, j, k):
                     mu = j + 2*k - 3
                     ZZ = ap[i].parent()
                     R = PowerSeriesRing(ZZ, 't')
-                    t = R.0
+                    t = R.gen()
                     P = 1 - p**(mu - 1) * t**2
                     Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
                     an = (P/Q).coefficients()[r]
