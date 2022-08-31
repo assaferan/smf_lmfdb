@@ -1,4 +1,4 @@
-from common_create_table import generate_common_column_types, generate_common_col_desc, hecke_types, generate_table
+from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, hecke_types, generate_table
 
 def generate_column_types():
     col_type = generate_common_column_types()
@@ -31,7 +31,7 @@ def generate_column_types():
 
 def generate_column_desc():
     col_desc = generate_common_col_desc()
-    col_desc['label'] = 'Label g.C.N.w.a.x of this newspace'
+    col_desc['label'] = 'Label g.C.N.w.a.x of this newform'
     col_desc['aut_rep_type'] = 'Type of the automorphic representation corresponding to this form - one of (F, B, P, Q, Y, G) according to the classification of Arthur parameters by Schmidt'
     col_desc['space_label'] = 'label g.C.N.w.a of the newspace containing this newform'
     col_desc['hecke_orbit'] = '(X) An integer that is encoded into x in the label via 1=a, 2=b, 26=z, 27=ba, 28=bb.  Note the shift: the letter is the Cremona code for X-1.'
