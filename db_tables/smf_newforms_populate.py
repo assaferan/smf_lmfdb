@@ -20,9 +20,9 @@ def entry_add_columns(e, ext_data):
     e['field_disc'] = 1
     e['field_poly_is_cyclotomic'] = False
     e['field_poly_is_real_cyclotomic'] = False
-    e['field_poly'] = str([0,1]).replace('[', '{').replace(']','}')
+    e['field_poly'] = [0,1]
     e['field_poly_root_of_unity'] = 0
-    e['field_disc_factorization'] = str([]).replace('[', '{').replace(']','}')
+    e['field_disc_factorization'] = []
     e['is_cuspidal'] = (e['aut_rep_type'] in ['Y', 'P', 'G'])
     e['lift_type'] = e['aut_rep_type']
     # for now we don't populate these fields
@@ -30,8 +30,8 @@ def entry_add_columns(e, ext_data):
     e['analytic_rank'] = 'NULL'
     e['analytic_rank_proved'] = False
     e['qexp_display'] = 'NULL'
-    e['related_objects'] = str([]).replace('[', '{').replace(']','}')
-    e['embedded_related_objects'] = str([]).replace('[', '{').replace(']','}')
+    e['related_objects'] = []
+    e['embedded_related_objects'] = []
     e['trace_display'] = 'NULL'
     e['traces'] = 'NULL'
     return e
