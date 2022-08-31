@@ -1,8 +1,12 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
-from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein
+from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
+
+# TODO - This is now assuming that everything is in Q!!
+def nf_lists_to_elements(coeffs):
+    return [coeff[0] for coeff in coeffs]
 
 def entry_add_columns(e, ext_data):
     e['id'] = ext_data['id']
@@ -26,7 +30,8 @@ def entry_add_columns(e, ext_data):
     e['hecke_ring_denominators'] = 'NULL'
     e['hecke_ring_inverse_numerators'] = 'NULL'
     e['hecke_ring_inverse_denominators'] = 'NULL'
-    e['an'] = 'NULL'
+    e['an'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, nf_lists_to_elements(e['lambda_p']),
+                                              nf_lists_to_elements(e['lambda_p_square']), e['weight'])
     e['maxp'] = MAX_P
     e['maxp_square'] = MAX_P_SQUARE
     return e
