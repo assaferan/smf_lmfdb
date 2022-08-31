@@ -75,7 +75,17 @@ def write_data(table, entries, entry_postprocess, aux_fname):
     column_types = '|'.join(types)
     e_data = []
     space_num_forms = {}
-    for i,e in enumerate(entries):
+    triple_entries = []
+    for e in entries do:
+        if e['level'] == 1:
+            families = FAMILY_DICT.values()
+        else:
+            families = [e['family']]
+        for family in families:
+            e['family'] = family
+            triple_entries.append(e.copy())
+            
+    for i,e in enumerate(triple_entries):
         space_label = make_space_label(e, False)
         space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
         e = entry_postprocess(e, {'id' : i,
@@ -83,13 +93,7 @@ def write_data(table, entries, entry_postprocess, aux_fname):
         e_datum = '|'.join([str(e[k]) for k in keys])
         e_datum = e_datum.replace('[', '{').replace(']','}')
         e_datum = e_datum.replace('(', '{').replace(')','}')
-        if e_datum['level'] == 1:
-            families = FAMILY_DICT.values()
-        else:
-            families = [e_datum['family']]
-        for family in families:
-            e_datum['family'] = family
-            e_data.append(e_datum)
+        e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
     f = open(aux_fname, "w")
     f.write(write_data)
