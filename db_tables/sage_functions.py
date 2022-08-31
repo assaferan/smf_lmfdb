@@ -22,6 +22,8 @@ def Hecke_Eigenvalues_Siegel_Eisenstein(k,j,e,prime_bound=MAX_P+1):
 # TODO : this is highly inefficient, can sieve it through, and can compue the exact recurrence relation for powers of p
 def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
     k,j = wt
+    if (k == 0) and (j == 0):
+        return [0 for n in range(prec)]
     a = []
     primes = prime_range(prec+1)
     prime_idx = {primes[i] : i for i in range(len(primes))}
