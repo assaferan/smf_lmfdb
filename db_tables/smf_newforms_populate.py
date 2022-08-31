@@ -33,7 +33,7 @@ def entry_add_columns(e, ext_data):
     e['related_objects'] = []
     e['embedded_related_objects'] = []
     e['trace_display'] = e['trace_lambda_p'][:4]
-    e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_2'], j, k)
+    e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], j, k)
     return e
 
 def populate_smf_newforms(triple_list):
