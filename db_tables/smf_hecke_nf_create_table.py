@@ -26,7 +26,7 @@ def generate_column_types():
     col_type['family'] = 'text'
     col_type['level'] = 'integer'
     col_type['weight'] = 'smallint[]'
-    col_type['char_orbit_index'] = 'smallint[]'
+    col_type['char_orbit_index'] = 'smallint'
     return col_type
 
 def generate_column_desc():
