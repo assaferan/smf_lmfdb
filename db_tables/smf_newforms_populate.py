@@ -1,19 +1,5 @@
-# from sage.all import *
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
-
-from smf_lmfdb.Dimension_formulas.dimformula_smf_degree2_level_1 import smf_dims_degree_2_level_1
-from smf_lmfdb.Hecke_Eigenvalues.Siegel_Eisenstein_series.Hecke_Eigenvalues_Siegel_Eisenstein import Hecke_Eigenvalues_Siegel_Eisenstein
-from smf_lmfdb.Hecke_Eigenvalues.Klingen_Eisenstein_series.Hecke_Eigenvalues_Klingen_Eisenstein import Hecke_Eigenvalue_Traces_Klingen_Eisenstein
-
-# import os
-# cwd = os.getcwd()
-# os.chdir('smf_lmfdb/Dimension_formulas')
-# load('dimformula_smf_degree2_level_1.sage')
-# os.chdir("../Hecke_Eigenvalues/Siegel_Eisenstein_series")
-# load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
-# os.chdir("../Klingen_Eisenstein_series")
-# load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
-# os.chdir(cwd)
+from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein
 
 from lmfdb import db
 
