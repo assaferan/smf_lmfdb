@@ -32,7 +32,7 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, j, k):
         else:
             fac = factor(n) 
             if len(fac) == 1:
-                // computing a_{p^r} 
+                # computing a_{p^r} 
                 p  = fac[0][0]
                 r  = fac[0][1]
                 i = prime_idx[p]
