@@ -15,7 +15,7 @@ def entry_add_columns(e, ext_data):
     # for now our forms are always over the rational field
     # TODO - have Fabien write down the dimension of each form
     e['dim'] = 1
-    e['relative_dim'] = e['dim'] / e['char_degree']
+    e['relative_dim'] = e['dim'] // e['char_degree']
     e['nf_label'] = '1.1.1.1'
     e['field_disc'] = 1
     e['field_poly_is_cyclotomic'] = False
