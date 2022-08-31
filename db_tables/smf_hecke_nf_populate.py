@@ -51,7 +51,7 @@ def populate_smf_hecke_nf(triple_list):
            for deg in hecke_types.keys():
                for hecke_type in hecke_types[deg]:
                    key = 'lambda_' + hecke_type
-                   entry_sub[key] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
+                   entry_sub[key] = [get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)]
            entries.append(entry_sub)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
