@@ -1,5 +1,5 @@
-from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
-from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
+from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
@@ -32,8 +32,8 @@ def entry_add_columns(e, ext_data):
     e['qexp_display'] = 'NULL'
     e['related_objects'] = []
     e['embedded_related_objects'] = []
-    e['trace_display'] = 'NULL'
-    e['traces'] = 'NULL'
+    e['trace_display'] = e['trace_lambda_p'][:4]
+    e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_2'], j, k)
     return e
 
 def populate_smf_newforms(triple_list):

@@ -2,7 +2,7 @@ from lmfdb import db
 
 def klingen_eis_Hecke_p(k,j):
     w = j+k 
-    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
+    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(200): 
         L[p]=0
@@ -14,7 +14,7 @@ def klingen_eis_Hecke_p(k,j):
 
 def klingen_eis_Hecke_p_square(k,j):
     w = j+k
-    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
+    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(sqrt(200)):
         L[p]=0
@@ -26,7 +26,7 @@ def klingen_eis_Hecke_p_square(k,j):
     
 def klingen_eis_Hecke_p_square_0(k,j):
     w = j+k
-    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
+    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(sqrt(200)):
         L[p]=0
@@ -38,7 +38,7 @@ def klingen_eis_Hecke_p_square_0(k,j):
 
 def klingen_eis_Hecke_p_square_1(k,j):
     w = j+k
-    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
+    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(sqrt(200)):
         L[p]=0
@@ -49,8 +49,9 @@ def klingen_eis_Hecke_p_square_1(k,j):
     return L
 
 def klingen_eis_Hecke_p_square_2(k,j):
+    # do we even need to read from the database here?
     w = j+k
-    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)})
+    results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(sqrt(200)):
         L[p]=0
