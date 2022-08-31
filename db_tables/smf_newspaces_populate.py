@@ -1,6 +1,6 @@
 # from sage.all import *
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
-from smf_lmfdb.db_tables.commmon_create_table import SUBSPACE_TYPES, HECKE_TYPES
+from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from lmfdb import db
 
 from smf_lmfdb.Dimension_formulas.dimformula_smf_degree2_level_1 import smf_dims_degree_2_level_1
