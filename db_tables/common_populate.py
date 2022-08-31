@@ -100,7 +100,7 @@ def write_data(table, entries, entry_postprocess, aux_fname):
         space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
         e = entry_postprocess(e, {'id' : i,
                                   'num_forms' : space_num_forms[space_label]})
-        e_datum = '|'.join([entry_to_text(e[k], col_type[k]) for k in keys])
+        e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
         e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
     f = open(aux_fname, "w")
