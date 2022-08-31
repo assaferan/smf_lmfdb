@@ -41,12 +41,13 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, j, k):
                 else:
                     mu = j + 2*k - 3
                     ZZ = ap[i].parent()
-                    R.<t> = PowerSeriesRing(ZZ)
-                    P = 1 - p^(mu - 1) * t^2
-                    Q = 1 - ap[i] * t + (ap[i]^2 - ap2[i] - p^(mu-1))*t^2 - p^mu * ap[i]*t^3 + p^(2*mu)*t^4
+                    R = PowerSeriesRing(ZZ, 't')
+                    t = R.0
+                    P = 1 - p**(mu - 1) * t**2
+                    Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
                     an = (P/Q).coefficients()[r]
             else:  # a_m*a_r := a_{mr} and we know all a_i for i<n.
-                m  = fac[0][0]^fac[0][1]
+                m  = fac[0][0]**fac[0][1]
                 an = a[m]*a[n//m]
         a += [an]
     return a
