@@ -1,4 +1,4 @@
-from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, hecke_types, generate_table
+from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, generate_table, HECKE_TYPES
 
 def generate_column_types():
     col_type = generate_common_column_types()
@@ -25,7 +25,7 @@ def generate_column_types():
     col_type['traces'] = 'numeric[]'
     col_type['is_cuspidal'] = 'boolean'
     col_type['lift_type'] = 'text'
-    for hecke_type in hecke_types:
+    for hecke_type in HECKE_TYPES:
     	col_type['trace_lambda_'+hecke_type] = 'numeric[]'
     return col_type
 
@@ -55,7 +55,7 @@ def generate_column_desc():
     col_desc['traces'] = 'full list of integer traces tr(a_{n,1}) for n from 1 to 1000 (or more)'
     col_desc['is_cuspidal'] = 'true if this is a cusp form'
     col_desc['lift_type'] = 'If not a lift, states None'
-    for hecke_type in hecke_types:
+    for hecke_type in HECKE_TYPES:
         col_desc['trace_lambda_'+hecke_type] = 'List of traces of Hecke operators T_' + hecke_type + ' on the Galois orbit corresponding to the values up to 200'
     return col_desc
 
