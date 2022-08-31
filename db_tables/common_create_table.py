@@ -6,9 +6,15 @@ FAMILY_DICT = {
     'principal'   : 'P'
 }
 
-hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
+HECKE_TYPES = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
 
-subspace_types = ['eis_F', 'eis_Q']
+SUBSPACE_TYPES = {
+    'eis_F'  : 'Siegel-Eisenstein series', 
+    'eis_Q'  : 'Klingen-Eisenstein series',
+    'cusp_P' : 'Saito-Kurokawa lifts',
+    'cusp_Y' : 'Yoshida lifts',
+    'cusp_G' : 'cuspforms of general type'
+}
 
 def generate_common_column_types():
     col_type = {}
@@ -17,7 +23,6 @@ def generate_common_column_types():
     col_type['level'] = 'integer'
     col_type['level_radical'] = 'integer'
     col_type['weight'] = 'smallint[]'
-    col_type['char_orbit'] = 'smallint'
     col_type['char_orbit_index'] = 'smallint'
     col_type['char_orbit_label'] = 'text'
     col_type['char_order'] = 'integer'
@@ -47,7 +52,8 @@ def generate_search_columns(col_type):
 def generate_common_col_desc():
     col_desc = {}
     col_desc['degree'] = 'Degree g (automorphic with repsect to Sp(2g, Q))'
-    col_desc['family'] = "Family of arithmetic subgroups ('K' = paramodular, 'S' = Siegel, 'P' =  principal)"
+    family_str = ','.join(["'"+FAMILY_DICT[k]+"' = " + k for k in FAMILY_DICT.keys()])
+    col_desc['family'] = "Family of arithmetic subgroups (" + family_str + ")"
     col_desc['level'] = 'Level N in the family'
     col_desc['level_is_prime'] = 'true if N is prime (1 is not prime)'
     col_desc['level_is_prime_power'] = 'true if N is a prime power (1 is not a prime power)'
@@ -58,7 +64,6 @@ def generate_common_col_desc():
     col_desc['weight'] = 'Weight (k,j)'
     col_desc['char_parity'] = '1 for even, -1 for odd'
     col_desc['char_is_minimal'] =  "true if the character chi is {{KNOWL('character.dirichlet.minimal','minimal')}}"
-    col_desc['char_orbit'] = 'ordinal i identifying the Galois orbit of the characterof this newform (base26 encoded in the newform label / character orbit label)'
     col_desc['char_orbit_index'] = 'ordinal i identifying the Galois orbit of the characterof this newform (base26 encoded in the newform label / character orbit label)'
     col_desc['char_orbit_label'] = 'base26-encoding of char_orbit-1'
     col_desc['char_order'] = 'the order of the character chi'

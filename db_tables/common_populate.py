@@ -2,10 +2,15 @@ from sage.all import prime_range, is_prime, is_prime_power, is_square, is_square
 
 from lmfdb import db
 
+MAX_P = 199
+MAX_P_SQUARE = 13
+
 def make_space_label(e, label=True):
     last_key = 'char_orbit'
     if label:
         last_key += '_label'
+    else:
+        last_key += '_index'
     return '.'.join([str(x) for x in [e['degree'], e['family'], e['level']] + list(e['weight']) +[e[last_key]]])
 
 def base_26(index):
@@ -33,20 +38,16 @@ def common_entry_values(k,j,e):
     entry['degree'] = 2
     entry['family'] = 'S'
     entry['weight'] = [k,j]
-    entry['char_orbit'] = e
+    entry['char_orbit_index'] = e + 1
     entry['level'] = 1
     return entry
 
 def entry_add_common_columns(e, ext_data):
     # we do that because the non-trivial level have level 2
-    if (e['char_orbit'] == 1):
+    if (e['char_orbit_index'] == 2):
         e['family'] = 'P'
         e['level'] = 2
-#        e['char_conductor'] = 4
-#    else:
-    e['char_orbit'] = 0
     e['char_conductor'] = 1
-    e['char_orbit_index'] = e['char_orbit'] + 1
     e['prim_orbit_index'] = e['char_orbit_index']
     e['char_orbit_label'] = base_26(e['char_orbit_index'])
     e['char_order'] = char_order(e['char_orbit_index'])
@@ -94,7 +95,7 @@ def table_reload(table, entries, entry_postprocess, aux_fname):
     table.cleanup_from_reload()
     return
 
-def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=200):
+def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1):
     prime_bound = prime_bound**(1/deg)
     vals = func(k,j,e)['lambda_' + hecke_type]
     return [vals[p] for p in prime_range(prime_bound)]
