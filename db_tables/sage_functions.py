@@ -36,7 +36,7 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, j, k):
                 p  = fac[0][0]
                 r  = fac[0][1]
                 i = prime_idx[p]
-	        if r == 2:
+                if r == 2:
                     an = ap2[i]
                 else:
                     mu = j + 2*k - 3
