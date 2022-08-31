@@ -1,4 +1,4 @@
-from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, hecke_types, generate_table, FAMILY_DICT, HECKE_TYPES, SUBSPACE_TYPES
+from smf_lmfdb.db_tables.common_create_table import generate_common_column_types, generate_common_col_desc, generate_table, FAMILY_DICT, HECKE_TYPES, SUBSPACE_TYPES
 
 from lmfdb import db
 
