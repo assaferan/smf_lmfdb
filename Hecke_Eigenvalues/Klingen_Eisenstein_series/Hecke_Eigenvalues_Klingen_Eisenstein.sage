@@ -185,5 +185,11 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_all_evs(k,j,e,prime_bound=100):
             # We don't want to accidentally use the same fields for the Klingen-Eisenstein form
             for field_name in ['label', 'hecke_orbit_code', 'an', 'ap', 'weight']:
                 dummy = ev.pop(field_name)
+            # TODO - maybe move it to the general postprocessing
+            # completing missing fields
+            for field_name in ['hecke_ring_character_values', 'hecke_ring_numerators', 'hecke_ring_denominators',
+                               'hecke_ring_inverse_numerators', 'hecke_ring_inverse_denominators']:
+                if not e.get(field_name):
+                    ev[field_name]= 'NULL'
             evs.append((ev))
     return evs
