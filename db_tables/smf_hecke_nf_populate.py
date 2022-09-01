@@ -8,6 +8,9 @@ from lmfdb import db
 def nf_lists_to_elements(coeffs):
     return [coeff[0] for coeff in coeffs]
 
+def nf_elts_to_lists(coeffs):
+    return [[coeff] for coeff in coeffs]
+
 def entry_add_columns(e, ext_data):
     e['id'] = ext_data['id']
     if (e['char_orbit_index'] == 2):
@@ -30,8 +33,8 @@ def entry_add_columns(e, ext_data):
     e['hecke_ring_denominators'] = 'NULL'
     e['hecke_ring_inverse_numerators'] = 'NULL'
     e['hecke_ring_inverse_denominators'] = 'NULL'
-    e['an'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, nf_lists_to_elements(e['lambda_p']),
-                                              nf_lists_to_elements(e['lambda_p_square']), e['weight'])
+    e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, nf_lists_to_elements(e['lambda_p']),
+                                                               nf_lists_to_elements(e['lambda_p_square']), e['weight']))
     e['maxp'] = MAX_P
     e['maxp_square'] = MAX_P_SQUARE
     return e
