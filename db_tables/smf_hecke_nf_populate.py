@@ -69,8 +69,10 @@ def entry_add_columns(e, ext_data):
     hecke_orbit = ext_data['num_forms']
     e['label'] = space_label + '.' + base_26(hecke_orbit)
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], hecke_orbit)
-    e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, nf_lists_to_elements(e['lambda_p']),
-                                                               nf_lists_to_elements(e['lambda_p_square']), e['weight']))
+    basis, inv_basis = get_nf_basis(e)
+    e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, nf_lists_to_elements(e['lambda_p'], basis),
+                                                               nf_lists_to_elements(e['lambda_p_square'], basis), e['weight']),
+                               inv_basis)
     e['maxp'] = MAX_P
     e['maxp_square'] = MAX_P_SQUARE
     return e
