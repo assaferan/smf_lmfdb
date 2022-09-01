@@ -171,7 +171,7 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_all_evs(k,j,e,prime_bound=200):
     ev['field_poly'] = [0,1]
     
     for ht in hecke_types:
-        ev['lambda_' + ht]  = [SE_func[ht](p,k) for p in prime_range(bound[ht])]
+        ev['lambda_' + ht]  = [[SE_func[ht](p,k)] for p in prime_range(bound[ht])]
         
     evs.append(ev)
     return evs
