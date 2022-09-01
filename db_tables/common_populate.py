@@ -77,7 +77,7 @@ def entry_add_common_columns(e, ext_data):
 
 def fill_nulls(entry, table):
     for field_name in table.col_type.keys():
-        if not entry.get(field_name):
+        if entry.get(field_name) is None:
             entry[field_name]= 'NULL'
     return entry
 
