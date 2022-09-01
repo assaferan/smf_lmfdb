@@ -189,7 +189,7 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_all_evs(k,j,e,prime_bound=100):
             # completing missing fields
             for field_name in ['hecke_ring_character_values', 'hecke_ring_numerators', 'hecke_ring_denominators',
                                'hecke_ring_inverse_numerators', 'hecke_ring_inverse_denominators']:
-                if not e.get(field_name):
+                if not ev.get(field_name):
                     ev[field_name]= 'NULL'
             evs.append((ev))
     return evs
