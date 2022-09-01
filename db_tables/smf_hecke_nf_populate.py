@@ -36,7 +36,7 @@ def populate_smf_hecke_nf(triple_list):
        entry = common_entry_values(k,j,e)
        sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
                     'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein}
-      for sub in sub_funcs.keys():
+       for sub in sub_funcs.keys():
            evs = sub_funcs[sub](k,j,e)
            for ev in evs:
                entry_sub = entry.copy()
