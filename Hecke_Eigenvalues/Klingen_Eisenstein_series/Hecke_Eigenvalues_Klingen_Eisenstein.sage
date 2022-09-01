@@ -183,7 +183,7 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_all_evs(k,j,e,prime_bound=100):
             for ht in hecke_types:
                 ev[ht] = [KE_func[ht](k,j,p,ev['an'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
             # We don't want to accidentally use the same fields for the Klingen-Eisenstein form
-            for field_name in ['label', 'id', 'hecke_orbit_code', 'an', 'ap']:
+            for field_name in ['label', 'hecke_orbit_code', 'an', 'ap']:
                 dummy = ev.pop(field_name)
             evs.append((ev))
     return evs
