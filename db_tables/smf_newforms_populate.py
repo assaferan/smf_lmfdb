@@ -30,7 +30,7 @@ def populate_smf_newforms(triple_list):
        k,j,e = triple
        if (j % 2 == 1) or (k == 1):
            continue
-       entry = common_entry_value(k,j,e)
+       entry = common_entry_values(k,j,e)
        sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
                     'eis_Q' : Hecke_Eigenforms_Klingen_Eisenstein}
        for sub in sub_funcs.keys():
