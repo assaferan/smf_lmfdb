@@ -141,7 +141,7 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_all_forms(k,j,e,prime_bound=200):
     w = j + k
     orbits = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['label', 'dim', 'nf_label', 'hecke_ring_index', 'field_poly_is_cyclotomic', 'field_poly_root_of_unity', 'field_poly_is_real_cyclotomic', 'hecke_ring_index_proved', 'hecke_ring_generator_nbound', 'field_disc', 'field_disc_factorization', 'field_poly', 'hecke_ring_index_factorization', 'relative_dim', 'traces', 'is_polredabs'])
     hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
-    KE_func = {ht : apply_to_nf_elt(eval('KE_' + ht)) for ht in hecke_types}
+    KE_func = {ht : eval('KE_' + ht) for ht in hecke_types}
     exp = {ht : 1 if ht == 'lambda_p' else 2 for ht in hecke_types}
     bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
     for orbit in orbits:
