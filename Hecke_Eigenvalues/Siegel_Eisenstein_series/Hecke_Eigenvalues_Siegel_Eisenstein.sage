@@ -101,7 +101,80 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_Series_All(k,j,e,prime_bound=200):
     if (j != 0) or (e != 0) or (k < 4):
        return {'lambda_' + hecke : empty_dic for hecke in hecke_types}
     return Hecke_Eigenvalues_Siegel_Eisenstein_Series(k)
-	
+
+def Hecke_Eigenvalues_Siegel_Eisenstein_all_forms(k,j,e,prime_bound=200):
+    '''
+    Returns a list of dictionaries.
+    Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
+    '''
+    forms = []
+    if (e != 0) or (j != 0) or (k < 4):
+        return forms
+
+    hecke_types = ['p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    SE_func = {ht : eval('siegel_eis_Hecke_' + ht) for ht in hecke_types}
+    exp = {ht : 1 if ht == 'p' else 2 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
+    
+    orbit = {}
+
+    orbit['related_objects'] = []
+    orbit['dim'] = 1
+    orbit['nf_label'] = '1.1.1.1'
+    orbit['hecke_ring_index'] = 1
+    orbit['field_poly_is_cyclotomic'] = False
+    orbit['field_poly_root_of_unity'] = 0
+    orbit['field_poly_is_real_cyclotomic'] = False
+    orbit['hecke_ring_index_proved'] = True
+    orbit['hecke_ring_generator_nbound'] = 1
+    orbit['field_disc'] = 1
+    orbit['field_disc_factorization'] = []
+    orbit['field_poly'] = [0,1]
+    orbit['hecke_ring_index_factorization'] = []
+    orbit['relative_dim'] = 1
+    orbit['is_polredabs'] = True
+    orbit['is_cuspidal'] = False
+    orbit['aut_rep_type'] = 'F'
+        
+    for ht in hecke_types:
+        orbit['trace_lambda_'+ ht] = [SE_func[ht](p,k) for p in prime_range(bound[ht])]
+        
+    forms.append(orbit)
+    return forms
+
+def Hecke_Eigenvalues_Siegel_Eisenstein_all_evs(k,j,e,prime_bound=200):
+    '''
+    Returns a list of dictionaries.
+    Each dictionary is an entry for the Hecke eigenvalues over a number field db,
+    meant to be uploaded to smf_hecke_nf
+    '''
+    evs = []
+    if (e != 0) or (j != 0) or (k < 4):
+        return evs
+
+    hecke_types = ['p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    SE_func = {ht : eval('siegel_eis_Hecke_' + ht) for ht in hecke_types}
+    exp = {ht : 1 if ht == 'p' else 2 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
+    
+    ev = {}
+    ev['maxp'] = previous_prime(prime_bound)
+    ev['maxp_square'] = previous_prime(floor(sqrt(prime_bound)))
+    ev['hecke_ring_character_values'] = 'NULL'
+    ev['hecke_ring_numerators'] = 'NULL'
+    ev['hecke_ring_denominators'] = 'NULL'
+    ev['hecke_ring_inverse_numerators'] = 'NULL'
+    ev['hecke_ring_inverse_denominators'] = 'NULL'
+    ev['hecke_ring_rank'] = 1
+    ev['hecke_ring_power_basis'] = True
+    ev['hecke_ring_cyclotomic_generator'] = 0
+    ev['field_poly'] = [0,1]
+    
+    for ht in hecke_types:
+        ev['lambda_' + ht]  = [SE_func[ht](p,k) for p in prime_range(bound[ht])]
+        
+    evs.append(ev)
+    return evs
 
 
 

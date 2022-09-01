@@ -1,5 +1,5 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
-from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Get_All_Hecke_Eigenvalues_Up_To
+from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
@@ -12,25 +12,11 @@ def entry_add_columns(e, ext_data):
     e['hecke_orbit'] = ext_data['num_forms']
     e['label'] = e['space_label'] + '.' + base_26(e['hecke_orbit'])
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], e['hecke_orbit'])
-    # for now our forms are always over the rational field
-    # TODO - have Fabien write down the dimension of each form
-    e['dim'] = 1
-    e['relative_dim'] = e['dim'] // e['char_degree']
-    e['nf_label'] = '1.1.1.1'
-    e['field_disc'] = 1
-    e['field_poly_is_cyclotomic'] = False
-    e['field_poly_is_real_cyclotomic'] = False
-    e['field_poly'] = [0,1]
-    e['field_poly_root_of_unity'] = 0
-    e['field_disc_factorization'] = []
-    e['is_cuspidal'] = (e['aut_rep_type'] in ['Y', 'P', 'G'])
-    e['lift_type'] = e['aut_rep_type']
     # for now we don't populate these fields
     e['trace_hash'] = 'NULL'
     e['analytic_rank'] = 'NULL'
     e['analytic_rank_proved'] = False
     e['qexp_display'] = 'NULL'
-    e['related_objects'] = []
     e['embedded_related_objects'] = []
     e['trace_display'] = e['trace_lambda_p'][:4]
     e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
@@ -44,22 +30,14 @@ def populate_smf_newforms(triple_list):
        k,j,e = triple
        if (j % 2 == 1) or (k == 1):
            continue
-       entry = common_entry_values(k,j,e)
-       hecke_types = {1 : ['p'],
-                      2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
-       sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein}
-# We're not yet ready for the Klingen-Eisenstein as the coefficient field may be non-trivial
-#                    'eis_Q' : Hecke_Eigenvalue_Traces_Klingen_Eisenstein}
-       dims = smf_dims_degree_2_level_1(j,k,e)
+       entry = common_entry_value(k,j,e)
+       sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
+                    'eis_Q' : Hecke_Eigenforms_Klingen_Eisenstein}
        for sub in sub_funcs.keys():
-           if dims[sub + '_dim'] == 0:
-               continue
-           entry_sub = {key : entry[key] for key in entry.keys()}
-           entry_sub['aut_rep_type'] = sub[-1]
-           for deg in hecke_types.keys():
-               for hecke_type in hecke_types[deg]:
-                   key = 'trace_lambda_' + hecke_type
-                   entry_sub[key] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
-           entries.append(entry_sub)
+           forms = sub_funcs[sub](k,j,e)
+           for f in forms:
+               entry_sub = entry.copy()
+               entry_sub.update(f)
+               entries.append(entry_sub)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return

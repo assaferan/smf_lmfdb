@@ -47,17 +47,13 @@ def conrey_indexes(char_orbit_index):
 def common_entry_values(k,j,e):
     entry = {}
     entry['degree'] = 2
-    entry['family'] = 'S'
+    entry['family'] = 'P'
     entry['weight'] = [k,j]
-    entry['char_orbit_index'] = e + 1
-    entry['level'] = 1
+    entry['char_orbit_index'] = 1
+    entry['level'] = e + 1
     return entry
 
 def entry_add_common_columns(e, ext_data):
-    # we do that because the non-trivial level have level 2
-    if (e['char_orbit_index'] == 2):
-        e['family'] = 'P'
-        e['level'] = 2
     e['char_conductor'] = 1
     e['prim_orbit_index'] = e['char_orbit_index']
     e['char_orbit_label'] = base_26(e['char_orbit_index'])
@@ -70,6 +66,7 @@ def entry_add_common_columns(e, ext_data):
     e['char_parity'] = 3-2*e['char_orbit_index']
     e['char_is_minimal'] = True
     e['char_is_real'] = True
+    # TODO - replace that by [1, 1, [], []], now that we know how to uploda json data
     e['char_values'] = "NULL"
     e['level_is_prime'] = is_prime(e['level'])
     e['level_is_prime_power'] = is_prime_power(e['level'])
