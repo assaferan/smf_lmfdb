@@ -41,7 +41,8 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
     prime_idx = {primes[i] : i for i in range(len(primes))}
     for n in range(1,prec+1):
         if n == 1:
-            an = 1
+            ZZ = ap[0].parent()
+            an = ZZ(1)
         elif is_prime(n):
             an = ap[prime_idx[n]]
         else:

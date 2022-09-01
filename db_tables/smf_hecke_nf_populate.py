@@ -61,7 +61,7 @@ def nf_elts_to_lists(elts, inv_basis):
     d = len(inv_basis)
     def to_list(elt):
         if type(elt) == int:
-            return [elt]
+            return [elt] + [0 for i in range(d-1)]
         return list(elt)
     return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) for elt in elts]
 
