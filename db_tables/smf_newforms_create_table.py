@@ -26,6 +26,7 @@ def generate_column_types():
     col_type['is_cuspidal'] = 'boolean'
     col_type['hecke_ring_generator_nbound'] = 'integer'
     col_type['hecke_ring_index_factorization'] = 'numeric[]'
+    col_type['hecke_ring_index_proved'] = 'boolean'
     for hecke_type in HECKE_TYPES:
     	col_type['trace_lambda_'+hecke_type] = 'numeric[]'
     return col_type
@@ -57,6 +58,7 @@ def generate_column_desc():
     col_desc['is_cuspidal'] = 'true if this is a cusp form'
     col_desc['hecke_ring_generator_nbound'] = 'minimal integer m such that a_1,...,a_m generate the Hecke ring'
     col_desc['hecke_ring_index_factorization'] = 'Factorization of hecke_ring_index stored as ordered list of pairs [p,e].'
+    col_desc['hecke_ring_index_proved'] = 'whether the index has been proved correct (computing the maximal order may not be possible)'
     for hecke_type in HECKE_TYPES:
         col_desc['trace_lambda_'+hecke_type] = 'List of traces of Hecke operators T_' + hecke_type + ' on the Galois orbit corresponding to the values up to 200'
     return col_desc
