@@ -31,7 +31,6 @@ def Hecke_Eigenvalues_Siegel_Eisenstein(k,j,e):
 def Hecke_Eigenvalues_Klingen_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Klingen_Eisenstein_all_evs(k,j,e)
 
-
 # TODO : this is highly inefficient, can sieve it through, and can compue the exact recurrence relation for powers of p
 def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
     k,j = wt
