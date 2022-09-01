@@ -40,7 +40,7 @@ def populate_smf_hecke_nf(triple_list):
            evs = sub_funcs[sub](k,j,e)
            for ev in evs:
                entry_sub = entry.copy()
-               entry_sub.update(f)
+               entry_sub.update(ev)
                entries.append(entry_sub)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
