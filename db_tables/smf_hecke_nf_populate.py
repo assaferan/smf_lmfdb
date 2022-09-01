@@ -59,7 +59,11 @@ def nf_lists_to_elements(coeffs, basis):
 
 def nf_elts_to_lists(elts, inv_basis):
     d = len(inv_basis)
-    return [ list(sum([list(elt)[i]*inv_basis[i] for i in range(d)])) for elt in elts]
+    def to_list(elt):
+        if type(elt) == int:
+            return [elt]
+        return list(elt)
+    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) for elt in elts]
 
 def entry_add_columns(e, ext_data):
     e['id'] = ext_data['id']
