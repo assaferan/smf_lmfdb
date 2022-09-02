@@ -173,11 +173,12 @@ def Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j, prime_bound=200
     bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
     ranges = {ht : prime_range(bound[ht]) for ht in hecke_types}
     res = db.mf_newspaces.lookup(label, ['traces'])
-    Tr = res['traces']
-    L = { ht : {}  for ht in hecke_types }
-    for ht in hecke_types:
-        for p in ranges[ht]:
-            L[ht][p] = KE_func[ht](k,j,p,Tr[p^exp[ht]-1]) 
+    L = { ht : {p : 0 for p in ranges[ht]}  for ht in hecke_types }
+    if res:
+        Tr = res['traces']
+        for ht in hecke_types:
+            for p in ranges[ht]:
+                L[ht][p] = KE_func[ht](k,j,p,Tr[p^exp[ht]-1]) 
     return L   
 
 # For now we restrict to 100 since column 'an' of mf_hecke_nf only stores up to 100
