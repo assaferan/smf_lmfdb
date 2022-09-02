@@ -7,7 +7,7 @@ from lmfdb import db
 def generate_dim_column_names():
     dim_columns = { prefix + '_dim' for prefix in ['total', 'eis', 'cusp'] + list(SUBSPACE_TYPES.keys()) }
     old_dim_columns = {'old_' + col for col in dim_columns}
-    new_dim_columns = {'new_' + col for col in new_dim_columns}
+    new_dim_columns = {'new_' + col for col in dim_columns}
     dim_columns.update(old_dim_columns)
     dim_columns.update(new_dim_columns)
     return dim_columns
