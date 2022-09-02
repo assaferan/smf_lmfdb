@@ -5,6 +5,9 @@ from lmfdb import db
 Here we implement the dimenion formulas for cupidal spaces of paramodular forms,
 following the paper [IK] Ibukiyama, Kitiyama - "Dimension formulas of paramodular
 forms of squarefree level and comparison with inner twist", J. Math. Soc. Japan, Vol. 69, No. 2 (2017)
+
+Although conjectural at the time, the formulas are now a consequence of the preprint
+[RW] Rosner, Weissauer - "Global liftings between inner forms of GSp(4)".
 '''
 
 def IK_legendre(a,p):
