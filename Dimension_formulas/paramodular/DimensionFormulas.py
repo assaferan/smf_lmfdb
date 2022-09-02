@@ -3,7 +3,8 @@ from lmfdb import db
 
 '''
 Here we implement the dimenion formulas for cupidal spaces of paramodular forms,
-followinf Ibukiyama-Kitiyama
+following the paper [IK] Ibukiyama, Kitiyama - "Dimension formulas of paramodular
+forms of squarefree level and comparison with inner twist", J. Math. Soc. Japan, Vol. 69, No. 2 (2017)
 '''
 
 def IK_legendre(a,p):
@@ -444,26 +445,45 @@ def Yoshida_lift_dim_sub(k,j,N,M):
     dims = [lookup(label, ['dim'])['dim'] for label in labels]
     return prod(dims)
     
-def Yoshida_lift_dim(k,j,N):
+def Yoshida_new_lift_dim(k,j,N):
     Ms = [M for M in divisors(N) if is_odd(omega(M))]
     return sum([Yoshida_lift_dim_sub(k,j,N,M) for M in Ms])
 
-def Saito_Kurokawa_lift_dim(k,N):
-    # Ms_odd = [M for M in divisors(N) if is_odd(omega(M))]
-    Ms_even = [M for M in divisors(N) if is_even(omega(M))]
-    # I think these only contribute to the algeraic modular forms ?
-    # SK_plus = sum([classical_plus_cusp_dim(2*k-2,N//M) for M in Ms_odd])
-    SK_plus = 0
-    SK_minus = sum([classical_minus_cusp_dim(2*k-2,N//M) for M in Ms_even])
-    return SK_plus + SK_minus
-    
+def Yoshida_lift_dim(k,j,N):
+    '''
+    Returns the dimension of the total space of Yoshida lifts, including old forms
+    '''
+    return sum([Yoshida_new_lift_dim(k,j,M) for M in divisors(N)])
+
 def Saito_Kurokawa_new_lift_dim(k,N):
     # all the rest here are considered old
     return classical_minus_cusp_dim(2*k-2,N)
 
+def Saito_Kurokawa_lift_dim(k,N):
+    '''
+    Returns the dimension of the total space of SK(=Gritsenko) lifts, including old forms
+
+    Example #1 (dimension of Jacobi cusp forms, p. 666):
+    >>> [[Saito_Kurokawa_lift_dim(k,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 2, 0, 2, 0, 2],
+     [0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 0, 2, 1, 3, 1, 3, 1, 4],
+     [0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 1, 3, 2, 4, 2, 5, 2, 5],
+     [0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 3, 5, 4, 6, 5, 7, 5, 8],
+     [0, 0, 0, 1, 1, 2, 2, 3, 3, 5, 3, 5, 5, 7, 5, 8, 6, 9],
+     [0, 1, 1, 2, 2, 3, 3, 5, 4, 6, 5, 7, 6, 9, 7, 10, 8, 11],
+     [0, 1, 1, 2, 3, 4, 4, 6, 6, 8, 7, 9, 9, 12, 10, 13, 12, 15],
+     [0, 1, 2, 3, 3, 5, 5, 7, 7, 9, 8, 11, 10, 13, 12, 15, 13, 17],
+     [1, 2, 3, 4, 5, 6, 7, 9, 9, 11, 11, 13, 13, 16, 15, 18, 17, 20],
+     [0, 1, 2, 3, 4, 6, 6, 8, 9, 11, 10, 13, 13, 16, 15, 18, 17, 21],
+     [0, 1, 2, 4, 4, 6, 7, 9, 9, 12, 11, 14, 14, 17, 16, 20, 18, 22]]
+    
+    '''
+    return sum([Saito_Kurokawa_new_lift_dim(k,M) for M in divisors(N)])
+
 # This is the total dimension of the (cuspidal) lifts (see (7) in p. 617)
 def paramodular_new_lift_dim(k,j,N):
-    Y_dim = Yoshida_lift_dim(k,j,N)
+    Y_dim = Yoshida_new_lift_dim(k,j,N)
     SK_dim = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
     # delta = (j == 0)*(k == 3)*(is_odd(omega(N)))
     delta = 0
