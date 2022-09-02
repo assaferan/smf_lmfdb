@@ -534,4 +534,12 @@ def smf_dims_paramodular(k,j,N):
     space['cusp_Y_dim'] = Yoshida_lift_dim(k,j,N)
     space['cusp_P_dim'] = Saito_Kurokawa_lift_dim(k,N) if j == 0 else 0
     space['cusp_G_dim'] = space['cusp_dim'] - space['cusp_Y_dim'] - space['cusp_P_dim']
+    space['new_cusp_dim'] = paramodular_new_cusp_dim(k,j,N)
+    space['new_cusp_Y_dim'] = Yoshida_new_lift_dim(k,j,N)
+    space['new_cusp_P_dim'] = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
+    space['new_cusp_G_dim'] = space['new_cusp_dim'] - space['new_cusp_Y_dim'] - space['new_cusp_P_dim']
+    for aut_type in ['Y', 'P', 'G']:
+        col = 'cusp_' + aut_type + '_dim'
+        space['old_' + col] = space[col] - space['new_' + col]
+    space['old_cusp_dim'] = space['cusp_dim'] - space['new_cusp_dim']
     return space

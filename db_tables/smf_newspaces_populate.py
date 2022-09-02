@@ -21,6 +21,11 @@ def smf_level1_space(k,j,e):
         for deg in hecke_types.keys():
        	    for hecke_type in hecke_types[deg]:
               	entry[sub + '_lambda_' + hecke_type] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
+    # in level 1 all forms are new, so we replicate the data, and fill zeros in oldforms
+    dim_columns = { prefix + '_dim' for prefix in ['total', 'eis', 'cusp'] + SUBSPACE_TYPES.keys() }
+    for dim_col in dim_columns:
+        entry['new_' + dim_col] = entry[dim_col]
+        entry['old_' + dim_col] = 0
     return entry
 
 # triple_list consists of triples (k,j,N) of weight and level
