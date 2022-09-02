@@ -6,8 +6,8 @@ def N_bound(k):
     '''
     The maximal N for which the lmfdb stores data for S_k(N) (classical modular forms)
     '''
-    triv_bound = 40000 // k^2 
-    small_bound = min(100000 // k^2, 10) 
+    triv_bound = 40000 // k**2 
+    small_bound = min(100000 // k**2, 10) 
     return max(triv_bound, small_bound) 
 
 def get_box_triples(max_k = 20, max_j = 20):
