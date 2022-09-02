@@ -20,5 +20,7 @@ def get_box_triples(max_k = 20, max_j = 20):
                     in range(2,N_bound(2*k+j-2)+1) if is_squarefree(N)]
     return triple_list
 
-create_table_smf_newspaces()
-populate_smf_newspaces(get_box_triples())
+def create_and_populate_smf_newspaces():
+    create_table_smf_newspaces()
+    populate_smf_newspaces(get_box_triples())
+    return
