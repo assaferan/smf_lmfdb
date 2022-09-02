@@ -523,3 +523,17 @@ def paramodular_non_lift_new_cusp_dim(k,j,N):
     
     return paramodular_new_cusp_dim(k,j,N) - paramodular_new_lift_dim(k,j,N)
 
+def smf_dims_paramodular(k,j,N):
+    space = {}
+    space['degree'] =  2 
+    space['family'] = 'K' 
+    space['level'] = N 
+    space['weight'] = [k, j]
+    space['char_orbit_index'] = 1
+    # Here we repeat the same computation twice
+    space['cusp_dim'] = paramodular_cusp_dim(k,j,N)
+    space['cusp_Y_dim'] = Yoshida_lift_dim(k,j,N)
+    space['cusp_P_dim'] = Saito_Kurokawa_lift_dim(k,N) if j == 0 else 0
+    space['cusp_G_dim'] = paramodular_non_lift_cusp_dim(k,j,N)
+    assert space['cusp_dim'] == space['cusp_Y_dim'] + space['cusp_P_dim'] + space['cusp_G_dim']
+    return space

@@ -1,6 +1,7 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular
 
 from lmfdb import db
 
@@ -9,29 +10,63 @@ def entry_add_columns(e, ext_data):
     e['label'] = make_space_label(e)
     return e
 
-# triple_list consists of triples (k,j,e) of weight and character
+def smf_level1_space(k,j,e):
+    entry = smf_dims_degree_2_level_1(j,k,e)
+    entry.update(common_entry_values(k,j,e))
+    hecke_types = {1 : ['p'],
+       		   2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
+    sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
+       		 'eis_Q' : Hecke_Eigenvalue_Traces_Klingen_Eisenstein}
+    for sub in sub_funcs.keys():
+        for deg in hecke_types.keys():
+       	    for hecke_type in hecke_types[deg]:
+              	entry[sub + '_lambda_' + hecke_type] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
+    return entry
+
+# triple_list consists of triples (k,j,N) of weight and level
+# at the moment we restrict to trivial character
 def populate_smf_newspaces(triple_list):
     table = db.smf_newspaces
     aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
     entries = []
     for triple in triple_list:
-       k,j,e = triple
-       if (j % 2 == 1) or (k == 1):
-           continue
-       entry = smf_dims_degree_2_level_1(j,k,e)
-       entry.update(common_entry_values(k,j,e))
-       hecke_types = {1 : ['p'],
-       		      2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
-       sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
-       		    'eis_Q' : Hecke_Eigenvalue_Traces_Klingen_Eisenstein}
-       for sub in sub_funcs.keys():
-          for deg in hecke_types.keys():
-       	      for hecke_type in hecke_types[deg]:
-              	  entry[sub + '_lambda_' + hecke_type] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
-       non_existing = [sub for sub in SUBSPACE_TYPES.keys() if sub not in sub_funcs.keys()]
-       for sub in non_existing:
-           for hecke in HECKE_TYPES:
-               entry[sub + '_lambda_' + hecke_type] = 'NULL'
-       entries.append(entry)
+        k,j,N = triple
+        # we dropped the condition checking since in cmf we have the zero-dimensional space in the DB
+        # so we have the same behavior here
+        if N == 1:
+            # for level 1 we have complete data of Eisenstein series
+            entry = smf_level1_space(k,j,0)
+        else:
+            entry = smf_dims_paramodular(k,j,N)
+        entries.append(entry)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
+
+# old code
+
+# triple_list consists of triples (k,j,e) of weight and character
+#def populate_smf_newspaces(triple_list):
+#    table = db.smf_newspaces
+#    aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
+#    entries = []
+#    for triple in triple_list:
+#       k,j,e = triple
+#       if (j % 2 == 1) or (k == 1):
+#           continue
+#       entry = smf_dims_degree_2_level_1(j,k,e)
+#       entry.update(common_entry_values(k,j,e))
+#       hecke_types = {1 : ['p'],
+#       		      2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
+#       sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
+#       		    'eis_Q' : Hecke_Eigenvalue_Traces_Klingen_Eisenstein}
+#       for sub in sub_funcs.keys():
+#          for deg in hecke_types.keys():
+#       	      for hecke_type in hecke_types[deg]:
+#              	  entry[sub + '_lambda_' + hecke_type] = get_hecke(sub_funcs[sub],deg,hecke_type,j,k,e)
+#       non_existing = [sub for sub in SUBSPACE_TYPES.keys() if sub not in sub_funcs.keys()]
+#       for sub in non_existing:
+#           for hecke in HECKE_TYPES:
+#               entry[sub + '_lambda_' + hecke_type] = 'NULL'
+#       entries.append(entry)
+#    table_reload(table, entries, entry_add_columns, aux_fname)
+#    return
