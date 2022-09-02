@@ -22,8 +22,11 @@ def apply_to_nf_elt(func):
         return [func(*(list(args[:-1]) + [x])) for x in args[-1]]
     return wrapper
 
+def ms_label(k,N):
+    return '.'.join([str(N), str(k), 'a'])
+
 def klingen_eis_Hecke_p(k,j):
-    w = j+k 
+    w = j+k
     results = db.mf_newforms.search({'level' : '1', 'weight': str(w)}, ['traces'])
     L={}
     for p in prime_range(200): 
@@ -155,6 +158,27 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_all_forms(k,j,e,prime_bound=200):
             dummy = orbit.pop(field_name)
         forms.append(orbit)
     return forms
+
+# we reduce the number of queries to the database
+def Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j, prime_bound=200):
+    """
+    Compute                     
+    """
+    w = j+k
+    label = ms_label(w,1)
+    hecke_types = ['lambda_p' + suffix for suffix in [''] +
+                   ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    KE_func = {ht : eval('KE_' + ht) for ht in hecke_types}
+    exp = {ht : 1 if ht == 'lambda_p' else 2 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
+    ranges = {ht : prime_range(bound[ht]) for ht in hecke_types}
+    res = db.mf_newspaces.lookup(label, ['traces'])
+    Tr = res['traces']
+    L = { ht : {}  for ht in hecke_types }
+    for ht in hecke_types:
+        for p in ranges[ht]:
+            L[ht][p] = KE_func[ht](k,j,p,Tr[p^exp[ht]-1]) 
+    return L   
 
 # For now we restrict to 100 since column 'an' of mf_hecke_nf only stores up to 100
 # !! TODO - the ap 'column' stores further (up to 997). W can use it to get to the a_{p^2}

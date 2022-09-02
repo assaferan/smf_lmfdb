@@ -14,7 +14,8 @@ def smf_dims_degree_2_level_1(j,k,e):
     return dim_splitting_smf_degree_2_level_1(j,k,e)
 
 def Hecke_Eigenvalue_Traces_Klingen_Eisenstein(k,j,e,prime_bound=MAX_P+1):
-    return Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac(k,j,e,prime_bound=prime_bound)
+    return Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j,prime_bound=prime_bound)
+    # return Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac(k,j,e,prime_bound=prime_bound)
 
 def Hecke_Eigenvalues_Traces_Siegel_Eisenstein(k,j,e,prime_bound=MAX_P+1):
     return Hecke_Eigenvalues_Siegel_Eisenstein_Series_All(k,j,e,prime_bound=prime_bound)
