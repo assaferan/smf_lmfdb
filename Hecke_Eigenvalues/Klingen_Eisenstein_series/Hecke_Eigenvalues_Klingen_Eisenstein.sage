@@ -174,7 +174,7 @@ def Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j, prime_bound=200
     ranges = {ht : prime_range(bound[ht]) for ht in hecke_types}
     res = db.mf_newspaces.lookup(label, ['traces'])
     L = { ht : {p : 0 for p in ranges[ht]}  for ht in hecke_types }
-    if res:
+    if res and (k >= 4):
         Tr = res['traces']
         for ht in hecke_types:
             for p in ranges[ht]:
