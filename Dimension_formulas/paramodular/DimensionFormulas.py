@@ -236,16 +236,79 @@ def paramodular_cusp_dim(k,j,N):
      [0, 0, 0, 0, 0, 1, 0, 1, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
 
+    Example #2 (total dim., scalar valued, p.666):
+    >>> [[paramodular_cusp_dim(k,0,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE 
+    [[0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 2, 0, 2, 0, 3],
+     [0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 0, 2, 1, 4, 1, 4, 2, 7],
+     [0, 0, 0, 1, 0, 1, 1, 2, 1, 4, 1, 4, 3, 6, 3, 10, 4, 11],
+     [0, 0, 1, 1, 1, 2, 2, 4, 4, 6, 5, 9, 8, 13, 12, 18, 16, 25],
+     [0, 0, 0, 1, 1, 2, 3, 4, 5, 10, 6, 11, 15, 20, 17, 30, 27, 40],
+     [0, 1, 1, 2, 2, 4, 4, 7, 7, 11, 11, 16, 16, 24, 24, 33, 33, 45],
+     [0, 1, 1, 2, 4, 6, 7, 12, 15, 21, 23, 32, 38, 52, 55, 72, 81, 103],
+     [0, 1, 2, 3, 3, 6, 7, 12, 14, 20, 22, 32, 36, 48, 54, 69, 76, 97],
+     [1, 2, 3, 5, 7, 10, 13, 19, 23, 31, 37, 48, 56, 72, 82, 102, 115, 140],
+     [0, 1, 2, 3, 5, 10, 12, 19, 26, 36, 42, 58, 70, 92, 105, 132, 152, 189],
+     [0, 1, 2, 5, 5, 10, 14, 21, 26, 40, 44, 62, 74, 96, 109, 144, 156, 197]]
+
+    Example #3 (total dim., vector valued j=2, p. 667):
+    >>> [[paramodular_cusp_dim(k,2,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE 
+    [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 2, 0, 3],
+     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 4, 4, 6, 4, 9, 7, 12],
+     [0, 0, 0, 0, 0, 1, 1, 2, 2, 4, 4, 8, 8, 13, 11, 18, 16, 26],
+     [0, 0, 0, 0, 1, 2, 3, 5, 7, 10, 13, 19, 22, 31, 33, 44, 48, 63],
+     [0, 0, 0, 1, 2, 4, 6, 11, 15, 20, 25, 38, 46, 59, 65, 87, 96, 121],
+     [0, 0, 1, 1, 3, 5, 8, 12, 16, 22, 29, 39, 47, 61, 70, 88, 100, 124],
+     [0, 0, 1, 3, 7, 12, 19, 30, 42, 56, 73, 99, 123, 154, 181, 226, 262, 316],
+     [0, 1, 2, 4, 9, 14, 21, 31, 43, 57, 75, 97, 119, 151, 178, 217, 254, 304],
+     [0, 1, 3, 5, 12, 19, 29, 43, 59, 79, 104, 134, 166, 208, 248, 301, 354, 422],
+     [0, 1, 4, 8, 17, 27, 42, 63, 87, 115, 151, 197, 245, 304, 363, 443, 520, 618],
+     [0, 1, 4, 8, 17, 29, 44, 65, 89, 121, 157, 205, 253, 318, 377, 461, 538, 646]]
+
+    Example #4 (total dim., vector valued j=4, p. 667):
+    >>> [[paramodular_cusp_dim(k,4,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE 
+    [[0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 2, 1, 3, 1, 4, 2, 6],
+     [0, 0, 0, 0, 1, 1, 1, 3, 3, 5, 4, 8, 9, 13, 11, 17, 18, 26],
+     [0, 0, 0, 1, 0, 2, 3, 5, 5, 10, 8, 16, 17, 23, 24, 35, 33, 49],
+     [0, 1, 1, 3, 4, 7, 10, 16, 18, 27, 31, 43, 50, 65, 72, 92, 102, 127],
+     [0, 0, 1, 4, 6, 12, 17, 25, 34, 49, 54, 78, 95, 117, 135, 170, 191, 239],
+     [0, 1, 1, 5, 7, 12, 18, 28, 34, 49, 59, 79, 95, 120, 138, 172, 196, 237],
+     [0, 3, 5, 13, 22, 35, 50, 74, 96, 131, 161, 209, 256, 317, 370, 450, 524, 623],
+     [1, 4, 6, 15, 22, 35, 51, 73, 93, 127, 157, 201, 245, 302, 355, 430, 498, 589],
+     [1, 5, 9, 20, 31, 49, 71, 101, 131, 176, 220, 280, 342, 420, 497, 598, 696, 820],
+     [1, 6, 12, 27, 45, 70, 101, 145, 191, 255, 319, 407, 500, 613, 725, 872, 1020, 1201],
+     [0, 5, 11, 28, 42, 71, 104, 148, 194, 264, 326, 422, 515, 632, 750, 907, 1049, 1246]]
+
+    Example #5 (total dim., vector valued j=6, p. 668):
+    >>> [[paramodular_cusp_dim(k,6,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE 
+    [[0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 2, 5, 3, 7, 4, 9],
+     [0, 0, 0, 0, 1, 2, 2, 4, 6, 7, 7, 13, 14, 19, 19, 28, 28, 37],
+     [0, 0, 1, 2, 2, 5, 7, 9, 12, 18, 18, 27, 31, 40, 43, 59, 59, 77],
+     [0, 0, 3, 4, 7, 13, 17, 24, 33, 43, 52, 69, 81, 102, 118, 145, 162, 197],
+     [0, 0, 3, 8, 13, 22, 33, 45, 62, 82, 97, 130, 159, 192, 223, 279, 312, 372],
+     [1, 3, 7, 11, 18, 28, 38, 52, 69, 89, 109, 139, 166, 204, 238, 286, 327, 387],
+     [0, 4, 12, 23, 42, 63, 91, 127, 170, 218, 274, 347, 422, 513, 605, 725, 840, 982],
+     [3, 5, 18, 27, 44, 68, 94, 126, 170, 216, 270, 338, 409, 494, 587, 695, 804, 941],
+     [4, 10, 25, 40, 64, 96, 134, 180, 239, 305, 381, 475, 575, 694, 823, 973, 1129, 1316],
+     [2, 10, 29, 51, 86, 131, 185, 253, 339, 433, 543, 682, 829, 1001, 1188, 1410, 1639, 1910],
+     [2, 10, 31, 55, 88, 137, 195, 263, 351, 455, 565, 710, 863, 1043, 1236, 1472, 1701, 1990]]
     
     '''
     assert is_squarefree(N)
     if is_odd(j):
         return 0
-    assert ((j >= 2) and (k >= 5)) or ((j == 0) and (k >= 3))
+    # assert ((j >= 2) and (k >= 5)) or ((j == 0) and (k >= 3))
+    assert k >= 3
     H_part = sum([H[i](k,j,N) for i in range(1,13)])
     I_part = sum([I[i](k,j,N) for i in range(1,11)])
     delta = (j == 0)*(k == 3)
     return H_part + I_part + delta
+
+def cmf_label(k,N):
+    return str(N)+'.'+str(k) + '.a'
 
 # Too tired to implement the trace formula here as well
 # for now we cheat
@@ -263,11 +326,31 @@ def classical_minus_cusp_dim(k,N):
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
     '''
-    label = str(N)+'.'+str(k) + '.a'
-    f = db.mf_newspaces.lookup(label, ['dim', 'plus_dim'])
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
     if f['dim'] == 0:
         return 0
     return f['plus_dim'] if is_odd(k//2) else f['dim']-f['plus_dim']
+
+# we could return them together, but we never call them with the same level
+def classical_plus_cusp_dim(k,N):
+    '''
+    Returns the dimension of S_k^{new, +}(N).
+    We do it by querying the LMFDB for the total dimension and the
+    dimension of the plus subspace
+
+    Example #1 (p. 618):
+    >>> [[classical_plus_cusp_dim(2*k-2,N) for k in range(3,12)]
+    ... for N in [6,3,2,1]] # doctest: +NORMALIZE_WHITESPACE
+    [[1, 1, 1, 1, 2, 1, 2, 2, 2],
+     [0, 1, 1, 1, 1, 2, 1, 2, 2],
+     [0, 0, 1, 1, 0, 1, 1, 1, 1],
+     [0, 0, 0, 0, 1, 0, 1, 0, 1]]
+    
+    '''
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
+    if f['dim'] == 0:
+        return 0
+    return f['plus_dim'] if is_even(k//2) else f['dim']-f['plus_dim']
 
 def paramodular_new_cusp_dim(k,j,N):
     '''
@@ -281,6 +364,66 @@ def paramodular_new_cusp_dim(k,j,N):
      [0, 0, 0, 1, 0, 1, 1, 1, 1],
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
+
+    Example #2 (new dim., scalar valued, p. 668):
+    >>> [[paramodular_new_cusp_dim(k,0,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 2, 0, 2, 0, 3],
+     [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 2, 1, 2, 2, 3],
+     [0, 0, 0, 1, 0, 1, 1, 1, 1, 3, 1, 3, 3, 4, 3, 8, 4, 7],
+     [0, 0, 1, 1, 1, 2, 2, 3, 4, 5, 5, 8, 8, 11, 12, 16, 16, 21],
+     [0, 0, 0, 0, 1, 0, 2, 2, 3, 4, 5, 5, 10, 9, 12, 12, 18, 19],
+     [0, 1, 1, 2, 2, 4, 4, 6, 7, 10, 11, 15, 16, 22, 24, 31, 33, 41],
+     [0, 1, 0, 1, 3, 3, 5, 7, 9, 12, 16, 18, 25, 29, 35, 40, 51, 57],
+     [0, 1, 2, 3, 3, 6, 7, 11, 14, 19, 22, 31, 36, 46, 54, 67, 76, 93],
+     [1, 2, 3, 5, 7, 10, 13, 18, 23, 30, 37, 47, 56, 70, 82, 100, 115, 136],
+     [0, 0, 1, 1, 3, 4, 7, 10, 15, 19, 25, 32, 43, 50, 63, 73, 91, 106],
+     [0, 1, 1, 3, 4, 7, 11, 15, 20, 28, 36, 45, 58, 70, 86, 102, 123, 144]]
+
+    Example #3 (new dim., vector valued j = 2, p. 669):
+    >>> [[paramodular_new_cusp_dim(k,2,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 2, 0, 3],
+     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 4, 2, 4, 5, 7, 6],
+     [0, 0, 0, 0, 0, 1, 1, 2, 2, 4, 4, 6, 8, 9, 11, 14, 16, 20],
+     [0, 0, 0, 0, 1, 2, 3, 5, 7, 10, 13, 17, 22, 27, 33, 40, 48, 57],
+     [0, 0, 0, 1, 2, 2, 4, 5, 9, 10, 15, 18, 22, 29, 35, 41, 50, 57],
+     [0, 0, 1, 1, 3, 5, 8, 12, 16, 22, 29, 37, 47, 57, 70, 84, 100, 118],
+     [0, 0, 1, 3, 5, 8, 13, 18, 26, 34, 45, 57, 71, 88, 107, 128, 152, 178],
+     [0, 1, 2, 4, 9, 14, 21, 31, 43, 57, 75, 95, 119, 147, 178, 213, 254, 298],
+     [0, 1, 3, 5, 12, 19, 29, 43, 59, 79, 104, 132, 166, 204, 248, 297, 354, 416],
+     [0, 1, 2, 6, 11, 17, 26, 37, 53, 69, 91, 115, 143, 178, 215, 257, 306, 358],
+     [0, 1, 4, 8, 15, 23, 36, 51, 71, 93, 123, 155, 193, 238, 289, 345, 410, 480]]
+    
+    Example #4 (new dim., vector valued j = 4, p. 669):
+    >>> [[paramodular_new_cusp_dim(k,4,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 2, 1, 3, 1, 4, 2, 6],
+     [0, 0, 0, 0, 1, 1, 1, 1, 3, 3, 4, 4, 7, 7, 9, 9, 14, 14],
+     [0, 0, 0, 1, 0, 2, 3, 3, 5, 8, 8, 12, 15, 17, 22, 27, 29, 37],
+     [0, 1, 1, 3, 4, 7, 10, 14, 18, 25, 31, 39, 48, 59, 70, 84, 98, 115],
+     [0, 0, 1, 2, 4, 6, 9, 13, 18, 23, 30, 38, 47, 57, 69, 82, 97, 113],
+     [0, 1, 1, 5, 7, 12, 18, 26, 34, 47, 59, 75, 93, 114, 136, 164, 192, 225],
+     [0, 1, 3, 7, 12, 19, 28, 40, 54, 71, 91, 115, 142, 173, 208, 248, 292, 341],
+     [1, 4, 6, 15, 22, 35, 51, 71, 93, 125, 157, 197, 243, 296, 353, 422, 494, 577],
+     [1, 5, 9, 20, 31, 49, 71, 99, 131, 174, 220, 276, 340, 414, 495, 590, 692, 808],
+     [1, 4, 10, 17, 29, 44, 63, 87, 117, 151, 193, 241, 296, 359, 431, 510, 600, 699],
+     [0, 3, 9, 20, 34, 53, 78, 110, 148, 194, 248, 312, 385, 468, 562, 669, 787, 918]]
+
+    Example #5 (new dim., vector valued j = 6, p. 670):
+    >>> [[paramodular_new_cusp_dim(k,6,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 1, 3, 2, 5, 3, 7, 4, 9],
+     [0, 0, 0, 0, 1, 0, 2, 2, 4, 3, 5, 7, 10, 9, 13, 14, 20, 19],
+     [0, 0, 1, 2, 2, 3, 7, 7, 10, 14, 16, 21, 27, 30, 37, 45, 51, 59],
+     [0, 0, 3, 4, 7, 11, 17, 22, 31, 39, 50, 63, 77, 92, 112, 131, 154, 179],
+     [0, 0, 1, 4, 7, 12, 15, 23, 30, 40, 51, 62, 77, 94, 111, 133, 154, 180],
+     [1, 3, 7, 11, 18, 26, 38, 50, 67, 85, 107, 133, 162, 194, 232, 272, 319, 369],
+     [0, 4, 6, 15, 26, 37, 53, 75, 96, 126, 160, 195, 240, 291, 343, 407, 476, 550],
+     [3, 5, 18, 27, 44, 66, 94, 124, 168, 212, 268, 332, 405, 484, 581, 681, 796, 923],
+     [4, 10, 25, 40, 64, 94, 134, 178, 237, 301, 379, 469, 571, 684, 817, 959, 1121, 1298],
+     [0, 4, 15, 29, 48, 75, 105, 145, 193, 249, 315, 390, 477, 575, 686, 810, 945, 1098],
+     [2, 10, 23, 43, 70, 105, 147, 201, 265, 341, 429, 530, 647, 779, 926, 1092, 1275, 1478]]
     
     '''
     pcd = paramodular_cusp_dim
@@ -291,4 +434,69 @@ def paramodular_new_cusp_dim(k,j,N):
         j0_term = sum([(-1)**omega(M)*cmcd(2*k-2,N//M) for M in divisors(N) if M > 1])
         return main_term - j0_term
     return main_term
-        
+
+# Here again we cheat even though there are implemented formulas
+def Yoshida_lift_dim_sub(k,j,N,M):
+    wt = [j+2, 2*k+j-2]
+    lev = [M, N//M]
+    lookup = db.mf_newspaces.lookup
+    labels = [cmf_label(wt[i],lev[i]) for i in [0,1]]
+    dims = [lookup(label, ['dim'])['dim'] for label in labels]
+    return prod(dims)
+    
+def Yoshida_lift_dim(k,j,N):
+    Ms = [M for M in divisors(N) if is_odd(omega(M))]
+    return sum([Yoshida_lift_dim_sub(k,j,N,M) for M in Ms])
+
+def Saito_Kurokawa_lift_dim(k,N):
+    # Ms_odd = [M for M in divisors(N) if is_odd(omega(M))]
+    Ms_even = [M for M in divisors(N) if is_even(omega(M))]
+    # I think these only contribute to the algeraic modular forms ?
+    # SK_plus = sum([classical_plus_cusp_dim(2*k-2,N//M) for M in Ms_odd])
+    SK_plus = 0
+    SK_minus = sum([classical_minus_cusp_dim(2*k-2,N//M) for M in Ms_even])
+    return SK_plus + SK_minus
+    
+def Saito_Kurokawa_new_lift_dim(k,N):
+    # all the rest here are considered old
+    return classical_minus_cusp_dim(2*k-2,N)
+
+# This is the total dimension of the (cuspidal) lifts (see (7) in p. 617)
+def paramodular_new_lift_dim(k,j,N):
+    Y_dim = Yoshida_lift_dim(k,j,N)
+    SK_dim = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
+    # delta = (j == 0)*(k == 3)*(is_odd(omega(N)))
+    delta = 0
+    return Y_dim + SK_dim + delta
+
+def paramodular_non_lift_new_cusp_dim(k,j,N):
+    '''
+    Returns the dimension of the cuspidal subspace of general type S_{k,j}^{new}_{(G)}(K(N))
+
+    Example #1 (non-lifts, p. 619):
+    >>> [[paramodular_non_lift_new_cusp_dim(k,0,N) for k in range(3,12)]
+    ... for N in [6,3,2,1]] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 1, 1, 2],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+    Example #2 (non-lifts, scalar valued, p. 669):
+    >>> [[paramodular_non_lift_new_cusp_dim(k,0,N) for k in range(3,21)] for N
+    ... in range(1,16) if is_squarefree(N)] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 2, 1, 5, 2, 4],
+     [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 4, 4, 7, 7, 11, 11, 15],
+     [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 4, 8, 7, 10, 10, 15, 17],
+     [0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 6, 9, 10, 15, 17, 23, 25, 32],
+     [0, 0, 0, 0, 1, 2, 3, 4, 7, 9, 12, 15, 21, 24, 31, 35, 45, 52],
+     [0, 0, 0, 0, -1, 1, 1, 4, 6, 10, 12, 20, 24, 33, 40, 52, 60, 76],
+     [0, 0, 0, 1, 2, 4, 6, 10, 14, 20, 26, 35, 43, 56, 67, 84, 98, 118],
+     [0, 0, 0, 0, 1, 2, 4, 7, 11, 15, 20, 27, 37, 44, 56, 66, 83, 98],
+     [0, 0, 0, 1, 1, 4, 7, 10, 15, 22, 29, 38, 50, 61, 77, 92, 112, 133]]
+    
+    '''
+    
+    return paramodular_new_cusp_dim(k,j,N) - paramodular_new_lift_dim(k,j,N)
+
