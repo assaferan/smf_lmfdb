@@ -118,7 +118,9 @@ def Make_Zero():
 def Hecke_Eigenvalues_Yoshida_All(k,j,e):
     if e == 0 or (j % 2) == 1 : 
        return Make_Zero()   
-    elif e == 1 : 
+    elif e == 1 and k == 2 : 
+       return Hecke_Eigenvalues_Yoshida(k,j)//2
+    elif e ==1 :
        return Hecke_Eigenvalues_Yoshida(k,j)       
 
 
