@@ -2,7 +2,7 @@ import os
 os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
 
-def Yoshida_Hecke_p(k,j):
+def Yoshida1_Hecke_p(k,j):
     signs = ['+','-']
     ws = [j+2, j+2*k-2]
     result = [[db.mf_newforms.search({'level' : '2', 'weight': str(w), 'atkin_lehner_string': sign}) for w in ws] for sign in signs]
@@ -16,6 +16,11 @@ def Yoshida_Hecke_p(k,j):
                        L[p] += tr_f[p-1]+p^(k-2)*tr_g[p-1]
     return L
 
+def Yoshida_Hecke_p(k,j):
+    if k == 2: 
+       return {key: value / 2 for key, value in Yoshida1_Hecke_p(k,j).items()}
+    elif k > 2:
+       return Yoshida1_Hecke_p(k,j) 
 
 def Yoshida_Hecke_p_square(k,j):
     signs = ['+','-']
@@ -118,9 +123,7 @@ def Make_Zero():
 def Hecke_Eigenvalues_Yoshida_All(k,j,e):
     if e == 0 or (j % 2) == 1 : 
        return Make_Zero()   
-    elif e == 1 and k == 2 : 
-       return Hecke_Eigenvalues_Yoshida(k,j)//2
-    elif e ==1 :
+    elif e == 1 :
        return Hecke_Eigenvalues_Yoshida(k,j)       
 
 
