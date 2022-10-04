@@ -2,12 +2,15 @@ from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_sq
 from lmfdb import db
 
 '''
-Here we implement the dimenion formulas for cupidal spaces of paramodular forms,
+Here we implement the dimenion formulas for cuspidal spaces of paramodular forms,
 following the paper [IK] Ibukiyama, Kitiyama - "Dimension formulas of paramodular
 forms of squarefree level and comparison with inner twist", J. Math. Soc. Japan, Vol. 69, No. 2 (2017)
 
 Although conjectural at the time, the formulas are now a consequence of the preprint
 [RW] Rosner, Weissauer - "Global liftings between inner forms of GSp(4)".
+
+!! TODO - the formulas are missing the forms with other Atkin-Lehner signs (as in Rama-Tornaria) !!
+Add that.
 '''
 
 def IK_legendre(a,p):
@@ -309,7 +312,9 @@ def paramodular_cusp_dim(k,j,N):
     H_part = sum([H[i](k,j,N) for i in range(1,13)])
     I_part = sum([I[i](k,j,N) for i in range(1,11)])
     delta = (j == 0)*(k == 3)
-    return H_part + I_part + delta
+    dim = H_part + I_part + delta
+    assert dim >= 0
+    return dim
 
 def cmf_label(k,N):
     return str(N)+'.'+str(k) + '.a'
@@ -436,7 +441,9 @@ def paramodular_new_cusp_dim(k,j,N):
     # still have to deal with the j = 0 case
     if j == 0:
         j0_term = sum([(-1)**omega(M)*cmcd(2*k-2,N//M) for M in divisors(N) if M > 1])
-        return main_term - j0_term
+        dim = main_term - j0_term
+        assert dim >= 0
+        return dim
     return main_term
 
 # Here again we cheat even though there are implemented formulas
@@ -486,11 +493,13 @@ def Saito_Kurokawa_lift_dim(k,N):
 
 # This is the total dimension of the (cuspidal) lifts (see (7) in p. 617)
 def paramodular_new_lift_dim(k,j,N):
-    Y_dim = Yoshida_new_lift_dim(k,j,N)
+    # Yoshida lifts are not paramodular (see Saha & Schmidt), in fact they are also never of Siegel square-free level
+    # Y_dim = Yoshida_new_lift_dim(k,j,N)
     SK_dim = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
     # delta = (j == 0)*(k == 3)*(is_odd(omega(N)))
     delta = 0
-    return Y_dim + SK_dim + delta
+    # return Y_dim + SK_dim + delta
+    return SK_dim + delta
 
 def paramodular_non_lift_new_cusp_dim(k,j,N):
     '''
@@ -514,14 +523,15 @@ def paramodular_non_lift_new_cusp_dim(k,j,N):
      [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 3, 4, 8, 7, 10, 10, 15, 17],
      [0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 6, 9, 10, 15, 17, 23, 25, 32],
      [0, 0, 0, 0, 1, 2, 3, 4, 7, 9, 12, 15, 21, 24, 31, 35, 45, 52],
-     [0, 0, 0, 0, -1, 1, 1, 4, 6, 10, 12, 20, 24, 33, 40, 52, 60, 76],
+     [0, 0, 0, 0, 0, 1, 2, 5, 7, 11, 14, 21, 26, 35, 42, 54, 63, 78],
      [0, 0, 0, 1, 2, 4, 6, 10, 14, 20, 26, 35, 43, 56, 67, 84, 98, 118],
      [0, 0, 0, 0, 1, 2, 4, 7, 11, 15, 20, 27, 37, 44, 56, 66, 83, 98],
      [0, 0, 0, 1, 1, 4, 7, 10, 15, 22, 29, 38, 50, 61, 77, 92, 112, 133]]
     
     '''
-    
-    return paramodular_new_cusp_dim(k,j,N) - paramodular_new_lift_dim(k,j,N)
+    dim = paramodular_new_cusp_dim(k,j,N) - paramodular_new_lift_dim(k,j,N)
+    assert dim >= 0
+    return dim
 
 def smf_dims_paramodular(k,j,N):
     space = {}
@@ -531,11 +541,14 @@ def smf_dims_paramodular(k,j,N):
     space['weight'] = [k, j]
     space['char_orbit_index'] = 1
     space['cusp_dim'] = paramodular_cusp_dim(k,j,N)
-    space['cusp_Y_dim'] = Yoshida_lift_dim(k,j,N)
+    # space['cusp_Y_dim'] = Yoshida_lift_dim(k,j,N)
+    # Yoshida lifts are not paramodular!!
+    space['cusp_Y_dim'] = 0
     space['cusp_P_dim'] = Saito_Kurokawa_lift_dim(k,N) if j == 0 else 0
     space['cusp_G_dim'] = space['cusp_dim'] - space['cusp_Y_dim'] - space['cusp_P_dim']
     space['new_cusp_dim'] = paramodular_new_cusp_dim(k,j,N)
-    space['new_cusp_Y_dim'] = Yoshida_new_lift_dim(k,j,N)
+    # space['new_cusp_Y_dim'] = Yoshida_new_lift_dim(k,j,N)
+    space['new_cusp_Y_dim'] = 0
     space['new_cusp_P_dim'] = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
     space['new_cusp_G_dim'] = space['new_cusp_dim'] - space['new_cusp_Y_dim'] - space['new_cusp_P_dim']
     for aut_type in ['Y', 'P', 'G']:
@@ -543,3 +556,257 @@ def smf_dims_paramodular(k,j,N):
         space['old_' + col] = space[col] - space['new_' + col]
     space['old_cusp_dim'] = space['cusp_dim'] - space['new_cusp_dim']
     return space
+
+def H1_prime(k,j,N):
+    C = QQ(2)**(-7) * QQ(3)**(-3) * QQ(5)**(-1)
+    D = (j+1)*(k-2)*(j+k-1)*(j+2*k-3)
+    return C*D*prod([p**2 - 1 for p in prime_divisors(N)])
+
+def H2_prime(k,j,N):
+    C = -QQ(2)**(-7) * QQ(3)**(-2)
+    D = (j+k-1)*(k-2)*(-1)**k
+    E = 3 if (N == 2) else 0
+    return C*D*E
+
+def H3_prime(k,j,N):
+    C = QQ(2)**(-5) * QQ(3)**(-1)
+    E = 3 if (N == 2) else 0
+    return C * C3(k,j) * E
+
+def H4_prime(k,j,N):
+    C = QQ(2)**(-3) * QQ(3)**(-3)
+    E = 8 if (N == 3) else 0
+    return C * C4(k,j) * E
+
+def H5_prime(k,j,N):
+    return 0
+
+def H6_1_prime(N):
+    a = 1/(QQ(2**5 * 3))
+    b = 1/(QQ(2**7 * 3))
+    prod_a = prod([p - IK_legendre(-1,p) for p in prime_divisors(N)])
+    prod_b = prod([-1 + p*IK_legendre(-1,p) for p in prime_divisors(N)])
+    return a*prod_a + b * prod_b
+
+def H6_2_prime(N):
+    a = (-1)**omega(N)/(QQ(2**5 * 3))
+    b = 1/(QQ(2**7 * 3))
+    prod_a = prod([p - IK_legendre(-1,p) for p in prime_divisors(N)])
+    prod_b = prod([-1 + p*IK_legendre(-1,p) for p in prime_divisors(N)])
+    return a*prod_a - b * prod_b
+
+def H6_prime(k,j,N):
+    a = (-1)**(j//2) * (2*k+j-3)
+    b = (-1)**(j//2 + k) * (j+1)
+    return a * H6_1_prime(N) + b * H6_2_prime(N)
+
+def H7_1_prime(N):
+    a = 1/(QQ(2**3 * 3**2))
+    b = 1/(QQ(2**3 * 3**3))
+    prod_a = prod([p - IK_legendre(-3,p) for p in prime_divisors(N)])
+    prod_b = prod([-1 + p*IK_legendre(-3,p) for p in prime_divisors(N)])
+    return a*prod_a + b * prod_b
+
+def H7_2_prime(N):
+    a = (-1)**omega(N)/(QQ(2**3 * 3**2))
+    b = 1/(QQ(2**3 * 3**3))
+    prod_a = prod([p - IK_legendre(-3,p) for p in prime_divisors(N)])
+    prod_b = prod([-1 + p*IK_legendre(-3,p) for p in prime_divisors(N)])
+    return a*prod_a - b * prod_b 
+
+def H7_prime(k,j,N):
+    return H7_1_prime(N)*mux([1,-1,0],j)*(2*k+j-3)+H7_2_prime(N)*mux([0,1,-1],j+2*k)*(j+1)
+
+def H8_prime(k,j,N):
+    return 0
+
+def H9_prime(k,j,N):
+    E = 3 if (N == 2) else 0
+    return -QQ(2)**(-1)*QQ(3)**(-2) * C9(k,j) * E
+
+def H10_prime(k,j,N):
+    if len(NN(1,5,N) + NN(4,5,N)) == 0:
+        F = 1 if N % 5 == 0 else 2
+    else:
+        F = 0
+    E = (-1)**omega(N)*QQ(2)**(omega(N)-1)*F
+    return QQ(5)**(-1) * C10(k,j) * E
+
+def H11_prime(k,j,N):
+    F = 1 if len(NN(1,8,N) + NN(7,8,N)) == 0 else 0
+    delta = 1 if is_even(N) else 0
+    E = (-1)**omega(N)*2**(omega(N)-delta)*F
+    return QQ(2)**(-3) * C11(k,j) * E
+
+def H12_1_prime(N):
+    a = (-1)**omega(N)/(QQ(2**3 * 3))
+    b = 1/(QQ(2**3 * 3))
+    prod_a = prod([1 - IK_legendre(3,p) for p in prime_divisors(N)])
+    prod_b = prod([IK_legendre(-1,p) - IK_legendre(-3,p) for p in prime_divisors(N)])
+    return a*prod_a - b * prod_b
+
+def H12_2_prime(N):
+    a = (-1)**omega(N)/(QQ(2**3 * 3))
+    b = (-1)**omega(N)/(QQ(2**3 * 3))
+    prod_a = prod([1 - IK_legendre(3,p) for p in prime_divisors(N)])
+    prod_b = prod([IK_legendre(-1,p) - IK_legendre(-3,p) for p in prime_divisors(N)])
+    return a*prod_a + b * prod_b 
+
+def H12_prime(k,j,N):
+    return H12_1_prime(N)*mux([1,-1,0],j)*(-1)**(j//2+k)+H12_2_prime(N)*mux([0,-1,1],j+2*k)*(-1)**(j//2)
+
+def I1_prime(k,j,N):
+    C = QQ(2)**(-3)*QQ(3)**(-1)
+    D = j+1
+    return C*D*prod([p-1 for p in prime_divisors(N)])
+
+def I2_prime(k,j,N):
+    return 0
+
+def I3_prime(k,j,N):
+    return 0
+
+def I4_prime(k,j,N):
+    return 0
+
+def I5_prime(k,j,N):
+    return 0
+
+def I6_prime(k,j,N):
+    return 0
+
+def I7_prime(k,j,N):
+    return 0
+
+def I8_prime(k,j,N):
+    return 0
+
+def I9_prime(k,j,N):
+    C = -QQ(2)**(-3)*(-1)**(j//2)
+    return C*prod([-1 + IK_legendre(-1,p) for p in prime_divisors(N)])
+
+def I10_prime(k,j,N):
+    C = -QQ(2)**(-1)*QQ(3)**(-1)*mux([1,-1,0],j)
+    return C*prod([-1 + IK_legendre(-3,p) for p in prime_divisors(N)])
+
+H_prime = { n : eval('H'+str(n)+'_prime') for n in range(1,13)}
+
+I_prime = { n : eval('I'+str(n)+'_prime') for n in range(1,11)}
+
+def make_H_star(h, h_prime):
+    def h_star(k,j,N):
+        return sum([(-1)**omega(M)*2**omega(M)*h(k,j,N//M) for M in divisors(N)]) - h_prime(k,j,N)
+    return h_star
+
+def make_I_star(i, i_prime):
+    def i_star(k,j,N):
+        return sum([(-1)**omega(M)*2**omega(M)*i(k,j,N//M) for M in divisors(N)]) - (1 if is_even(omega(N)) else 0) * i_prime(k,j,N)
+    return i_star
+
+H_star = { i : make_H_star(H[i], H_prime[i]) for i in range(1,13)}
+
+I_star = { i : make_I_star(I[i], I_prime[i]) for i in range(1,11)}
+
+# when omega(N) is odd these should be given by the following (the rest are zero)
+
+def H6_1_star(N):
+    a = 1/(QQ(2**4 * 3))
+    adm_divs = [M for M in divisors(N) if is_odd(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-1,p) for p in prime_divisors(M)])
+        prod_N_M = prod([p-1 for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H6_2_star(N):
+    a = 1/(QQ(2**4 * 3))
+    adm_divs = [M for M in divisors(N) if is_even(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-1,p) for p in prime_divisors(M)])
+        prod_N_M = prod([p-1 for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H6_star(k,j,N):
+    a = (-1)**(j//2) * (2*k+j-3)
+    b = (-1)**(j//2 + k) * (j+1)
+    return a * H6_1_star(N) + b * H6_2_star(N)
+
+def H7_1_star(N):
+    a = 1/(QQ(2**2 * 3**2))
+    adm_divs = [M for M in divisors(N) if is_odd(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-3,p) for p in prime_divisors(M)])
+        prod_N_M = prod([p-1 for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H7_2_star(N):
+    a = 1/(QQ(2**2 * 3**2))
+    adm_divs = [M for M in divisors(N) if is_even(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-3,p) for p in prime_divisors(M)])
+        prod_N_M = prod([p-1 for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H7_star(k,j,N):
+    return H7_1_star(N)*mux([1,-1,0],j)*(2*k+j-3)+H7_2_star(N)*mux([0,1,-1],j+2*k)*(j+1)
+
+def H12_1_star(N):
+    a = -1/(QQ(2**2 * 3))
+    adm_divs = [M for M in divisors(N) if is_even(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-1,p) for p in prime_divisors(M)])
+        prod_N_M = prod([-1 + IK_legendre(-3,p) for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H12_2_star(N):
+    a = -1/(QQ(2**2 * 3))
+    adm_divs = [M for M in divisors(N) if is_odd(omega(M))]
+    s = 0
+    for M in adm_divs:
+        prod_M = prod([-1 + IK_legendre(-1,p) for p in prime_divisors(M)])
+        prod_N_M = prod([-1 + IK_legendre(-3,p) for p in prime_divisors(N//M)])
+        s += prod_M*prod_N_M
+    return a*s
+
+def H12_star(k,j,N):
+    return H12_1_star(N)*mux([1,-1,0],j)*(-1)**(j//2+k)+H12_2_star(N)*mux([0,1,-1],j+2*k)*(-1)**(j//2)
+
+def I1_star(k,j,N):
+    C = QQ(2)**(-3)*QQ(3)**(-1)
+    D = j+1
+    return C*D*prod([p-1 for p in prime_divisors(N)])
+
+def I3_star(k,j,N):
+    return -QQ(2)**(omega(N)-5)*QQ(3)**(-2)*(j+1)*(2*k+j-3)*prod([p-1 for p in prime_divisors(N)])
+
+def I4_star(k,j,N):
+    return -QQ(2)**(omega(N)-5)*(-1)**k * prod([-1 + IK_legendre(-1,p) for p in prime_divisors(N)])
+
+def I7_star(k,j,N):
+    return -QQ(2)**(omega(N)-1)*QQ(3)**(-2)*mux([1,-1,0],j)*mux([0,1,-1],j+2*k)*prod([IK_legendre(-3,p)-1 for p in prime_divisors(N)])
+
+def I9_star(k,j,N):
+    C = -QQ(2)**(-3)*(-1)**(j//2)
+    return C*prod([-1 + IK_legendre(-1,p) for p in prime_divisors(N)])
+
+def I10_star(k,j,N):
+    C = -QQ(2)**(-1)*QQ(3)**(-1)*mux([1,-1,0],j)
+    return C*prod([-1 + IK_legendre(-3,p) for p in prime_divisors(N)])
+
+def new_cmf_dim(N,k):
+    d = (k-1) / 12 * prod([p-1 for p in prime_divisors(N)])
+    e2 = (-1)**(k/2) / 4 * prod([IK_legendre(-1,p)-1 for p in prime_divisors(N)])
+    e3 = mux([-1,0,1],k) / 3 *  prod([IK_legendre(-3,p)-1 for p in prime_divisors(N)])
+    e_inf = (-1)**omega(N) if k == 2 else 0
+    triv_level = 1/2 if N == 1 else 0
+    return d+e2-e3+e_inf-triv_level
+    
