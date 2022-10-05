@@ -1,6 +1,10 @@
 from sage.all import (is_squarefree)
 from smf_lmfdb.db_tables.smf_newspaces_create_table import create_table_smf_newspaces
+from smf_lmfdb.db_tables.smf_newforms_create_table import create_table_smf_newforms
+from smf_lmfdb.db_tables.smf_hecke_nf_create_table import create_table_smf_hecke_nf
 from smf_lmfdb.db_tables.smf_newspaces_populate import populate_smf_newspaces
+from smf_lmfdb.db_tables.smf_hecke_nf_populate import populate_smf_hecke_nf
+from smf_lmfdb.db_tables.smf_newforms_populate import populate_smf_newforms
 
 def N_bound(k):
     '''
@@ -23,4 +27,22 @@ def get_box_triples(max_k = 20, max_j = 20):
 def create_and_populate_smf_newspaces():
     create_table_smf_newspaces()
     populate_smf_newspaces(get_box_triples())
+    return
+
+def create_smf_all_tables():
+    create_table_smf_newspaces()
+    create_table_smf_newforms()
+    create_table_smf_hecke_nf()
+    return
+
+def populate_smf_all_tables():
+    box_triples = get_box_triples()
+    populate_smf_newspaces(box_triples)
+    populate_smf_hecke_nf(box_triples)
+    populate_smf_newforms(box_triples)
+    return
+
+def create_and_populate_smf_all_tables():
+    create_smf_all_tables()
+    populate_smf_all_tables()
     return
