@@ -27,14 +27,17 @@ def populate_smf_newforms(triple_list):
     aux_fname = "smf_newforms_table.dat"
     entries = []
     for triple in triple_list:
-       k,j,e = triple
+       k,j,N = triple
        if (j % 2 == 1) or (k == 1):
            continue
-       entry = common_entry_values(k,j,e)
+       # right now we only have implemented forms for full level
+       if (N > 1):
+           continue
+       entry = common_entry_values(k,j,0)
        sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
                     'eis_Q' : Hecke_Eigenforms_Klingen_Eisenstein}
        for sub in sub_funcs.keys():
-           forms = sub_funcs[sub](k,j,e)
+           forms = sub_funcs[sub](k,j,0)
            for f in forms:
                entry_sub = entry.copy()
                entry_sub.update(f)

@@ -2,6 +2,29 @@ import os
 os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
 
+def Y_lambda_p(k,j,p,a_p,b_p):
+    return a_p+p^(k-2)*b_p
+
+def Y_lambda_p_square(k,j,p,a_p,b_p):
+    return a_p^2+p^(k-2)*a_p*b_p+p^(2*k-4)*b_p^2-p^(2*k+j-4)*(1+2*p)
+
+def Y_lambda_p_square_0(k,j,p,a_p,b_p):
+    return a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-3)*(p-1)-2*p^(2*k+j-4)*(1+p)
+
+def Y_lambda_p_square_1(k,j,p,a_p,b_p):
+    return a_p*b_p*p^(k-3)+(p^2-1)*p^(2*k+j-6)
+
+def Y_lambda_p_square_2(k,j,p,a_p,b_p):
+    return p^(2*k+j-6)
+
+## !! TODO - can't do it anymore, need to get the data about the number field from hecke_nf table
+def apply_to_nf_elt(func):
+    # Here we use the fact that all the functions are linear in the number field elements,
+    # so we don't need to convert back and forth, but simply scale all the coefficients
+    def wrapper(*args):
+        return [func(*(list(args[:-1]) + [x])) for x in args[-1]]
+    return wrapper
+
 def Yoshida1_Hecke_p(k,j):
     signs = ['+','-']
     ws = [j+2, j+2*k-2]

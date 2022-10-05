@@ -84,14 +84,17 @@ def populate_smf_hecke_nf(triple_list):
     aux_fname = "smf_hecke_nf_table.dat"
     entries = []
     for triple in triple_list:
-       k,j,e = triple
+       k,j,N = triple
        if (j % 2 == 1) or (k == 1):
            continue
-       entry = common_entry_values(k,j,e)
+        # right now we only have implemented forms for full level
+       if (N > 1):
+           continue
+       entry = common_entry_values(k,j,0)
        sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
                     'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein}
        for sub in sub_funcs.keys():
-           evs = sub_funcs[sub](k,j,e)
+           evs = sub_funcs[sub](k,j,0)
            for ev in evs:
                entry_sub = entry.copy()
                entry_sub.update(ev)
