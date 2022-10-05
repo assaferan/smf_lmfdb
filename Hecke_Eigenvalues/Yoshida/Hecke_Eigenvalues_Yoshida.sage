@@ -17,6 +17,9 @@ def Y_lambda_p_square_1(k,j,p,a_p,b_p):
 def Y_lambda_p_square_2(k,j,p,a_p,b_p):
     return p^(2*k+j-6)
 
+def ms_label(k,N):
+    return '.'.join([str(N), str(k), 'a'])
+
 ## !! TODO - can't do it anymore, need to get the data about the number field from hecke_nf table
 def apply_to_nf_elt(func):
     # Here we use the fact that all the functions are linear in the number field elements,
@@ -196,4 +199,43 @@ def Hecke_Eigenvalues_Yoshida_All(k,j,e):
     elif k == 2 and  j < 33 :
        return Hecke_Eigenvalues_Yoshida(k,j)
 
+def Hecke_Eigenvalues_Yoshida_all_forms(k,j,e,prime_bound=200):
+    '''
+    Returns a list of dictionaries.
+    Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
+    '''
+    forms = []
+    if (e == 0) or is_odd(j) or (k < 2):
+        return forms
+    ws = [j+2, j+2*k-2]
+    signs = ['+','-']
+    fields = ['label', 'dim', 'nf_label', 'hecke_ring_index', 'field_poly_is_cyclotomic', 'field_poly_root_of_unity', 'field_poly_is_real_cyclotomic', 'hecke_ring_index_proved', 'hecke_ring_generator_nbound', 'field_disc', 'field_disc_factorization', 'field_poly', 'hecke_ring_index_factorization', 'relative_dim', 'traces', 'is_polredabs', 'atkin_lehner_string']
+    if ws[1] != ws[0]:
+        result = [[db.mf_newforms.search({'level' : '2', 'weight': str(w), 'atkin_lehner_string': sign}, fields) for w in ws] for sign in signs] 
+        pairs = [[[f,g] for f in result[1-sign_idx][1] for g in result[sign_idx][0]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+    else:
+        result = [db.mf_newforms.search({'level' : '2', 'weight': str(ws[0]), 'atkin_lehner_string': sign}, fields) for sign in signs]
+        pairs = [[[f,g] for f in result[1-sign_idx] for g in result[sign_idx]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+    
+    hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    Y_func = {ht : eval('Y_' + ht) for ht in hecke_types}
+    exp = {ht : 1 if ht == 'lambda_p' else 2 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
 
+    for pair in pairs:
+        f,g = pair
+        orbit = f
+        orbit['related_objects'] = [ 'ModularForm/GL2/Q/holomorphic/' + '/'.join(orb['label'].split('.')) for orb in [f,g]]
+        orbit['is_cuspidal'] = True
+        orbit['aut_rep_type'] = 'Y'
+        orbit['dim'] = f['dim']*g['dim']
+        orbit['atkin_lehner_string'] = '-'
+        for ht in hecke_types:
+            orbit['trace_' + ht] = [Y_func[ht](k,j,p,f['traces'][p-1],g['traces'][p-1]) for p in prime_range(bound[ht])]
+        # We don't want to accidentally use the same label or traces for the Yoshida form
+        for field_name in ['label', 'traces']:
+            dummy = orbit.pop(field_name)
+        forms.append(orbit)
+    return forms
