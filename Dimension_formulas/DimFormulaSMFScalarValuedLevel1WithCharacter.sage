@@ -68,7 +68,7 @@ def dim_splitting_SV_odd_weight_charac(k):
     dtotal = dim_SV_sp4Z_odd_weight_with_charac(k)
     deis = 0
     dklingeneis = 0
-    dsaitokurokawa = dimension_new_cusp_forms_plus(2,2*(k-1))
+    dsaitokurokawa = dimension_new_cusp_forms_plus_level_2(2*k-2)
     dgenuine = dtotal-dsaitokurokawa
     dcusp = dtotal
     dnoncusp = deis + dklingeneis

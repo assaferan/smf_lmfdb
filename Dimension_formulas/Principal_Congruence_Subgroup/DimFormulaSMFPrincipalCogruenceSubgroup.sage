@@ -31,7 +31,7 @@ def dim_cusp_form_GammaN(k,j,N):
 
 """
 For N=2, we use the paper of Berström, Faber and van der Geer.
-The conjectures there are now proved thamks to the work of Rösner (see his PhD)    
+The conjectures there are now proved thanks to the work of Rösner (see his PhD)    
 """
 
 def dim_cusp_form_Gamma2(k,j):
@@ -192,10 +192,17 @@ def Check_1(k):
     equals the sum of the multiplicities of each irrep. of
     S_6 times their dimension:
     irrep.           dim
-    s[6]             1    s[5,1]           5    s[4,2]           9
-    s[4,1,1]         10    s[3,3]           5
-    s[3,2,1]         16    s[3,1,1,1]       10    s[2,2,2]         5
-    s[2,2,1,1]       9    s[2,1,1,1,1]     5    s[1,1,1,1,1,1]   1
+    s[6]             1    
+    s[5,1]           5    
+    s[4,2]           9
+    s[4,1,1]         10    
+    s[3,3]           5
+    s[3,2,1]         16    
+    s[3,1,1,1]       10    
+    s[2,2,2]         5
+    s[2,2,1,1]       9    
+    s[2,1,1,1,1]     5    
+    s[1,1,1,1,1,1]   1
     """
     d1 = Dim_Scalar_Valued_P_2(k)
     d2 = Mult_s6_SV(k)+5*Mult_s51_SV(k)+9*Mult_s42_SV(k)+10*Mult_s411_SV(k)+5*Mult_s33_SV(k) 
