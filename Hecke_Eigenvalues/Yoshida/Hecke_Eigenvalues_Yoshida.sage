@@ -1,6 +1,7 @@
 import os
 # os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
+from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_lists_to_elements, nf_elts_to_lists
 
 def Y_lambda_p(k,j,p,a_p,b_p):
     return a_p+p^(k-2)*b_p
@@ -300,17 +301,30 @@ def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
         pairs = reduce(lambda x,y : x+y, pairs)
 
     hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
-    Y_func = {ht : apply_to_nf_elt(eval('Y_' + ht)) for ht in hecke_types}
+    Y_func = {ht : eval('Y_' + ht) for ht in hecke_types}
     exp = {ht : 1 for ht in hecke_types}
     bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
     for orbit_pair in pairs:
         ev_pair = [db.mf_hecke_nf.lucky({'hecke_orbit_code' : orbit['hecke_orbit_code']}) for orbit in orbit_pair]
         if (ev_pair[0] and ev_pair[1]):
+            basis0, inv_basis0 = get_nf_basis(ev_pair[0])
+            basis1, inv_basis1 = get_nf_basis(ev_pair[1])
+            F0 = basis0[-1].parent()
+            F1 = basis1[-1].parent()
+            F = F1.composite_fields(F0)[0]
+            basis = inv_basis = F.power_basis()
             ev = ev_pair[0]
             ev['maxp'] = bound['lambda_p'] -1 
             ev['maxp_square'] = bound['lambda_p_square'] - 1
             for ht in hecke_types:
-                ev[ht] = [Y_func[ht](k,j,p,ev_pair[0]['an'][p^exp[ht]-1],ev_pair[1]['an'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
+                aps_lists = [ev_pair[0]['an'][p^exp[ht]-1] for p in prime_range(bound[ht])]
+                bps_lists = [ev_pair[1]['an'][p^exp[ht]-1] for p in prime_range(bound[ht])]
+                aps = nf_lists_to_elements(aps_lists, basis0)
+                bps = nf_lists_to_elements(bps_lists, basis1)
+                aps = [F(ap) for ap in aps]
+                bps = [F(bp) for bp in bps]
+                ps = prime_range(bound[ht])
+                ev[ht] = nf_elts_to_lists([F(Y_func[ht](k,j,ps[i],aps[i],bps[i])) for i in range(len(ps))], inv_basis)
             # We don't want to accidentally use the same fields for the Yoshida lift
             for field_name in ['label', 'hecke_orbit_code', 'an', 'ap', 'weight']:
                 dummy = ev.pop(field_name)
