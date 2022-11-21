@@ -1,6 +1,6 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
-from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa
+from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular
 
 from lmfdb import db
@@ -17,7 +17,8 @@ def smf_level1_space(k,j,e):
        		   2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
     sub_funcs = {'eis_F' : Hecke_Eigenvalues_Traces_Siegel_Eisenstein,
        		 'eis_Q' : Hecke_Eigenvalue_Traces_Klingen_Eisenstein,
-                 'cusp_P' : Hecke_Eigenvalue_Traces_Saito_Kurokawa}
+                 'cusp_P' : Hecke_Eigenvalue_Traces_Saito_Kurokawa,
+                 'cusp_Y' : Hecke_Eigenvalue_Traces_Yoshida}
     for sub in sub_funcs.keys():
         for deg in hecke_types.keys():
        	    for hecke_type in hecke_types[deg]:
