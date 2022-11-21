@@ -32,9 +32,7 @@ def smf_level1_space(k,j,e):
 
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
-def populate_smf_newspaces(triple_list):
-    table = db.smf_newspaces
-    aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
+def create_entries(triple_list):
     entries = []
     for triple in triple_list:
         k,j,N = triple
@@ -46,6 +44,12 @@ def populate_smf_newspaces(triple_list):
         else:
             entry = smf_dims_paramodular(k,j,N)
         entries.append(entry)
+    return entries
+
+def populate_smf_newspaces(triple_list):
+    table = db.smf_newspaces
+    aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
+    entries = create_entries(triple_list)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
 

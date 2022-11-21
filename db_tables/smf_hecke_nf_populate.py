@@ -79,9 +79,7 @@ def entry_add_columns(e, ext_data):
                                inv_basis)
     return e
 
-def populate_smf_hecke_nf(triple_list):
-    table = db.smf_hecke_nf
-    aux_fname = "smf_hecke_nf_table.dat"
+def create_entries(triple_list):
     entries = []
     for triple in triple_list:
        k,j,N = triple
@@ -102,5 +100,11 @@ def populate_smf_hecke_nf(triple_list):
                    entry_sub = entry.copy()
                    entry_sub.update(ev)
                    entries.append(entry_sub)
+    return entries
+
+def populate_smf_hecke_nf(triple_list):
+    table = db.smf_hecke_nf
+    aux_fname = "smf_hecke_nf_table.dat"
+    entries = create_entries(triple_list)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
