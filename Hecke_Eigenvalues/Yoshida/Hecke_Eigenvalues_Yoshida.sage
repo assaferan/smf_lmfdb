@@ -1,5 +1,5 @@
 import os
-os.chdir("/scratch/home/fclery/lmfdb")
+# os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
 
 def Y_lambda_p(k,j,p,a_p,b_p):
@@ -199,6 +199,40 @@ def Hecke_Eigenvalues_Yoshida_All(k,j,e):
     elif k == 2 and  j < 33 :
        return Hecke_Eigenvalues_Yoshida(k,j)
 
+def Hecke_Traces_Eigenvalues_Yoshida(k,j,e,prime_bound=200):
+    """
+    Compute                     
+    """
+    ws = [j+2, j+2*k-2]
+    signs = ['+','-']
+    fields = ['traces']
+    if ws[1] != ws[0]:
+        result = [[db.mf_newforms.search({'level' : '2', 'weight': str(w), 'atkin_lehner_string': sign}, fields) for w in ws] for sign in signs] 
+        pairs = [[[f,g] for f in result[1-sign_idx][1] for g in result[sign_idx][0]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+    else:
+        result = [db.mf_newforms.search({'level' : '2', 'weight': str(ws[0]), 'atkin_lehner_string': sign}, fields) for sign in signs]
+        pairs = [[[f,g] for f in result[1-sign_idx] for g in result[sign_idx]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+                
+    hecke_types = ['lambda_p' + suffix for suffix in [''] +
+                   ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    Y_func = {ht : eval('Y_' + ht) for ht in hecke_types}
+    exp = {ht : 1 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
+    ranges = {ht : prime_range(bound[ht]) for ht in hecke_types}  
+    L = { ht : {p : 0 for p in ranges[ht]}  for ht in hecke_types }
+    if (pairs and (e > 0) and is_even(j) and (k >= 2)):
+        for ht in hecke_types:
+            for p in ranges[ht]:
+                Tr_a = 0
+                Tr_b = 0
+                for pair in pairs:
+                    Tr_a += pair[0]['traces'][p^exp[ht]-1]
+                    Tr_b += pair[1]['traces'][p^exp[ht]-1]
+                L[ht][p] = Y_func[ht](k,j,p,Tr_a,Tr_b) 
+    return L   
+   
 def Hecke_Eigenvalues_Yoshida_all_forms(k,j,e,prime_bound=200):
     '''
     Returns a list of dictionaries.
@@ -221,7 +255,7 @@ def Hecke_Eigenvalues_Yoshida_all_forms(k,j,e,prime_bound=200):
     
     hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
     Y_func = {ht : eval('Y_' + ht) for ht in hecke_types}
-    exp = {ht : 1 if ht == 'lambda_p' else 2 for ht in hecke_types}
+    exp = {ht : 1 for ht in hecke_types}
     bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
 
     for pair in pairs:
@@ -239,3 +273,46 @@ def Hecke_Eigenvalues_Yoshida_all_forms(k,j,e,prime_bound=200):
             dummy = orbit.pop(field_name)
         forms.append(orbit)
     return forms
+
+# For now we restrict to 100 since column 'an' of mf_hecke_nf only stores up to 100
+# !! TODO - the ap 'column' stores further (up to 997). W can use it to get to the a_{p^2}
+# However, for that we will need to perform actual field arithmetic so we save it for later
+
+def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
+    '''
+    Returns a list of dictionaries.
+    Each dictionary is an entry for the Hecke eigenvalues over a number field db,
+    meant to be uploaded to smf_hecke_nf
+    '''
+    evs = []
+    if (e == 0) or is_odd(j) or (k < 2):
+        return forms
+    ws = [j+2, j+2*k-2]
+    signs = ['+','-']
+    fields = ['hecke_orbit_code']
+    if ws[1] != ws[0]:
+        result = [[db.mf_newforms.search({'level' : '2', 'weight': str(w), 'atkin_lehner_string': sign}, fields) for w in ws] for sign in signs] 
+        pairs = [[[f,g] for f in result[1-sign_idx][1] for g in result[sign_idx][0]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+    else:
+        result = [db.mf_newforms.search({'level' : '2', 'weight': str(ws[0]), 'atkin_lehner_string': sign}, fields) for sign in signs]
+        pairs = [[[f,g] for f in result[1-sign_idx] for g in result[sign_idx]] for sign_idx in [0,1]]
+        pairs = reduce(lambda x,y : x+y, pairs)
+
+    hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
+    Y_func = {ht : apply_to_nf_elt(eval('Y_' + ht)) for ht in hecke_types}
+    exp = {ht : 1 for ht in hecke_types}
+    bound = {ht : previous_prime(floor(prime_bound^(1/exp[ht])))+1 for ht in hecke_types}
+    for orbit_pair in pairs:
+        ev_pair = [db.mf_hecke_nf.lucky({'hecke_orbit_code' : orbit['hecke_orbit_code']}) for orbit in orbit_pair]
+        if (ev_pair[0] and ev_pair[1]):
+            ev = ev_pair[0]
+            ev['maxp'] = bound['lambda_p'] -1 
+            ev['maxp_square'] = bound['lambda_p_square'] - 1
+            for ht in hecke_types:
+                ev[ht] = [Y_func[ht](k,j,p,ev_pair[0]['an'][p^exp[ht]-1],ev_pair[1]['an'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
+            # We don't want to accidentally use the same fields for the Yoshida lift
+            for field_name in ['label', 'hecke_orbit_code', 'an', 'ap', 'weight']:
+                dummy = ev.pop(field_name)
+            evs.append((ev))
+    return evs

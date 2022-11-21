@@ -1,5 +1,5 @@
 import os
-os.chdir("/scratch/home/fclery/lmfdb")
+# os.chdir("/scratch/home/fclery/lmfdb")
 from lmfdb import db
 
 def ms_label(k,N):
