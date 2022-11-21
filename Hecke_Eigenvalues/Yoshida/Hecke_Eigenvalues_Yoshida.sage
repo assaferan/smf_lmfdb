@@ -286,7 +286,7 @@ def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
     '''
     evs = []
     if (e == 0) or is_odd(j) or (k < 2):
-        return forms
+        return evs
     ws = [j+2, j+2*k-2]
     signs = ['+','-']
     fields = ['hecke_orbit_code']
