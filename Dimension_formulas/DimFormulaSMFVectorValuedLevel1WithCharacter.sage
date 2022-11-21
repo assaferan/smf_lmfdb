@@ -61,7 +61,7 @@ def dim_VV_sp4Z_j_2_with_charac(j):   # k=2
     Compute the dimension of S_{j,2}(Sp(4,Z),eps)
     for j in {0, 2,..., 30} otherwise this dimension is conjectural
     """
-    d = dimension_new_cusp_forms_plus(2,2+j)*dimension_new_cusp_forms_minus(2,2+j)  
+    d = dimension_new_cusp_forms_plus_level_2(2+j)*dimension_new_cusp_forms_minus_level_2(2+j)
     return d
 
 def dim_VV_sp4Z_j_3_with_charac(j):    # k=3
@@ -111,8 +111,8 @@ def dimension_yoshida_lift(j, k):
     """
     Compute the dimension of Y_{j,k}(Sp(4,Z),eps)
     """
-    d1 = dimension_new_cusp_forms_plus(2,j+2*k-2)*dimension_new_cusp_forms_minus(2,j+2)
-    d2 = dimension_new_cusp_forms_minus(2,j+2*k-2)*dimension_new_cusp_forms_plus(2,j+2)
+    d1 = dimension_new_cusp_forms_plus_level_2(j+2*k-2)*dimension_new_cusp_forms_minus_level_2(j+2)
+    d2 = dimension_new_cusp_forms_minus_level_2(j+2*k-2)*dimension_new_cusp_forms_plus_level_2(j+2)
     d = d1+d2 
     return d
 

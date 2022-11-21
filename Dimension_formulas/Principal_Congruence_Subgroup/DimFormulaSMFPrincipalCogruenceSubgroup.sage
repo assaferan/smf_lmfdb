@@ -31,7 +31,7 @@ def dim_cusp_form_GammaN(k,j,N):
 
 """
 For N=2, we use the paper of Berström, Faber and van der Geer.
-The conjectures there are now proved thamks to the work of Rösner (see his PhD)    
+The conjectures there are now proved thanks to the work of Rösner (see his PhD)    
 """
 
 def dim_cusp_form_Gamma2(k,j):
@@ -185,7 +185,6 @@ def Mult_s111111_SV(k):
     f = num / denom
     d = f.list()[k]
     return d
-
 
 
 def List_Mult_Irrep_SV(k):
