@@ -256,7 +256,7 @@ def Hecke_Eigenvalues_Saito_Kurokawa_all_forms(k,j,e,prime_bound=200):
         orbit['is_cuspidal'] = False
         orbit['aut_rep_type'] = 'P'
         for ht in hecke_types:
-            orbit['trace_' + ht] = [SK_func[ht](k,j,p,orbit['traces'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
+            orbit['trace_' + ht] = [SK_func[ht](k,p,orbit['traces'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
         # We don't want to accidentally use the same label or traces for the Saito-Kurokawa lift
         for field_name in ['label', 'traces']:
             dummy = orbit.pop(field_name)
@@ -292,7 +292,7 @@ def Hecke_Eigenvalues_Saito_Kurokawa_all_evs(k,j,e,prime_bound=100):
             ev['maxp'] = bound['lambda_p'] -1 
             ev['maxp_square'] = bound['lambda_p_square'] - 1
             for ht in hecke_types:
-                ev[ht] = [SK_func[ht](k,j,p,ev['an'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
+                ev[ht] = [SK_func[ht](k,p,ev['an'][p^exp[ht]-1]) for p in prime_range(bound[ht])]
             # We don't want to accidentally use the same fields for the Saito-Kurokawa lift
             for field_name in ['label', 'hecke_orbit_code', 'an', 'ap', 'weight']:
                 dummy = ev.pop(field_name)
