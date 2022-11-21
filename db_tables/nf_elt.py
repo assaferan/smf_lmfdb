@@ -1,4 +1,5 @@
 from sage.all import (PolynomialRing, NumberField, ZZ, QQ, gcd, lcm, vector)
+from lmfdb.utils import integer_squarefree_part
 
 def get_nf_basis(ev):
     R = PolynomialRing(QQ, 'x')
