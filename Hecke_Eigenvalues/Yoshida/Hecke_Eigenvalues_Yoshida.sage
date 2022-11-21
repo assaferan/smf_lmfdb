@@ -4,18 +4,27 @@ from lmfdb import db
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_lists_to_elements, nf_elts_to_lists
 
 def Y_lambda_p(k,j,p,a_p,b_p):
+    assert k >= 2
     return a_p+p^(k-2)*b_p
 
 def Y_lambda_p_square(k,j,p,a_p,b_p):
+    assert k >= 2
     return a_p^2+p^(k-2)*a_p*b_p+p^(2*k-4)*b_p^2-p^(2*k+j-4)*(1+2*p)
 
 def Y_lambda_p_square_0(k,j,p,a_p,b_p):
+    assert k >= 2
+    if (k == 2):
+        return a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-2)-2*p^(2*k+j-4)*(1+p)
     return a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-3)*(p-1)-2*p^(2*k+j-4)*(1+p)
 
 def Y_lambda_p_square_1(k,j,p,a_p,b_p):
+    assert k >= 2
+    if (k == 2):
+        return (p^2-1)*p^(2*k+j-6)
     return a_p*b_p*p^(k-3)+(p^2-1)*p^(2*k+j-6)
 
 def Y_lambda_p_square_2(k,j,p,a_p,b_p):
+    assert 2*k+j >= 6
     return p^(2*k+j-6)
 
 def ms_label(k,N):
