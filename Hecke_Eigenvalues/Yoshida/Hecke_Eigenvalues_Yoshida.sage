@@ -313,11 +313,11 @@ def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
             F1 = basis1[-1].parent()
             F = F1.composite_fields(F0)[0]
             basis = inv_basis = F.power_basis()
+            ev = ev_pair[0]
             ev['field_poly'] = list(F.defining_polynomial())
             ev['hecke_ring_power_basis'] = True
             ev['hecke_ring_cyclotomic_generator'] = 0
             ev['hecke_ring_rank'] = F.degree()
-            ev = ev_pair[0]
             ev['maxp'] = bound['lambda_p'] -1 
             ev['maxp_square'] = bound['lambda_p_square'] - 1
             for ht in hecke_types:
