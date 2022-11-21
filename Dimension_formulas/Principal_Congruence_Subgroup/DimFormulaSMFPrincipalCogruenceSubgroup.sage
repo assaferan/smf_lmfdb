@@ -833,6 +833,13 @@ def Dim_gen_Cusp_Form_Total_SV_even(k):
     d = 1*L[0]+ 5*L[1] + 9*L[2] + 10*L[3] + 5*L[4]+ 16*L[5] + 10*L[6] + 5*L[7] + 9*L[8] + 5*L[9]+ 1*L[10]
     return d
 
+def Dim_List(L):
+    """
+    Return the dimension of the space whose isotypical decomposition is given by L
+    """
+    d = 1*L[0]+ 5*L[1] + 9*L[2] + 10*L[3] + 5*L[4]+ 16*L[5] + 10*L[6] + 5*L[7] + 9*L[8] + 5*L[9]+ 1*L[10]
+    return d
+
 
 def List_Mult_Irrep_SV_odd(k):
     """
@@ -845,17 +852,25 @@ def List_Mult_Irrep_SV_odd(k):
     Saito-Kurokawa (type P)
     Yosh (type Y)
     Genuine (type G)
-    The output is a list of 8 lists with 11 elements.
+    The output is a list of 8 lists with 12 elements.
     """
     Total = List_Mult_Irrep_SV(k)
+    Totalwd = [Total, Dim_List(Total)]
     Total_Cusp = List_Mult_Irrep_SV(k)
+    Total_Cuspwd = [Total_Cusp,Dim_List(Total_Cusp)]
     E = [0,0,0,0,0,0,0,0,0,0,0]
+    Ewd = [E,Dim_List(E)]
     Eis = [0,0,0,0,0,0,0,0,0,0,0]
+    Eiswd = [Eis,Dim_List(Eis)]
     KE = [0,0,0,0,0,0,0,0,0,0,0]
+    KEwd = [KE,Dim_List(KE)]
     SK = List_Mult_Irrep_SK_SV_odd(k)
+    SKwd = [SK,Dim_List(SK)]
     Yosh = [0,0,0,0,0,0,0,0,0,0,0]
+    Yoshwd = [Yosh,Dim_List(Yosh)]
     Gen = List_Mult_Irrep_gen_SV_odd(k)
-    L = [Total, Total_Cusp, E, Eis, KE, SK, Yosh, Gen]
+    Genwd = [Gen,Dim_List(Gen)]
+    L = [Totalwd, Total_Cuspwd, Ewd, Eiswd, KEwd, SKwd, Yoshwd, Genwd]
     return L
 
 
@@ -873,14 +888,22 @@ def List_Mult_Irrep_SV_even(k):
     The output is a list of 8 lists with 11 elements.
     """
     Total = List_Mult_Irrep_SV(k)
+    Totalwd = [Total, Dim_List(Total)]
     Total_Cusp = List_Mult_Irrep_Cusp_Form_SV_even(k)
+    Total_Cuspwd = [Total_Cusp,Dim_List(Total_Cusp)]
     E = List_Mult_Irrep_E_SV_even(k)
+    Ewd = [E,Dim_List(E)]
     Eis = List_Mult_Irrep_Eis_SV_even(k)
+    Eiswd = [Eis,Dim_List(Eis)]
     KE = List_Mult_Irrep_KE_SV_even(k)
+    KEwd = [KE,Dim_List(KE)]
     SK = List_Mult_Irrep_SK_Cusp_Form_SV_even(k)
+    SKwd = [SK,Dim_List(SK)]
     Yosh = [0,0,0,0,0,0,0,0,0,0,0]
+    Yoshwd = [Yosh,Dim_List(Yosh)]
     Gen = List_Mult_Irrep_gen_Cusp_Form_SV_even(k)
-    L = [Total, Total_Cusp, E, Eis, KE, SK, Yosh, Gen]
+    Genwd = [Gen,Dim_List(Gen)]
+    L = [Totalwd, Total_Cuspwd, Ewd, Eiswd, KEwd, SKwd, Yoshwd, Genwd]
     return L
 
   
