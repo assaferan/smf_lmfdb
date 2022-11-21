@@ -20,17 +20,26 @@ def Hecke_Eigenvalue_Traces_Klingen_Eisenstein(k,j,e,prime_bound=MAX_P+1):
 def Hecke_Eigenvalues_Traces_Siegel_Eisenstein(k,j,e,prime_bound=MAX_P+1):
     return Hecke_Eigenvalues_Siegel_Eisenstein_Series_All(k,j,e,prime_bound=prime_bound)
 
+def Hecke_Eigenvalue_Traces_Saito_Kurokawa(k,j,e,prime_bound=MAX_P+1):
+    return Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,e,prime_bound=prime_bound)
+
 def Hecke_Eigenforms_Siegel_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Siegel_Eisenstein_all_forms(k,j,e)
 
 def Hecke_Eigenforms_Klingen_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Klingen_Eisenstein_all_forms(k,j,e)
 
+def Hecke_Eigenforms_Saito_Kurokawa(k,j,e):
+    return Hecke_Eigenvalues_Saito_Kurokawa_all_forms(k,j,e)
+
 def Hecke_Eigenvalues_Siegel_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Siegel_Eisenstein_all_evs(k,j,e)
 
 def Hecke_Eigenvalues_Klingen_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Klingen_Eisenstein_all_evs(k,j,e)
+
+def Hecke_Eigenvalues_Saito_Kurokawa(k,j,e):
+    return Hecke_Eigenvalues_Saito_Kurokawa_all_evs(k,j,e)
 
 # TODO : this is highly inefficient, can sieve it through, and can compue the exact recurrence relation for powers of p
 def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):

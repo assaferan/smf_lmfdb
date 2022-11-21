@@ -2,7 +2,7 @@ from sage.all import (PolynomialRing, NumberField, ZZ, QQ, gcd, lcm, vector)
 from lmfdb.utils import integer_squarefree_part
 from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
-from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Get_All_Hecke_Eigenvalues_Up_To
+from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
@@ -93,7 +93,8 @@ def populate_smf_hecke_nf(triple_list):
        for e in [0,1]:
            entry = common_entry_values(k,j,e)
            sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
-                        'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein}
+                        'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein,
+                        'cusp_P' : Hecke_Eigenvalues_Saito_Kurokawa}
            for sub in sub_funcs.keys():
                evs = sub_funcs[sub](k,j,e)
                for ev in evs:
