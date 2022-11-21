@@ -1,5 +1,5 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
-from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Get_All_Hecke_Eigenvalues_Up_To
+from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
@@ -37,7 +37,8 @@ def populate_smf_newforms(triple_list):
            entry = common_entry_values(k,j,e)
            sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
                         'eis_Q' : Hecke_Eigenforms_Klingen_Eisenstein,
-                        'cusp_P': Hecke_Eigenforms_Saito_Kurokawa}
+                        'cusp_P': Hecke_Eigenforms_Saito_Kurokawa,
+                        'cusp_Y': Hecke_Eigenforms_Yoshida}
            for sub in sub_funcs.keys():
                forms = sub_funcs[sub](k,j,e)
                for f in forms:
