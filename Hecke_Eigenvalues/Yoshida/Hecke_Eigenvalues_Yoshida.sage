@@ -13,18 +13,26 @@ def Y_lambda_p_square(k,j,p,a_p,b_p):
 
 def Y_lambda_p_square_0(k,j,p,a_p,b_p):
     assert k >= 2
+    # right now we return a p-multiple when k == 2,
+    # needs to remember to display it divided by p
     if (k == 2):
-        return a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-2)-2*p^(2*k+j-4)*(1+p)
+        return p*(a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-3)*(p-1)-2*p^(2*k+j-4)*(1+p))
     return a_p^2+p^(2*k-4)*b_p^2+a_p*b_p*p^(k-3)*(p-1)-2*p^(2*k+j-4)*(1+p)
 
 def Y_lambda_p_square_1(k,j,p,a_p,b_p):
     assert k >= 2
+    # right now we return a p-multiple when k == 2,
+    # needs to remember to display it divided by p
     if (k == 2):
-        return (p^2-1)*p^(2*k+j-6)
+        return p*(a_p*b_p*p^(k-3)+(p^2-1)*p^(2*k+j-6))
     return a_p*b_p*p^(k-3)+(p^2-1)*p^(2*k+j-6)
 
 def Y_lambda_p_square_2(k,j,p,a_p,b_p):
-    assert 2*k+j >= 6
+    assert k >= 2
+    # right now we return a p^2-multiple when k == 2 and j == 0,
+    # needs to remember to display it divided by p^2
+    if (k == 2) and (j == 0):
+        return p^2 * p^(2*k+j-6) 
     return p^(2*k+j-6)
 
 def ms_label(k,N):
@@ -321,10 +329,18 @@ def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
             F0 = basis0[-1].parent()
             F1 = basis1[-1].parent()
             F = F1.composite_fields(F0)[0]
-            basis = inv_basis = F.power_basis()
+            nu = F.gen(0)
+            basis = F.integral_basis()
+            mat = Matrix([list(b) for b in basis])
+            ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
+            ev['hecke_ring_numerators'] = [list(row.denominator()*row) for row in mat]  
+            ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat^(-1)]
+            ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat^(-1)]
+            inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
+            inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]
             ev = ev_pair[0]
             ev['field_poly'] = list(F.defining_polynomial())
-            ev['hecke_ring_power_basis'] = True
+            ev['hecke_ring_power_basis'] = False
             ev['hecke_ring_cyclotomic_generator'] = 0
             ev['hecke_ring_rank'] = F.degree()
             ev['maxp'] = bound['lambda_p'] -1 
