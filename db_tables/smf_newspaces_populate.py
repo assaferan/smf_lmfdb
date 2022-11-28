@@ -52,7 +52,7 @@ def create_entries(triple_list):
         if N == 1:
             # for level 1 we have complete data of Eisenstein series
             entry = smf_level1_space(k,j,0)
-        else if N == 2:
+        elif N == 2:
             entry = smf_level2_space(k,j)
         else:
             entry = smf_dims_paramodular(k,j,N)
