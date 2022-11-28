@@ -37,8 +37,11 @@ def create_smf_all_tables():
 
 def populate_smf_all_tables():
     box_triples = get_box_triples()
+    # !!TODO : this line currently takes over 4 minutes on legendre
     populate_smf_newspaces(box_triples)
+    # 1 min 23s
     populate_smf_hecke_nf(box_triples)
+    # 16.6 s
     populate_smf_newforms(box_triples)
     return
 
