@@ -36,6 +36,7 @@ def smf_level1_space(k,j,e):
     return entry
 
 def smf_level2_space(k,j):
+    assert is_even(j) and (k >= 3)
     entry = smf_dims_degree_2_level_2(k,j)
     entry.update(common_entry_values(k,j,0))
     return entry
@@ -52,9 +53,10 @@ def create_entries(triple_list):
         if N == 1:
             # for level 1 we have complete data of Eisenstein series
             entry = smf_level1_space(k,j,0)
-        elif N == 2:
-            entry = smf_level2_space(k,j)
         else:
+            if (N == 2) and (is_even(j)) and (k >= 3):
+                entry = smf_level2_space(k,j)
+                entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
         entries.append(entry)
     return entries
