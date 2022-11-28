@@ -19,6 +19,7 @@ def generate_column_types():
             col_type[subspace + '_lambda_' + hecke_type] = 'numeric[]'
     col_type['num_forms'] = 'integer'
     col_type['traces'] = 'integer[]'
+    col_type['weight_parity'] = 'smallint'
     dim_columns = generate_dim_column_names()
     for col_name in dim_columns:
         col_type[col_name] = 'integer'
@@ -32,6 +33,7 @@ def generate_column_desc():
     col_desc['num_forms'] = 'number of Hecke orbits (each corresponds to a Galois conjugacy class of modular forms)'
     col_desc['traces'] = 'integer coefficients a_n of the trace form (sum of all newforms in the space) for n from 1 to 1000, only set when dim > 0 and not yet computed in every case.'
     col_desc['label'] = 'Label g.C.N.w.a of this newspace'
+    col_desc['weight_parity'] = '(-1)^j'
     for prefix in ['old_', 'new_', '']:
         pre = prefix[:-1]
         col_desc[prefix+'total_dim'] = 'Total dimension of the space of ' + pre +  ' modular forms'
