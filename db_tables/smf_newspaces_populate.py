@@ -12,7 +12,7 @@ def entry_add_columns(e, ext_data):
 
 def smf_level1_space(k,j,e):
     entry = smf_dims_degree_2_level_1(j,k,e)
-    entry.update(common_entry_values(k,j,e))
+    entry.update(common_entry_values(k,j,e+1))
     hecke_types = {1 : ['p'],
        		   2 : ['p_square', 'p_square_0', 'p_square_1', 'p_square_2']}
     sub_funcs = {'eis_F' : Hecke_Eigenvalues_Traces_Siegel_Eisenstein,
@@ -38,7 +38,7 @@ def smf_level1_space(k,j,e):
 def smf_level2_space(k,j):
     assert (j % 2 == 0) and (k >= 3)
     entry = smf_dims_degree_2_level_2(k,j)
-    entry.update(common_entry_values(k,j,0))
+    entry.update(common_entry_values(k,j,2))
     return entry
 
 # triple_list consists of triples (k,j,N) of weight and level

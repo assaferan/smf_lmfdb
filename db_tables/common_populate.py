@@ -46,13 +46,13 @@ def conrey_indexes(char_orbit_index):
     # right now just working for Fabien's code (index = 1 or 2)
     return [2*char_orbit_index-1]
 
-def common_entry_values(k,j,e):
+def common_entry_values(k,j,N):
     entry = {}
     entry['degree'] = 2
     entry['family'] = 'P'
     entry['weight'] = [k,j]
     entry['char_orbit_index'] = 1
-    entry['level'] = e + 1
+    entry['level'] = N
     return entry
 
 def entry_add_common_columns(e, ext_data):

@@ -31,7 +31,7 @@ def create_entries(triple_list):
        if (N > 1):
            continue
        for e in [0,1]:
-           entry = common_entry_values(k,j,e)
+           entry = common_entry_values(k,j,e+1)
            sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
                         'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein,
                         'cusp_P' : Hecke_Eigenvalues_Saito_Kurokawa,

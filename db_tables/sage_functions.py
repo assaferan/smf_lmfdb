@@ -22,11 +22,11 @@ def smf_dims_degree_2_level_1(j,k,e):
 def smf_dims_degree_2_level_2(k,j):
     entry = {}
     all_dims = All_List_Mult_Irrep_VV(k,j)
-    entry['degree'] = 2
-    entry['family'] = 'P'
-    entry['level'] = 2
-    entry['weight'] = [k,j]
-    entry['char_orbit'] = 0
+    # entry['degree'] = 2
+    # entry['family'] = 'P'
+    # entry['level'] = 2
+    # entry['weight'] = [k,j]
+    # entry['char_orbit'] = 0
     isotypes = ['total_dim', 'cusp_dim', 'eis_dim', 'eis_F_dim', 'eis_Q_dim',
                 'cusp_P_dim', 'cusp_Y_dim', 'cusp_G_dim']
     for i in range(8):
