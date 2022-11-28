@@ -43,12 +43,11 @@ def create_entries(triple_list):
         k,j,N = triple
         # we dropped the condition checking since in cmf we have the zero-dimensional space in the DB
         # so we have the same behavior here
+        print("creating entries for triple (%d,%d,%d)" %(k,j,N))
         if N == 1:
-            print("creating entries for level 1...")
             # for level 1 we have complete data of Eisenstein series
             entry = smf_level1_space(k,j,0)
         else:
-            print("creating entries for paramodular levels...")
             entry = smf_dims_paramodular(k,j,N)
         entries.append(entry)
     return entries
