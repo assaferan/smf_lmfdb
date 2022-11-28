@@ -250,7 +250,19 @@ def Hecke_Traces_Eigenvalues_Yoshida(k,j,e,prime_bound=200):
                     Tr_b += pair[1]['traces'][p^exp[ht]-1]
                 L[ht][p] = Y_func[ht](k,j,p,Tr_a,Tr_b) 
     return L   
-   
+
+def Hecke_Eigenvalues_Yoshida_num_forms(k,j,e):
+    if (e == 0) or is_odd(j) or (k < 2):
+        return 0
+    ws = [j+2, j+2*k-2]
+    signs = ['+','-']
+    if ws[1] != ws[0]:
+        num_res = [[db.mf_newforms.count({'level' : '2', 'weight': str(w), 'atkin_lehner_string': sign}) for w in ws] for sign in signs]
+        return num_res[1][1] * num_res[0][0] + num_res[0][1] * num_res[1][0]
+    else:
+        num_res = [db.mf_newforms.count({'level' : '2', 'weight': str(ws[0]), 'atkin_lehner_string': sign}) for sign in signs]
+        return num_res[0]*num_res[1]
+
 def Hecke_Eigenvalues_Yoshida_all_forms(k,j,e,prime_bound=200):
     '''
     Returns a list of dictionaries.

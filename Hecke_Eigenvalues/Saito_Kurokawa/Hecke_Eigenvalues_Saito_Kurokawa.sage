@@ -232,6 +232,17 @@ def Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,e,prime_bound=200):
                 L[ht][p] = SK_func[ht](k,p,Tr[p^exp[ht]-1]) 
     return L   
 
+def Hecke_Eigenvalues_Saito_Kurokawa_num_forms(k,j,e,prime_bound=200):
+    if (j > 0):
+        return 0
+    w = 2*k-2
+    if e == 0:
+        query = {'level' : '1', 'weight': str(w)}
+    else:
+        query = {'level' : '2', 'weight': str(w), 'atkin_lehner_string': '+'}
+    num_orbits = db.mf_newforms.count(query)
+    return num_orbits
+
 def Hecke_Eigenvalues_Saito_Kurokawa_all_forms(k,j,e,prime_bound=200):
     '''
     Returns a list of dictionaries.

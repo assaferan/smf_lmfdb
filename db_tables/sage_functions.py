@@ -30,6 +30,18 @@ def Hecke_Eigenvalue_Traces_Saito_Kurokawa(k,j,e,prime_bound=MAX_P+1):
 def Hecke_Eigenvalue_Traces_Yoshida(k,j,e,prime_bound=MAX_P+1):
     return Hecke_Traces_Eigenvalues_Yoshida(k,j,e,prime_bound=prime_bound)
 
+def num_forms_Siegel_Eisenstein(k,j,e):
+    return Hecke_Eigenvalues_Siegel_Eisenstein_num_forms(k,j,e)
+
+def num_forms_Klingen_Eisenstein(k,j,e):
+    return Hecke_Eigenvalues_Klingen_Eisenstein_num_forms(k,j,e)
+
+def num_forms_Saito_Kurokawa(k,j,e):
+    return Hecke_Eigenvalues_Saito_Kurokawa_num_forms(k,j,e)
+
+def num_forms_Yoshida(k,j,e):
+    return Hecke_Eigenvalues_Yoshida_num_forms(k,j,e)
+
 def Hecke_Eigenforms_Siegel_Eisenstein(k,j,e):
     return Hecke_Eigenvalues_Siegel_Eisenstein_all_forms(k,j,e)
 

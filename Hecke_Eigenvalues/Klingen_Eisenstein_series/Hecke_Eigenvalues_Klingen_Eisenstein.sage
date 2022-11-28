@@ -133,6 +133,13 @@ def Hecke_Eigenvalues_Klingen_Eisenstein_Series_with_or_without_charac(k,j,e,pri
     elif e == 0 : 
        return Hecke_Eigenvalues_Klingen_Eisenstein_Series(k,j)
 
+def Hecke_Eigenvalues_Klingen_Eisenstein_num_forms(k,j,e,prime_bound=200):
+    if (e == 1) or (k < 4):
+        return 0
+    w = j + k
+    num_orbits = db.mf_newforms.count({'level' : '1', 'weight': str(w)})
+    return num_orbits
+
 def Hecke_Eigenvalues_Klingen_Eisenstein_all_forms(k,j,e,prime_bound=200):
     '''
     Returns a list of dictionaries.

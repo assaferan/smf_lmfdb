@@ -102,6 +102,11 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_Series_All(k,j,e,prime_bound=200):
        return {'lambda_' + hecke : empty_dic for hecke in hecke_types}
     return Hecke_Eigenvalues_Siegel_Eisenstein_Series(k)
 
+def Hecke_Eigenvalues_Siegel_Eisenstein_num_forms(k,j,e,prime_bound=200):
+    if (e != 0) or (j != 0) or (k < 4) or (is_odd(k)):
+        return 0
+    return 1
+
 def Hecke_Eigenvalues_Siegel_Eisenstein_all_forms(k,j,e,prime_bound=200):
     '''
     Returns a list of dictionaries.
