@@ -37,7 +37,7 @@ def smf_level1_space(k,j,e):
 
 def smf_level2_space(k,j):
     entry = smf_dims_degree_2_level_2(k,j)
-    entry.update(common_entry_values(k,j,e))
+    entry.update(common_entry_values(k,j,0))
     return entry
 
 # triple_list consists of triples (k,j,N) of weight and level
