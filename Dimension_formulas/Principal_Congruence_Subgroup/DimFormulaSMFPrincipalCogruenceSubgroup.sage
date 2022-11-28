@@ -918,12 +918,384 @@ def All_List_Mult_Irrep_SV(k):
     else:
       return List_Mult_Irrep_SV_even(k)
 
+"""
+The vector-valued case 
+"""
+load('Generating_Series_Cusp_Forms_j_2_to_50.sage')
+load('Generating_Series_Mod_Forms_j_2_to_50.sage')
+
+LC = [LC2,LC4,LC6,LC8,LC10,LC12,LC14,LC16,LC18,LC20,LC22,LC24,LC26,LC28,LC30,LC32,LC34,LC36,LC38,LC40,LC42,LC44,LC46,LC48,LC50]
+LM = [LM2,LM4,LM6,LM8,LM10,LM12,LM14,LM16,LM18,LM20,LM22,LM24,LM26,LM28,LM30,LM32,LM34,LM36,LM38,LM40,LM42,LM44,LM46,LM48,LM50]
 
 
+def Pick_j(j,L):
+    """
+    Return the list of the m
+    """
+    if j % 2 == 1:
+      return [0,0,0,0,0,0,0,0,0,0,0]
+    else:
+      return L[j/2-1][1]
 
 
+def Mult_s6_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the trivial rep. of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[0]
+    d = f.list()[k]
+    return d
+
+def Mult_s51_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[5,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[1]
+    d = f.list()[k]
+    return d
+
+def Mult_s42_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[4,2] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[2]
+    d = f.list()[k]
+    return d
+
+def Mult_s411_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[4,1,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[3]
+    d = f.list()[k]
+    return d
+
+def Mult_s33_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,3] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[4]
+    d = f.list()[k]
+    return d
+
+def Mult_s321_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,2,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[5]
+    d = f.list()[k]
+    return d
+
+def Mult_s3111_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,1,1,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[6]
+    d = f.list()[k]
+    return d
+
+def Mult_s222_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,2,2] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[7]
+    d = f.list()[k]
+    return d
+
+def Mult_s2211_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,2,1,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[8]
+    d = f.list()[k]
+    return d
+
+def Mult_s21111_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,1,1,1,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[9]
+    d = f.list()[k]
+    return d
+
+def Mult_s111111_Cusp_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[1,1,1,1,1,1] of S_6 in S_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LC)
+    f = L[10]
+    d = f.list()[k]
+    return d
+
+def List_Mult_Irrep_Cusp_Form_VV(k,j):
+    """
+    Return the multiplicities of the 11 irrep. of S_6 in S_{k,j}(Gamma[2]) as a list, k>=3.
+    """
+    s6 = Mult_s6_Cusp_Form_VV(k,j)
+    s51 = Mult_s51_Cusp_Form_VV(k,j)
+    s42 = Mult_s42_Cusp_Form_VV(k,j)
+    s411 = Mult_s411_Cusp_Form_VV(k,j)
+    s33 = Mult_s33_Cusp_Form_VV(k,j)
+    s321 = Mult_s321_Cusp_Form_VV(k,j)
+    s3111 = Mult_s3111_Cusp_Form_VV(k,j)
+    s222 = Mult_s222_Cusp_Form_VV(k,j)
+    s2211 = Mult_s2211_Cusp_Form_VV(k,j)
+    s21111 = Mult_s21111_Cusp_Form_VV(k,j)
+    s111111 = Mult_s111111_Cusp_Form_VV(k,j)
+    L = [s6,s51,s42,s411,s33,s321,s3111,s222,s2211,s21111,s111111]
+    return L
 
 
+def Mult_s6_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the trivial rep. of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[0]
+    d = f.list()[k]
+    return d
+
+def Mult_s51_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[5,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[1]
+    d = f.list()[k]
+    return d
+
+def Mult_s42_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[4,2] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[2]
+    d = f.list()[k]
+    return d
+
+def Mult_s411_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[4,1,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[3]
+    d = f.list()[k]
+    return d
+
+def Mult_s33_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,3] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[4]
+    d = f.list()[k]
+    return d
+
+def Mult_s321_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,2,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[5]
+    d = f.list()[k]
+    return d
+
+def Mult_s3111_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[3,1,1,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[6]
+    d = f.list()[k]
+    return d
+
+def Mult_s222_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,2,2] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[7]
+    d = f.list()[k]
+    return d
+
+def Mult_s2211_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,2,1,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[8]
+    d = f.list()[k]
+    return d
+
+def Mult_s21111_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[2,1,1,1,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[9]
+    d = f.list()[k]
+    return d
+
+def Mult_s111111_Mod_Form_VV(k,j):
+    """
+    Compute the multiplicity of the rep. s[1,1,1,1,1,1] of S_6 in M_{k,j}(Gamma[2]), k>=3.
+    """
+    R.<t> = PowerSeriesRing(ZZ, default_prec=k+1)
+    L = Pick_j(j,LM)
+    f = L[10]
+    d = f.list()[k]
+    return d
+
+def List_Mult_Irrep_Mod_Form_VV(k,j):
+    """
+    Return the multiplicities of the 11 irrep. of S_6 in M_{k,j}(Gamma[2]) as a list, k>=3.
+    """
+    s6 = Mult_s6_Mod_Form_VV(k,j)
+    s51 = Mult_s51_Mod_Form_VV(k,j)
+    s42 = Mult_s42_Mod_Form_VV(k,j)
+    s411 = Mult_s411_Mod_Form_VV(k,j)
+    s33 = Mult_s33_Mod_Form_VV(k,j)
+    s321 = Mult_s321_Mod_Form_VV(k,j)
+    s3111 = Mult_s3111_Mod_Form_VV(k,j)
+    s222 = Mult_s222_Mod_Form_VV(k,j)
+    s2211 = Mult_s2211_Mod_Form_VV(k,j)
+    s21111 = Mult_s21111_Mod_Form_VV(k,j)
+    s111111 = Mult_s111111_Mod_Form_VV(k,j)
+    L = [s6,s51,s42,s411,s33,s321,s3111,s222,s2211,s21111,s111111]
+    return L
+
+load('DimFormulaPlusMinusNewFormGamma0.sage')
+
+def List_Mult_Irrep_Yoshida_Lift_VV(k,j):
+    """
+    Return the multiplicities of the 11 irrep. of S_6 in S^{Y}_{k,j}(Gamma[2]) as a list, k>=3.
+    """
+    k1 = j+2*k-2
+    k2 = j+2
+    dk1p = dimension_new_cusp_forms_plus_level_2(k1)
+    dk2p = dimension_new_cusp_forms_plus_level_2(k2)
+    dk1m = dimension_new_cusp_forms_minus_level_2(k1)
+    dk2m = dimension_new_cusp_forms_minus_level_2(k2)
+    s6 = 0
+    s51 = 0
+    s42 = 0
+    s411 = 0
+    s33 = 0
+    s321 = 0
+    s3111 = 0
+    s222 = dk1p*dk2p+dk1m*dk2m
+    s2211 = 0
+    s21111 = dimension_new_cusp_forms(Gamma0(4),k1)*dimension_new_cusp_forms(Gamma0(4),k2)
+    s111111 = dk1p*dk2m+dk1m*dk2p
+    L = [s6,s51,s42,s411,s33,s321,s3111,s222,s2211,s21111,s111111]
+    return L
+
+def List_Mult_Irrep_VV_odd(k,j):
+    """
+    Return for k odd the list of the isotypical decomposition of 
+    Total space,
+    Total cusp space
+    E (Eisenstein),
+    Eis (type F),
+    KE (type Q),
+    Saito-Kurokawa (type P)
+    Yosh (type Y)
+    Genuine (type G)
+    The output is a list of 8 lists with 12 elements.
+    """
+    Total = List_Mult_Irrep_Mod_Form_VV(k,j)
+    Totalwd = [Total, Dim_List(Total)]
+    Total_Cusp = List_Mult_Irrep_Cusp_Form_VV(k,j)
+    Total_Cuspwd = [Total_Cusp,Dim_List(Total_Cusp)]
+    E = [0,0,0,0,0,0,0,0,0,0,0]
+    Ewd = [E,Dim_List(E)]
+    Eis = [0,0,0,0,0,0,0,0,0,0,0]
+    Eiswd = [Eis,Dim_List(Eis)]
+    KE = [0,0,0,0,0,0,0,0,0,0,0]
+    KEwd = [KE,Dim_List(KE)]
+    SK = [0,0,0,0,0,0,0,0,0,0,0]
+    SKwd = [SK,Dim_List(SK)]
+    Yosh = List_Mult_Irrep_Yoshida_Lift_VV(k,j)
+    Yoshwd = [Yosh,Dim_List(Yosh)]
+    Gen = [Total_Cusp[x]-Yosh[x] for x in range(11)]
+    Genwd = [Gen,Dim_List(Gen)]
+    L = [Totalwd, Total_Cuspwd, Ewd, Eiswd, KEwd, SKwd, Yoshwd, Genwd]
+    return L
+
+def List_Mult_Irrep_VV_even(k,j):
+    """
+    Return for k even the list of the isotypical decomposition of 
+    Total space,
+    Total cusp space
+    E (Eisenstein),
+    Eis (type F),
+    KE (type Q),
+    Saito-Kurokawa (type P)
+    Yosh (type Y)
+    Genuine (type G)
+    The output is a list of 8 lists with 12 elements.
+    """
+    Total = List_Mult_Irrep_Mod_Form_VV(k,j)
+    Totalwd = [Total, Dim_List(Total)]
+    Total_Cusp = List_Mult_Irrep_Cusp_Form_VV(k,j)
+    Total_Cuspwd = [Total_Cusp,Dim_List(Total_Cusp)]
+    E = [Total[x]-Total_Cusp[x] for x in range(11)]
+    Ewd = [E,Dim_List(E)]
+    Eis = [0,0,0,0,0,0,0,0,0,0,0]
+    Eiswd = [Eis,Dim_List(Eis)]
+    KE = E
+    KEwd = [KE,Dim_List(KE)]
+    SK = [0,0,0,0,0,0,0,0,0,0,0]
+    SKwd = [SK,Dim_List(SK)]
+    Yosh = List_Mult_Irrep_Yoshida_Lift_VV(k,j)
+    Yoshwd = [Yosh,Dim_List(Yosh)]
+    Gen = [Total_Cusp[x]-Yosh[x] for x in range(11)]
+    Genwd = [Gen,Dim_List(Gen)]
+    L = [Totalwd, Total_Cuspwd, Ewd, Eiswd, KEwd, SKwd, Yoshwd, Genwd]
+    return L
+
+
+def All_List_Mult_Irrep_VV(k,j):
+    """
+    Put everything together
+    """
+    k = ZZ(k)
+    
+    if k % 2 == 1: 
+      return List_Mult_Irrep_VV_odd(k,j)
+    else:
+      return List_Mult_Irrep_VV_even(k,j)
 
 
 
