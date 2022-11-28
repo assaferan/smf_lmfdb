@@ -98,7 +98,7 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_Series(k):
 def Hecke_Eigenvalues_Siegel_Eisenstein_Series_All(k,j,e,prime_bound=200):
     empty_dic = {p : 0 for p in prime_range(prime_bound)}
     hecke_types = ['p', 'p_square', 'p_square_0', 'p_square_1', 'p_square_2']
-    if (j != 0) or (e != 0) or (k < 4):
+    if (j != 0) or (e != 0) or (k < 4) or (is_odd(k)):
        return {'lambda_' + hecke : empty_dic for hecke in hecke_types}
     return Hecke_Eigenvalues_Siegel_Eisenstein_Series(k)
 
@@ -108,7 +108,7 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_all_forms(k,j,e,prime_bound=200):
     Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
     '''
     forms = []
-    if (e != 0) or (j != 0) or (k < 4):
+    if (e != 0) or (j != 0) or (k < 4) or (is_odd(k)):
         return forms
 
     hecke_types = ['p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
@@ -149,7 +149,7 @@ def Hecke_Eigenvalues_Siegel_Eisenstein_all_evs(k,j,e,prime_bound=200):
     meant to be uploaded to smf_hecke_nf
     '''
     evs = []
-    if (e != 0) or (j != 0) or (k < 4):
+    if (e != 0) or (j != 0) or (k < 4) or (is_odd(k)):
         return evs
 
     hecke_types = ['p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
