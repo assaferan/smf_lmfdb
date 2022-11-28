@@ -27,7 +27,7 @@ def create_entries(triple_list):
        k,j,N = triple
        if (j % 2 == 1) or (k == 1):
            continue
-        # right now we only have implemented forms for full level
+       # right now we only have implemented forms for full level
        if (N > 1):
            continue
        for e in [0,1]:

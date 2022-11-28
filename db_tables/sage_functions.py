@@ -4,7 +4,9 @@ import os
 cwd = os.getcwd()
 os.chdir('smf_lmfdb/Dimension_formulas')
 load('dimformula_smf_degree2_level_1.sage')
-os.chdir("../Hecke_Eigenvalues/Siegel_Eisenstein_series")
+os.chdir("Principal_Congruence_Subgroup")
+load('DimFormulaSMFPrincipalCogruenceSubgroup.sage')
+os.chdir("../../Hecke_Eigenvalues/Siegel_Eisenstein_series")
 load('Hecke_Eigenvalues_Siegel_Eisenstein.sage')
 os.chdir("../Klingen_Eisenstein_series")
 load('Hecke_Eigenvalues_Klingen_Eisenstein.sage')
@@ -16,6 +18,25 @@ os.chdir(cwd)
 
 def smf_dims_degree_2_level_1(j,k,e):
     return dim_splitting_smf_degree_2_level_1(j,k,e)
+
+def smf_dims_degree_2_level_2(k,j):
+    entry = {}
+    all_dims = All_List_Mult_Irrep_VV(k,j)
+    entry['degree'] = 2
+    entry['family'] = 'P'
+    entry['level'] = 2
+    entry['weight'] = [k,j]
+    entry['char_orbit'] = 0
+    isotypes = ['total_dim', 'cusp_dim', 'eis_dim', 'eis_F_dim', 'eis_Q_dim',
+                'cusp_P_dim', 'cusp_Y_dim', 'cusp_G_dim']
+    for i in range(8):
+        entry[isotypes[i]] = all_dims[i][1]
+        entry['old_' + isotypes[i]] = all_dims[i][0][0]
+        # for now, new is simply the ones that are not in level 1
+        entry['new_' + isotypes[i]] = all_dims[i][1] - all_dims[i][0][0]
+    # dimensions of the irreps according to this ordering, for later
+    dims = [1, 5, 9, 10, 5, 16, 10, 5, 9, 5, 1]
+    return entry
 
 def Hecke_Eigenvalue_Traces_Klingen_Eisenstein(k,j,e,prime_bound=MAX_P+1):
     return Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j,prime_bound=prime_bound)

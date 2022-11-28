@@ -35,6 +35,11 @@ def smf_level1_space(k,j,e):
     entry['num_forms'] = sum([func(k,j,e) for func in num_form_funcs])
     return entry
 
+def smf_level2_space(k,j):
+    entry = smf_dims_degree_2_level_2(k,j)
+    entry.update(common_entry_values(k,j,e))
+    return entry
+
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
 def create_entries(triple_list):
@@ -47,6 +52,8 @@ def create_entries(triple_list):
         if N == 1:
             # for level 1 we have complete data of Eisenstein series
             entry = smf_level1_space(k,j,0)
+        else if N == 2:
+            entry = smf_level2_space(k,j)
         else:
             entry = smf_dims_paramodular(k,j,N)
         entries.append(entry)
