@@ -13,7 +13,7 @@ def get_space_entries(g, F, N, k, j):
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
     # !! TODO : For now, we take cusp_Y until we have cusp_G
     M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p', 'cusp_Y_lambda_p_square'])
-    if 'cusp_Y_lambda_P' not in M:
+    if 'cusp_Y_lambda_p' not in M:
         print((k, j, N))
     aps = M['cusp_Y_lambda_p']
     aps2 = M['cusp_Y_lambda_p_square']
