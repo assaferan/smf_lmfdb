@@ -2,12 +2,14 @@ from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_comm
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular
+from smf_lmfdb.smf_newforms_populate import make_orbit_code
 
 from lmfdb import db
 
 def entry_add_columns(e, ext_data):
     e = entry_add_common_columns(e, ext_data)
     e['label'] = make_space_label(e)
+    e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], 0)
     return e
 
 def smf_level1_space(k,j,e):
