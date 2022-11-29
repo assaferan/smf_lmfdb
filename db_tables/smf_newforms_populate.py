@@ -24,7 +24,7 @@ def entry_add_columns(e, ext_data):
 
 def populate_smf_newforms(triple_list):
     table = db.smf_newforms
-    aux_fname = "smf_newforms_table.dat"
+    aux_fname = "smf_lmfdb/db_tables/smf_newforms_table.dat"
     entries = []
     for triple in triple_list:
        k,j,N = triple

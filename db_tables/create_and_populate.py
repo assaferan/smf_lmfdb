@@ -8,6 +8,7 @@ from smf_lmfdb.db_tables.smf_newforms_populate import populate_smf_newforms
 from smf_lmfdb.db_tables.smf_hecke_newspace_traces_create_table import create_table_smf_hecke_newspace_traces
 from smf_lmfdb.db_tables.smf_hecke_traces_create_table import create_table_smf_hecke_traces
 from smf_lmfdb.db_tables.smf_hecke_newspace_traces_populate import populate_smf_hecke_newspace_traces
+from smf_lmfdb.db_tables.smf_hecke_traces_populate import populate_smf_hecke_traces
 
 def N_bound(k):
     '''
@@ -48,6 +49,8 @@ def populate_smf_all_tables():
     populate_smf_hecke_nf(box_triples)
     # 16.6 s
     populate_smf_newforms(box_triples)
+    populate_smf_hecke_newspace_traces(box_triples)
+    populate_smf_hecke_traces(box_triples)
     return
 
 def create_and_populate_smf_all_tables():

@@ -46,7 +46,7 @@ def create_entries(triple_list):
 
 def populate_smf_hecke_nf(triple_list):
     table = db.smf_hecke_nf
-    aux_fname = "smf_hecke_nf_table.dat"
+    aux_fname = "smf_lmfdb/db_tables/smf_hecke_nf_table.dat"
     entries = create_entries(triple_list)
     table_reload(table, entries, entry_add_columns, aux_fname)
     return
