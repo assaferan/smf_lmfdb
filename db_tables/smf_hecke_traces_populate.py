@@ -29,7 +29,7 @@ def create_entries(triple_list):
            continue
        # right now we only have implemented forms for full level
        if (N == 1):
-           query = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
+           query = {'hecke_orbit_code' : make_orbit_code(g, 'P', N, k, j, 1, 1)}
            num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
            for i in range(num_orbits):
                entries += get_form_entries(2, 'P', N, k, j, 1, i+1)
