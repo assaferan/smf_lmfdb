@@ -10,9 +10,10 @@ def entry_add_columns(e, ext_data):
 def get_space_entries(g, F, N, k, j):
     entries = []
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
-    M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p', 'cusp_G_lambda_p_square'])
-    aps = M['cusp_G_lambda_p']
-    aps2 = M['cusp_G_lambda_p_square']
+    # !! TODO : For now, we take cusp_Y until we have cusp_G
+    M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p', 'cusp_Y_lambda_p_square'])
+    aps = M['cusp_Y_lambda_p']
+    aps2 = M['cusp_Y_lambda_p_square']
     an = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, aps, aps2, (k,j))
     for n in range(1,MAX_P+1):
         e['n'] = n
