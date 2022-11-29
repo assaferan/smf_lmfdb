@@ -9,7 +9,7 @@ from lmfdb import db
 def entry_add_columns(e, ext_data):
     e = entry_add_common_columns(e, ext_data)
     e['label'] = make_space_label(e)
-    e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], 0)
+    e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], 1)
     return e
 
 def smf_level1_space(k,j,e):
