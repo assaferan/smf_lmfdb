@@ -1,6 +1,5 @@
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
-from smf_lmfdb.db_tables.sage_functions import Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
@@ -12,15 +11,11 @@ def get_space_entries(g, F, N, k, j):
     entries = []
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
     # !! TODO : For now, we take cusp_Y until we have cusp_G
-    M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p', 'cusp_Y_lambda_p_square'])
-    if 'cusp_Y_lambda_p' not in M:
-        print((k, j, N))
+    M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p'])
     aps = M['cusp_Y_lambda_p']
-    aps2 = M['cusp_Y_lambda_p_square']
-    an = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, aps, aps2, (k,j))
-    for n in range(1,MAX_P+1):
-        e['n'] = n
-        e['trace_an'] = an[n-1]
+    for n,p in enumerate(prime_range(1,MAX_P+1)):
+        e['n'] = p
+        e['trace_an'] = aps[n-1]
         entries.append(e.copy())
     return entries
     
