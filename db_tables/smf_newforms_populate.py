@@ -1,6 +1,6 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
-from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G
+from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12,
 
 from lmfdb import db
 
@@ -46,6 +46,16 @@ def create_entries(triple_list):
                 for f in forms:
                     entry_sub = entry.copy()
                     entry_sub.update(f)
+                    if (j == 0) and (N == 1) and (sub == 'eis_F'):
+                        if (k == 4):
+                            entry['qexp_display'] = get_qexp_display_E4()
+                        if (k == 6):
+                            entry['qexp_display'] = get_qexp_display_E6()
+                    if (j == 0) and (N == 1) and (sub == 'cusp_P'):
+                        if (k == 10):
+                            entry['qexp_display'] = get_qexp_display_Chi10()
+                        if (k == 12):
+                            entry['qexp_display'] = get_qexp_display_Chi12()
                     entries.append(entry_sub)
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):

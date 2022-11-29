@@ -2,7 +2,11 @@ from sage.all import *
 # from sage.all import (LaurentPolynomialRing, PolynomialRing, Rationals)
 cwd = os.getcwd()
 os.chdir('smf_lmfdb/qExpansions')
+# This loads the form F20G
 load('FE_FG_20_0.sage')
+load('FE_E4_E6_Chi10_Chi12_Precision_51.sage')
+# This one is vector valued, so I postpone handling it - it is called FEKLEis
+# load('Example_1_Klingen_Eisenstein_6_6_0.sage')
 os.chdir(cwd)
 
 def make_qexp_display(f, nterms=5):
@@ -46,3 +50,26 @@ def get_qexp_display_F20G():
 def get_qexp_F20G():
     return F20G.dict()
     
+def get_qexp_display_E4():
+    return make_qexp_display(E4[0])
+
+def get_qexp_display_E6():
+    return make_qexp_display(E6[0])
+
+def get_qexp_display_Chi10():
+    return make_qexp_display(Chi10[0])
+
+def get_qexp_display_Chi12():
+    return make_qexp_display(Chi12[0])
+
+def get_qexp_E4():
+    return E4[0].dict()
+
+def get_qexp_E6():
+    return E6[0].dict()
+
+def get_qexp_Chi10():
+    return Chi10[0].dict()
+
+def get_qexp_Chi12():
+    return Chi12[0].dict()
