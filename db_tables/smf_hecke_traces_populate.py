@@ -18,7 +18,7 @@ def get_form_entries(g, F, N, k, j, orb):
     for n in range(1,MAX_P+1):
         e['n'] = n
         e['trace_an'] = an[n-1]
-        entries.append(e)
+        entries.append(e.copy())
     return entries
     
 def create_entries(triple_list):
