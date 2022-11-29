@@ -5,7 +5,7 @@ from smf_lmfdb.db_tables.sage_functions import Get_All_Hecke_Eigenvalues_Up_To
 from lmfdb import db
 
 def entry_add_columns(e, ext_data):
-    e = entry_add_common_columns(e, ext_data)
+    e['id'] = ext_data['id']
     return e
 
 def get_form_entries(g, F, N, k, j, orb):
