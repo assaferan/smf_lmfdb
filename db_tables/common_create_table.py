@@ -40,6 +40,9 @@ def generate_common_column_types():
     col_type['level_is_squarefree'] = 'boolean'
     col_type['level_primes'] = 'integer[]'
     col_type['label'] = 'text'
+    col_type['weight_parity'] = 'smallint'
+    col_type['hecke_orbit_code'] = 'bigint'
+    col_type['Nk2'] = 'integer'
     return col_type
 
 def generate_search_columns(col_type):
@@ -73,6 +76,8 @@ def generate_common_col_desc():
     col_desc['char_values'] = 'quadruple <N,n,u,v> where N is the level, n is the order of the character, u is a list of generators for the unit group of Z/NZ, and v is a corresponding list of integers for which chi(u[i]) = zeta_n^v[i]'
     col_desc['prim_orbit_index'] = 'char_orbit for the primitive version of this character'
     col_desc['conrey_indexes'] = 'Sorted list of Conrey indexes of characters in this Galois orbit'
+    col_desc['weight_parity'] = '(-1)^j'
+    col_desc['Nk2'] = 'N*(2*k+j-2)^2'
     return col_desc
 
 def generate_table(table_name, table_desc, col_type_func, col_desc_func, label_col='label'):

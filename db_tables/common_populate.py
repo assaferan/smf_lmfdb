@@ -54,6 +54,7 @@ def common_entry_values(k,j,N):
     entry['weight_parity'] = (-1)**j
     entry['char_orbit_index'] = 1
     entry['level'] = N
+    entry['Nk2'] = N * (2*k+j-2)**2
     return entry
 
 def entry_add_common_columns(e, ext_data):
