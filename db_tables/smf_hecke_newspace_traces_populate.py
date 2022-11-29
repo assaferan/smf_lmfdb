@@ -1,5 +1,6 @@
 from smf_lmfdb.db_tables.common_populate import MAX_P
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
+from smf_lmfdb.db_tables.sage_functions import Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
