@@ -51,7 +51,7 @@ def common_entry_values(k,j,N):
     entry['degree'] = 2
     entry['family'] = 'P'
     entry['weight'] = [k,j]
-    entry['weight_parity'] = (-1)^j
+    entry['weight_parity'] = (-1)**j
     entry['char_orbit_index'] = 1
     entry['level'] = N
     return entry
