@@ -20,8 +20,10 @@ def entry_add_columns(e, ext_data):
     if 'qexp_display' not in e:
         e['qexp_display'] = 'NULL'
     e['embedded_related_objects'] = []
-    e['trace_display'] = e['trace_lambda_p'][:4]
-    e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
+    # sometimes we just have q-expansions and no hecke eigenvalues
+    if 'trace_lambda_p' in e:
+        e['trace_display'] = e['trace_lambda_p'][:4]
+        e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
     return e
 
 def create_entries(triple_list):
