@@ -4,6 +4,10 @@ from smf_lmfdb.db_tables.sage_functions import Get_All_Hecke_Eigenvalues_Up_To
 
 from lmfdb import db
 
+def entry_add_columns(e, ext_data):
+    e = entry_add_common_columns(e, ext_data)
+    return e
+
 def get_space_entries(g, F, N, k, j):
     entries = []
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
@@ -38,5 +42,5 @@ def populate_smf_hecke_newspace_traces(triple_list):
     table = db.smf_hecke_newspace_traces
     aux_fname = "smf_lmfdb/db_tables/smf_hecke_newspace_traces_table.dat"
     entries = create_entries(triple_list)
-    table_reload_plain(table, entries, aux_fname)
+    table_reload_plain(table, entries, entry_add_columns, aux_fname)
     return

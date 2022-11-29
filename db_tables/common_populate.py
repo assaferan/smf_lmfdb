@@ -84,13 +84,14 @@ def fill_nulls(entry, table):
             entry[field_name]= 'NULL'
     return entry
 
-def write_data_plain(table, entries, aux_fname):
+def write_data_plain(table, entries, entry_postprocess, aux_fname):
     keys = [k for k in table.col_type.keys()]
     types = [table.col_type[k] for k in keys]
     column_names = '|'.join(keys)
     column_types = '|'.join(types)
     e_data = []
-    for e in entries:
+    for i,e in enumerate(entries):
+        e = entry_postprocess(e, {'id' : i})
         e = fill_nulls(e, table)
         e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
         e_data.append(e_datum)
@@ -131,8 +132,8 @@ def write_data(table, entries, entry_postprocess, aux_fname):
     f.close()
     return
 
-def table_reload_plain(table, entries, aux_fname):
-    write_data_plain(table, entries, aux_fname)
+def table_reload_plain(table, entries, entry_postprocess, aux_fname):
+    write_data_plain(table, entries, entry_postprocess, aux_fname)
     table.reload(aux_fname, null="NULL")
     table.cleanup_from_reload()
     return
