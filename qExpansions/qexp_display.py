@@ -28,7 +28,17 @@ def make_qexp_display(f, nterms=5):
         deg_hom = [sum([d[k]*q12**k[2] for k in key_by_deg[j] if (k[0], k[1]) == exp])*q1**exp[0]*q2**exp[1] for exp in exps]        
         terms += deg_hom
     str_terms = [str(t).replace('q12', 'q_{12}').replace('q1', 'q_{1}').replace('q2', 'q_{2}').replace('*', '') for t in terms]
-    return '+'.join(str_terms + ['\\cdots'])
+    s = '+'.join(str_terms + ['\\\\cdots'])
+    i = 0
+    while (i < len(s)):
+        if s[i] == '^':
+            i += 1
+            s = s[:i] + "{" + s[i:]
+            while s[i] in "{-0123456789":
+                i += 1
+            s = s[:i] + "}" + s[i:]
+        i += 1   
+    return s
 
 def get_qexp_display_F20G():
     return make_qexp_display(F20G)
