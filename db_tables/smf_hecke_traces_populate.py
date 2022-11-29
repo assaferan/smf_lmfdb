@@ -33,7 +33,7 @@ def create_entries(triple_list):
                query = {'hecke_orbit_code' : make_orbit_code(2, F, N, k, j, 1, 1)}
                num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
                for i in range(num_orbits):
-                   entries += get_form_entries(2, F, N, k, j, 1, i+1)
+                   entries += get_form_entries(2, F, N, k, j, i+1)
     return entries
 
 def populate_smf_hecke_traces(triple_list):
