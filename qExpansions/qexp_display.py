@@ -42,3 +42,7 @@ def make_qexp_display(f, nterms=5):
 
 def get_qexp_display_F20G():
     return make_qexp_display(F20G)
+
+def get_qexp_F20G():
+    return F20G.dict()
+    

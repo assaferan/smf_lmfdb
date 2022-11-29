@@ -11,7 +11,6 @@ def generate_column_types():
     col_type['maxp'] = 'integer'
     col_type['maxp_square'] = 'integer'
     col_type['an'] = 'jsonb'
-#    col_type['ap'] = 'jsonb'
     col_type['lambda_p'] = 'jsonb'
     col_type['lambda_p_square'] = 'jsonb'
     col_type['lambda_p_square_0'] = 'jsonb'
@@ -27,6 +26,7 @@ def generate_column_types():
     col_type['level'] = 'integer'
     col_type['weight'] = 'smallint[]'
     col_type['char_orbit_index'] = 'smallint'
+    col_type['qexp'] = 'jsonb'
     return col_type
 
 def generate_column_desc():
@@ -55,6 +55,7 @@ def generate_column_desc():
     col_desc['level'] = 'Level N in the family'
     col_desc['weight'] = 'Weight (k,j)'
     col_desc['char_orbit_index'] = 'ordinal i identifying the Galois orbit of the characterof this newform (base26 encoded in the newform label / character orbit label)'
+    col_desc['qexp'] = 'a dictionary - keys are exponents, values are coefficients, for the q-expansion'
     return col_desc
     
 def create_table_smf_hecke_nf():
