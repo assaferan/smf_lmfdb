@@ -1,3 +1,4 @@
+from sage.all import (prime_range)
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
