@@ -9,7 +9,7 @@ def entry_add_columns(e, ext_data):
 
 def get_form_entries(g, F, N, k, j, orb):
     entries = []
-    e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 0, orb)}
+    e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, orb)}
     f = db.smf_newforms.lucky(e, ['trace_lambda_p', 'trace_lambda_p_square'])
     aps = f['trace_lambda_p']
     aps2 = f['trace_lambda_p_square']
@@ -28,10 +28,10 @@ def create_entries(triple_list):
            continue
        # right now we only have implemented forms for full level
        if (N == 1):
-           query = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 0, 0)}
+           query = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
            num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
            for i in range(num_orbits):
-               entries += get_form_entries(2, 'P', N, k, j, 0, i)
+               entries += get_form_entries(2, 'P', N, k, j, 1, i+1)
     return entries
 
 def populate_smf_hecke_traces(triple_list):

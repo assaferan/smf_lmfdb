@@ -9,7 +9,7 @@ def entry_add_columns(e, ext_data):
 
 def get_space_entries(g, F, N, k, j):
     entries = []
-    e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 0, 0)}
+    e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
     M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p', 'cusp_G_lambda_p_square'])
     aps = M['cusp_G_lambda_p']
     aps2 = M['cusp_G_lambda_p_square']
