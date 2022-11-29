@@ -31,10 +31,10 @@ def create_entries(triple_list):
        if (N == 1):
            entries += get_space_entries(2, 'P', N, k, j)
        else:
-           # For now we don't yet have traces for the level 2 spaces
+           # For now we don't yet have traces for the higher level spaces
            # if (N == 2) and (j % 2 == 0) and (k >= 3):
            #    entries += get_space_entries(2, 'P', N, k, j)
-           entries += get_space_entries(2, 'K', N, k, j)
+           # entries += get_space_entries(2, 'K', N, k, j)
     return entries
 
 def populate_smf_hecke_newspace_traces(triple_list):
