@@ -15,7 +15,7 @@ The formulas are taken from Theorem 2 of
 WARNING: In Theorem 2 of [1] the plus/minus signs correspond to 
          w_f which is the sign in the functional equation of L(f,s)
          for f a new form on Gamma_0(2) so 
-         w_f=(-1)^{k/2} \lambda_{W_2} for f \in S_{k}(Gamma_0(2))^{new}
+         w_f=(-1)^{k/2} \\lambda_{W_2} for f \\in S_{k}(Gamma_0(2))^{new}
 """
 
 
