@@ -50,7 +50,24 @@ def create_entries(triple_list):
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):
             entry = common_entry_values(k,j,N)
+            entry['is_cuspidal'] = True
+            entry['aut_rep_type'] = 'G'
             entry['qexp_display'] = get_qexp_display_F20G()
+            entry['dim'] = 1
+            entry['nf_label'] = '1.1.1.1'
+            entry['hecke_ring_index'] = 1
+            entry['field_poly_is_cyclotomic'] = False
+            entry['field_poly_root_of_unity'] = 0
+            entry['related_objects'] = []
+            entry['field_poly_is_real_cyclotomic'] = False
+            entry['hecke_ring_index_proved'] = True
+            entry['hecke_ring_generator_nbound'] = 1
+            entry['field_disc'] = 1
+            entry['field_disc_factorization'] = []
+            entry['field_poly'] = [0,1]
+            entry['hecke_ring_index_factorization'] = []
+            entry['relative_dim'] = 1
+            entry['is_polredabs'] = True
             entries.append(entry)
     return entries
 
