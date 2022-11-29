@@ -44,16 +44,16 @@ def create_entries(triple_list):
                 for ev in evs:
                     entry_sub = entry.copy()
                     entry_sub.update(ev)
-                    if (j == 0) and (N == 1) and (sub == 'eis_F'):
+                    if (j == 0) and (N == 1) and (sub == 'eis_F') and (e == 0):
                         if (k == 4):
-                            entry['qexp'] = get_qexp_E4()
+                            entry_sub['qexp'] = get_qexp_E4()
                         if (k == 6):
-                            entry['qexp'] = get_qexp_E6()
-                    if (j == 0) and (N == 1) and (sub == 'cusp_P'):
+                            entry_sub['qexp'] = get_qexp_E6()
+                    if (j == 0) and (N == 1) and (sub == 'cusp_P') and (e == 0):
                         if (k == 10):
-                            entry['qexp'] = get_qexp_Chi10()
+                            entry_sub['qexp'] = get_qexp_Chi10()
                         if (k == 12):
-                            entry['qexp'] = get_qexp_Chi12()
+                            entry_sub['qexp'] = get_qexp_Chi12()
                     entries.append(entry_sub)
         if (k == 20) and (j == 0) and (N == 1):
             entry = common_entry_values(k,j,N)

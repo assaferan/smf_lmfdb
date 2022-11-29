@@ -48,14 +48,14 @@ def create_entries(triple_list):
                     entry_sub.update(f)
                     if (j == 0) and (N == 1) and (sub == 'eis_F'):
                         if (k == 4):
-                            entry['qexp_display'] = get_qexp_display_E4()
+                            entry_sub['qexp_display'] = get_qexp_display_E4()
                         if (k == 6):
-                            entry['qexp_display'] = get_qexp_display_E6()
+                            entry_sub['qexp_display'] = get_qexp_display_E6()
                     if (j == 0) and (N == 1) and (sub == 'cusp_P'):
                         if (k == 10):
-                            entry['qexp_display'] = get_qexp_display_Chi10()
+                            entry_sub['qexp_display'] = get_qexp_display_Chi10()
                         if (k == 12):
-                            entry['qexp_display'] = get_qexp_display_Chi12()
+                            entry_sub['qexp_display'] = get_qexp_display_Chi12()
                     entries.append(entry_sub)
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):
