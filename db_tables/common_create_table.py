@@ -75,11 +75,11 @@ def generate_common_col_desc():
     col_desc['conrey_indexes'] = 'Sorted list of Conrey indexes of characters in this Galois orbit'
     return col_desc
 
-def generate_table(table_name, table_desc, col_type_func, col_desc_func):
+def generate_table(table_name, table_desc, col_type_func, col_desc_func, label_col='label'):
     if table_name in db.tablenames:
        db.drop_table(table_name)
     col_type = col_type_func()
     search_col = generate_search_columns(col_type)
     col_desc = col_desc_func()
-    db.create_table(table_name, search_col, 'label', table_desc, col_desc)
+    db.create_table(table_name, search_col, label_col, table_desc, col_desc)
     return

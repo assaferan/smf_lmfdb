@@ -18,6 +18,6 @@ def create_table_smf_hecke_newspace_traces():
     table_name = "smf_hecke_newspace_traces"
     table_desc = "Traces of Hecke operators on spaces of Siegel modular forms over number fields"
     generate_table(table_name, table_desc,
-                   generate_column_types, generate_column_desc)
+                   generate_column_types, generate_column_desc, label_col=None)
     return
     
