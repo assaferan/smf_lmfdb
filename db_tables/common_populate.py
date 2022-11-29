@@ -84,6 +84,22 @@ def fill_nulls(entry, table):
             entry[field_name]= 'NULL'
     return entry
 
+def write_data_plain(table, entries, aux_fname):
+    keys = [k for k in table.col_type.keys()]
+    types = [table.col_type[k] for k in keys]
+    column_names = '|'.join(keys)
+    column_types = '|'.join(types)
+    e_data = []
+    for e in entries:
+        e = fill_nulls(e, table)
+        e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
+        e_data.append(e_datum)
+    write_data = "\n".join([column_names, column_types, ""] + e_data)
+    f = open(aux_fname, "w")
+    f.write(write_data)
+    f.close()
+    return
+
 def write_data(table, entries, entry_postprocess, aux_fname):
     keys = [k for k in table.col_type.keys()]
     types = [table.col_type[k] for k in keys]
@@ -113,6 +129,12 @@ def write_data(table, entries, entry_postprocess, aux_fname):
     f = open(aux_fname, "w")
     f.write(write_data)
     f.close()
+    return
+
+def table_reload_plain(table, entries, aux_fname):
+    write_data_plain(table, entries, aux_fname)
+    table.reload(aux_fname, null="NULL")
+    table.cleanup_from_reload()
     return
 
 def table_reload(table, entries, entry_postprocess, aux_fname):
