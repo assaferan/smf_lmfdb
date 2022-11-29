@@ -25,12 +25,11 @@ def create_entries(triple_list):
     for triple in triple_list:
        k,j,N = triple
        if (N == 1):
-           for F in ['K', 'S', 'P']:
-               entries += get_space_entries(2, F, N, k, j)
+           entries += get_space_entries(2, 'P', N, k, j)
        else:
            if (N == 2) and (j % 2 == 0) and (k >= 3):
                entries += get_space_entries(2, 'P', N, k, j)
-            entries += get_space_entries(2, 'K', N, k, j)
+           entries += get_space_entries(2, 'K', N, k, j)
     return entries
 
 def populate_smf_hecke_newspace_traces(triple_list):
