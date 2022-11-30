@@ -1,3 +1,16 @@
+"""
+The function MakeFEEis(k,N)
+returns the Siegel-Eisenstein series
+of weight k on Sp(4,Z) up
+to the precision X^N*Y^N where
+X=exp(2 pi i tau_1) and
+Y=exp(2 pi i tau_1)
+The varaible appearing in this expansion is
+u=exp(2 pi i tau_12)
+"""
+
+
+
 def MakeSum(f,D0,k):
     L = f.divisors()
     s = sum([moebius(d)*kronecker(D0,d)*d^(k-2)*sigma(f/d,2*k-3) for d in L])
