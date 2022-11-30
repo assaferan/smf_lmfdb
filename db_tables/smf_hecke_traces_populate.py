@@ -13,6 +13,9 @@ def get_form_entries(g, F, N, k, j, orb):
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, orb)}
     f = db.smf_newforms.lucky(e, ['trace_lambda_p'])
     aps = f['trace_lambda_p']
+    max_p = MAX_P
+    if (k == 20) and (j == 0) and (N == 1):
+        max_p = 19
     for n,p in enumerate(prime_range(1,MAX_P+1)):
         e['n'] = p
         e['trace_an'] = aps[n-1]
