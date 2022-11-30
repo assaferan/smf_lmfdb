@@ -35,6 +35,10 @@ def smf_level1_space(k,j,e):
                       num_forms_Saito_Kurokawa,
                       num_forms_Yoshida]
     entry['num_forms'] = sum([func(k,j,e) for func in num_form_funcs])
+    if (k == 20) and (j == 0) and (e == 0):
+        # manually fixing the (20,0) space for demonstration
+        entry['num_forms'] += 1
+        entry['cusp_G_lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
     return entry
 
 def smf_level2_space(k,j):

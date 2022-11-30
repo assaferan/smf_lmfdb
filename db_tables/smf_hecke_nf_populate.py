@@ -17,7 +17,7 @@ def entry_add_columns(e, ext_data):
     e['label'] = space_label + '.' + base_26(hecke_orbit)
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], hecke_orbit)
     # sometimes we don't have the Hecke eigenvalues
-    if 'lambda_p' in e:
+    if 'lambda_p_square' in e:
         basis, inv_basis = get_nf_basis(e)
         e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
                                                                    nf_lists_to_elements(e['lambda_p_square'], basis), e['weight']),
@@ -62,6 +62,8 @@ def create_entries(triple_list):
             entry['hecke_ring_cyclotomic_generator'] = 0
             entry['field_poly'] = [0,1]
             entry['qexp'] = get_qexp_F20G()
+            entry['maxp'] = 19
+            entry['lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
             entries.append(entry)
     return entries
 

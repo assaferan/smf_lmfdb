@@ -21,7 +21,7 @@ def entry_add_columns(e, ext_data):
         e['qexp_display'] = 'NULL'
     e['embedded_related_objects'] = []
     # sometimes we just have q-expansions and no hecke eigenvalues
-    if 'trace_lambda_p' in e:
+    if 'trace_lambda_p_square' in e:
         e['trace_display'] = e['trace_lambda_p'][:4]
         e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
     return e
@@ -78,6 +78,7 @@ def create_entries(triple_list):
             entry['hecke_ring_index_factorization'] = []
             entry['relative_dim'] = 1
             entry['is_polredabs'] = True
+            entry['trace_lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
             entries.append(entry)
     return entries
 
