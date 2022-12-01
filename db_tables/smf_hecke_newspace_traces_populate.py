@@ -1,4 +1,4 @@
-from sage.all import (prime_range)
+from sage.all import (prime_range, nth_prime)
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
@@ -18,7 +18,8 @@ def get_space_entries(g, F, N, k, j):
     if (k == 3) and (j == 0) and (N == 61):
          M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p'])
          aps = M['cusp_G_lambda_p']
-    for n,p in enumerate(prime_range(1,MAX_P+1)):
+    max_p = min(MAX_P, nth_prime(len(aps)))
+    for n,p in enumerate(prime_range(1,max_p+1)):
         e['n'] = p
         e['trace_an'] = aps[n-1]
         entries.append(e.copy())
