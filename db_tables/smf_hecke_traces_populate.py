@@ -1,4 +1,4 @@
-from sage.all import (prime_range)
+from sage.all import (prime_range, nth_prime)
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
@@ -13,7 +13,7 @@ def get_form_entries(g, F, N, k, j, orb):
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, orb)}
     f = db.smf_newforms.lucky(e, ['trace_lambda_p'])
     aps = f['trace_lambda_p']
-    max_p = MAX_P
+    max_p = min(MAX_P, nth_prime(len(aps)))
     if (k == 20) and (j == 0) and (N == 1):
         max_p = 19
     for n,p in enumerate(prime_range(1,max_p+1)):
