@@ -106,7 +106,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
                 is_lift = True
                 for n in range(len(orbit['lambda_p'])):
                     p = nth_prime(n+1)
-                    is_lift = (f['traces'][p-1] == orbit['lambda_p'][n].trace() - orbit['dim']*(p+p^2))
+                    is_lift = (f['traces'][p-1] == orbit['lambda_p'][n].trace() - orbit['dim']*(p+p**2))
                     if (not is_lift):
                         break
                 if (is_lift):
