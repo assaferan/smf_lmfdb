@@ -35,7 +35,7 @@ def create_entries(triple_list):
         if (N > 1):
             # adding the (3,0,61) space for demo
             if (k == 3) and (j == 0) and (N == 61):
-                entry = common_entry_values(k,j,N)
+                entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)
                 for ev in evs:
                     entry_sub = entry.copy()
@@ -45,7 +45,7 @@ def create_entries(triple_list):
                 continue
             continue
         for e in [0,1]:
-            entry = common_entry_values(k,j,e+1)
+            entry = common_entry_values(k,j,e+1,'P')
             sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
                          'eis_Q' : Hecke_Eigenvalues_Klingen_Eisenstein,
                          'cusp_P' : Hecke_Eigenvalues_Saito_Kurokawa,
@@ -67,7 +67,7 @@ def create_entries(triple_list):
                             entry_sub['qexp'] = get_qexp_Chi12()
                     entries.append(entry_sub)
         if (k == 20) and (j == 0) and (N == 1):
-            entry = common_entry_values(k,j,N)
+            entry = common_entry_values(k,j,N,'P')
             entry['hecke_ring_rank'] = 1
             entry['hecke_ring_power_basis'] = True
             entry['hecke_ring_cyclotomic_generator'] = 0

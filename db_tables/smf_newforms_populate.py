@@ -40,7 +40,7 @@ def create_entries(triple_list):
         if (N > 1):
             # adding the (3,0,61) space for demo
             if (k == 3) and (j == 0) and (N == 61):
-                entry = common_entry_values(k,j,N)
+                entry = common_entry_values(k,j,N, 'K')
                 forms = Hecke_Eigenforms_paramodular(k,j,N)
                 for f in forms:
                     entry_sub = entry.copy()
@@ -49,7 +49,7 @@ def create_entries(triple_list):
             else:
                 continue
         for e in [0,1]:
-            entry = common_entry_values(k,j,e+1)
+            entry = common_entry_values(k,j,e+1, 'P')
             sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
                          'eis_Q' : Hecke_Eigenforms_Klingen_Eisenstein,
                          'cusp_P': Hecke_Eigenforms_Saito_Kurokawa,
@@ -73,7 +73,7 @@ def create_entries(triple_list):
                     entries.append(entry_sub)
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):
-            entry = common_entry_values(k,j,N)
+            entry = common_entry_values(k,j,N, 'P')
             entry['is_cuspidal'] = True
             entry['aut_rep_type'] = 'G'
             entry['qexp_display'] = get_qexp_display_F20G()
