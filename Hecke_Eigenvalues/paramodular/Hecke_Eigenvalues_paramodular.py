@@ -100,6 +100,18 @@ def Hecke_Eigenforms_paramodular(k,j,N):
                                                    orbit['hecke_ring_index'].factor()]
         orbit['hecke_ring_index_proved'] = False
         orbit['related_objects'] = []
+        if orbit['aut_rep_type'] == 'P':
+            res = db.mf_newforms.search({'level' : N, 'weight' : 2*k-2, 'char_order' : 1, 'dim' : orbit['dim']}, ['label', 'traces'])
+            for f in res:
+                is_lift = True
+                for n in range(len(orbit['lambda_p'])):
+                    p = nth_prime(n+1)
+                    is_lift = (f['traces'][p-1] == orbit['lambda_p'][n].trace() - orbit['dim']*(p+p^2))
+                    if (not is_lift):
+                        break
+                if (is_lift):
+                    orbit['related_objects'] = [ 'ModularForm/GL2/Q/holomorphic/' + '/'.join(f['label'].split('.'))]
+                    break
             
         for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
             dummy = orbit.pop(field_name)
