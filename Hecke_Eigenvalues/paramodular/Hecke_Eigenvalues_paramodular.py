@@ -118,6 +118,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
+        nu = F.gen(0)
         basis = ev['hecke_ring'].basis()
         # basis = F.integral_basis()
         mat = Matrix([list(b) for b in basis])
@@ -126,7 +127,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
         ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat**(-1)]
         ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat**(-1)]
         inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
-        inv_basis = [sum([nums[i] * basis[i] for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
+        inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
         ev['hecke_ring_power_basis'] = False
         ev['hecke_ring_cyclotomic_generator'] = 0
         ev['hecke_ring_rank'] = F.degree()
