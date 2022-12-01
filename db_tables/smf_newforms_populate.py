@@ -1,3 +1,5 @@
+from sage.all import (nth_prime)
+
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
@@ -23,8 +25,9 @@ def entry_add_columns(e, ext_data):
     e['embedded_related_objects'] = []
     # sometimes we just have q-expansions and no hecke eigenvalues
     if 'trace_lambda_p_square' in e:
+        max_p = min(MAX_P, nth_prime(len(e['trace_lambda_p'])))
         e['trace_display'] = e['trace_lambda_p'][:4]
-        e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(MAX_P+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
+        e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
     return e
 
 def create_entries(triple_list):
