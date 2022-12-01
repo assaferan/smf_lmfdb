@@ -99,6 +99,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
                                                    orbit['hecke_ring_index'].factor()]
         orbit['hecke_ring_index_proved'] = False
+        orbit['related_objects'] = []
             
         for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
             dummy = orbit.pop(field_name)
