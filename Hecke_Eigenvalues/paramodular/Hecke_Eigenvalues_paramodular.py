@@ -15,13 +15,13 @@ def parse_omf5(k,j,N,hecke_ring=True):
         forms = al_signs[al_sign]
         for f in forms:
             pol = Qx([int(c) for c in f['field_poly'].split()[1:]])
-            pol = Qx(pari(pol).polredbest().polredabs())
-            coeffs = [int(c) for c in pol.coefficients(sparse=False)]
-            f['field_poly'] = coeffs
             F = NumberField(pol, name = "a")
             a = F.gens()[0]
             f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
             f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
+            # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
+            coeffs = [int(c) for c in pol.coefficients(sparse=False)]
+            f['field_poly'] = coeffs
             f['atkin_lehner_eigenvals'] = [[p, -1 if al_sign % p == 0 else 1] for p in prime_divisors(N)]
             f['atkin_lehner_string'] = ''.join(['-' if al_sign % p == 0 else '+' for p in prime_divisors(N)])
             if (hecke_ring):
@@ -80,7 +80,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         orbit['dim'] = len(orbit['field_poly']) - 1
         orbit['trace_lambda_p'] = [x.trace() for x in orbit['lambda_p']]
         orbit['trace_lambda_p_square'] = [x.trace() for x in orbit['lambda_p_square']]
-        orbit['is_polredabs'] = True
+        orbit['is_polredabs'] = False
         # For now, all our fields are absolute. Change that in the future
         orbit['relative_dim'] = orbit['dim']
         pol = Qx([int(c) for c in orbit['field_poly']])
@@ -88,7 +88,9 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         # !! TODO - check if that actually happens to be true
         orbit['field_poly_is_real_cyclotomic'] = False
         orbit['field_poly_root_of_unity'] = pol.is_cyclotomic(certificate=True)
-        orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : orbit['field_poly']}, 'label')
+        pol = Qx(pari(pol).polredbest().polredabs())
+        coeffs = [int(c) for c in pol.coefficients(sparse=False)]
+        orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : coeffs}, 'label')
         F = NumberField(pol, name = "a")
         orbit['field_disc'] = F.disc()
         orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
