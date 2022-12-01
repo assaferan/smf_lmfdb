@@ -355,7 +355,7 @@ def Hecke_Eigenvalues_Yoshida_all_evs(k,j,e,prime_bound=100):
             ev['hecke_ring_power_basis'] = False
             ev['hecke_ring_cyclotomic_generator'] = 0
             ev['hecke_ring_rank'] = F.degree()
-            ev['maxp'] = bound['lambda_p'] -1 
+            ev['maxp'] = bound['lambda_p'] - 1 
             ev['maxp_square'] = bound['lambda_p_square'] - 1
             for ht in hecke_types:
                 aps_lists = [ev_pair[0]['an'][p^exp[ht]-1] for p in prime_range(bound[ht])]

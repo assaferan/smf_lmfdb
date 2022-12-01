@@ -14,6 +14,10 @@ def get_space_entries(g, F, N, k, j):
     # !! TODO : For now, we take cusp_Y until we have cusp_G
     M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p'])
     aps = M['cusp_Y_lambda_p']
+    # manually adding (3,0,61)
+    if (k == 3) and (j == 0) and (N == 61):
+         M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p'])
+         aps = M['cusp_G_lambda_p']
     for n,p in enumerate(prime_range(1,MAX_P+1)):
         e['n'] = p
         e['trace_an'] = aps[n-1]
@@ -23,10 +27,13 @@ def get_space_entries(g, F, N, k, j):
 def create_entries(triple_list):
     entries = []
     for triple in triple_list:
-       k,j,N = triple
-       if (N == 1):
-           for F in ['K','S','P']:
-               entries += get_space_entries(2, F, N, k, j)
+        k,j,N = triple
+        if (N == 1):
+            for F in ['K','S','P']:
+                entries += get_space_entries(2, F, N, k, j)
+        # manually adding (3,0,61)
+        if (N == 61) and (k == 3) and (j == 0):
+            entries += get_space_entries(2, 'K', N, k, j)
        # else:
            # For now we don't yet have traces for the higher level spaces
            # if (N == 2) and (j % 2 == 0) and (k >= 3):

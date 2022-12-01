@@ -3,6 +3,7 @@ from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Hecke_Eigenvalues_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_lists_to_elements, nf_elts_to_lists
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_F20G, get_qexp_E4, get_qexp_E6, get_qexp_Chi10, get_qexp_Chi12
+from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_paramodular
 
 from lmfdb import db
 
@@ -32,6 +33,16 @@ def create_entries(triple_list):
             continue
         # right now we only have implemented forms for full level
         if (N > 1):
+            # adding the (3,0,61) space for demo
+            if (k == 3) and (j == 0) and (N == 61):
+                entry = common_entry_values(k,j,N)
+                evs = Hecke_Eigenvalues_paramodular(k,j,N)
+                for ev in evs:
+                    entry_sub = entry.copy()
+                    entry_sub.update(ev)
+                    entries.append(entry_sub)
+            else:
+                continue
             continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1)

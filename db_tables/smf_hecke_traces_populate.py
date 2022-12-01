@@ -25,16 +25,22 @@ def get_form_entries(g, F, N, k, j, orb):
 def create_entries(triple_list):
     entries = []
     for triple in triple_list:
-       k,j,N = triple
-       if (j % 2 == 1) or (k == 1):
-           continue
-       # right now we only have implemented forms for full level
-       if (N == 1):
-           for F in ['K', 'S', 'P']:
-               query = {'hecke_orbit_code' : make_orbit_code(2, F, N, k, j, 1, 1)}
-               num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
-               for i in range(num_orbits):
-                   entries += get_form_entries(2, F, N, k, j, i+1)
+        k,j,N = triple
+        if (j % 2 == 1) or (k == 1):
+            continue
+        # right now we only have implemented forms for full level
+        if (N == 1):
+            for F in ['K', 'S', 'P']:
+                query = {'hecke_orbit_code' : make_orbit_code(2, F, N, k, j, 1, 1)}
+                num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
+                for i in range(num_orbits):
+                    entries += get_form_entries(2, F, N, k, j, i+1)
+        # manually adding (3,0,61)
+        if (N == 61) and (k == 3) and (j == 0):
+            query = {'hecke_orbit_code' : make_orbit_code(2, 'K', N, k, j, 1, 1)}
+            num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
+            for i in range(num_orbits):
+                entries += get_form_entries(2, 'K', N, k, j, i+1)
     return entries
 
 def populate_smf_hecke_traces(triple_list):

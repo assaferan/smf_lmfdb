@@ -1,6 +1,7 @@
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
+from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenforms_paramodular
 
 from lmfdb import db
 
@@ -34,7 +35,16 @@ def create_entries(triple_list):
             continue
         # right now we only have implemented forms for full level
         if (N > 1):
-            continue
+            # adding the (3,0,61) space for demo
+            if (k == 3) and (j == 0) and (N == 61):
+                entry = common_entry_values(k,j,N)
+                forms = Hecke_Eigenforms_paramodular(k,j,N)
+                for f in forms:
+                    entry_sub = entry.copy()
+                    entry_sub.update(f)
+                    entries.append(entry_sub)
+            else:
+                continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1)
             sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
@@ -46,6 +56,7 @@ def create_entries(triple_list):
                 for f in forms:
                     entry_sub = entry.copy()
                     entry_sub.update(f)
+                    # adding several qexpansions for demonstration purposes
                     if (j == 0) and (N == 1) and (sub == 'eis_F'):
                         if (k == 4):
                             entry_sub['qexp_display'] = get_qexp_display_E4()

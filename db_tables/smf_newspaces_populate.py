@@ -3,6 +3,7 @@ from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
+from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_Traces_paramodular, num_forms_paramodular
 
 from lmfdb import db
 
@@ -35,6 +36,7 @@ def smf_level1_space(k,j,e):
                       num_forms_Saito_Kurokawa,
                       num_forms_Yoshida]
     entry['num_forms'] = sum([func(k,j,e) for func in num_form_funcs])
+    # manually handling (20,0,1) for demo
     if (k == 20) and (j == 0) and (e == 0):
         # manually fixing the (20,0) space for demonstration
         entry['num_forms'] += 1
@@ -64,6 +66,10 @@ def create_entries(triple_list):
                 entry = smf_level2_space(k,j)
                 entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
+            # manually handling (3,0,61) for demo
+            if (k == 3) and (j == 0) and (N == 61):
+                entry.update(Hecke_Eigenvalues_Traces_paramodular(k,j,N))
+                entry['num_forms'] = num_forms_paramodular(k,j,N)
         entries.append(entry)
     return entries
 
