@@ -1,6 +1,8 @@
-from sage.all import (Matrix, NumberField, nth_prime, PolynomialRing, prime_divisors, QQ)
+from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, QQ)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
+
+from lmfdb import db
 
 def parse_omf5(k,j,N,hecke_ring=True):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/"
@@ -12,8 +14,11 @@ def parse_omf5(k,j,N,hecke_ring=True):
     for al_sign in al_signs:
         forms = al_signs[al_sign]
         for f in forms:
-            f['field_poly'] = Qx([int(c) for c in f['field_poly'].split()[1:]])
-            F = NumberField(f['field_poly'], name = "a")
+            pol = Qx([int(c) for c in f['field_poly'].split()[1:]])
+            pol = Qx(pari(pol).polredbest().polredabs())
+            coeffs = [int(c) for c in pol.coefficients(sparse=False)]
+            f['field_poly'] = coeffs
+            F = NumberField(pol, name = "a")
             a = F.gens()[0]
             f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
             f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
@@ -67,20 +72,24 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
     '''
     forms = parse_omf5(k,j,N)
-
+    Qx = PolynomialRing(QQ, name="x")
+    x = Qx.gens()[0]
+    
     for orbit in forms:
         orbit['is_cuspidal'] = True
-        orbit['dim'] = orbit['field_poly'].degree()
+        orbit['dim'] = len(orbit['field_poly']) - 1
         orbit['trace_lambda_p'] = [x.trace() for x in orbit['lambda_p']]
         orbit['trace_lambda_p_square'] = [x.trace() for x in orbit['lambda_p_square']]
-        orbit['is_polredabs'] = False
+        orbit['is_polredabs'] = True
         # For now, all our fields are absolute. Change that in the future
         orbit['relative_dim'] = orbit['dim']
-        orbit['field_poly_is_cyclotomic'] = orbit['field_poly'].is_cyclotomic()
+        pol = Qx([int(c) for c in orbit['field_poly']])
+        orbit['field_poly_is_cyclotomic'] = pol.is_cyclotomic()
         # !! TODO - check if that actually happens to be true
         orbit['field_poly_is_real_cyclotomic'] = False
-        orbit['field_poly_root_of_unity'] = orbit['field_poly'].is_cyclotomic(certificate=True)
-        F = NumberField(orbit['field_poly'], name = "a")
+        orbit['field_poly_root_of_unity'] = pol.is_cyclotomic(certificate=True)
+        orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : orbit['field_poly']}, 'label')
+        F = NumberField(pol, name = "a")
         orbit['field_disc'] = F.disc()
         orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
         if F.disc() < 0:
@@ -102,8 +111,11 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     meant to be uploaded to smf_hecke_nf
     '''
     evs = parse_omf5(k,j,N)
+    Qx = PolynomialRing(QQ, name="x")
+    x = Qx.gens()[0]
+    
     for ev in evs:
-        F = NumberField(ev['field_poly'], name = "nu")
+        F = NumberField(Qx(ev['field_poly']), name = "nu")
         basis = ev['hecke_ring'].basis()
         # basis = F.integral_basis()
         mat = Matrix([list(b) for b in basis])
