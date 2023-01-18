@@ -20,6 +20,14 @@ def IK_legendre(a,p):
         if (p % 4 == 1):
             return 1
         return -1
+    if a == -3:
+        if p == 3:
+            return 0
+        if (p % 3 == 1):
+            return 1
+        return -1
+    if a == 3:
+        return IK_legendre(-1,p) * IK_legendre(-3,p)    
 
 def mux(a,n):
     m = len(a)
@@ -211,8 +219,10 @@ def cusp_form_gamma_0_p_chi_dim(k,j,p,ch):
      [3, 4, 11, 11, 27, 25, 51, 46, 84, 74, 128, 116, 187, 168, 258, 232],
      [5, 7, 18, 19, 42, 43, 77, 74, 123, 118, 187, 181, 269, 256, 365, 349]]
     
-    Example #2 (e = DirichletGroup(3, QQ).0) cf p. 251
-    Warning with DirichletGroup(p, CC).0 got some floating point numbers... not cool)
+    Example #2 
+    e = DirichletGroup(3, QQ).0 cf p. 251
+    can do 
+    e = DirichletGroup(p,CyclotomicField(p-1)).0
     >>>[[cusp_form_gamma_0_p_chi_dim(k,j,3,e) for k in range(4,20)] for j in range(0,9) if is_even(j)]# doctest: +NORMALIZE_WHITESPACE 
     [[0, 1, 0, 4, 0, 7, 0, 12, 0, 20, 1, 29, 1, 39, 4, 55],
      [0, 1, 0, 5, 1, 10, 3, 21, 10, 36, 17, 53, 28, 79, 47, 112],
@@ -224,3 +234,153 @@ def cusp_form_gamma_0_p_chi_dim(k,j,p,ch):
     dim = H_part 
     return dim
 
+'''
+For j=0, k=3 or 4 and chi trivial, we use Theorems 2.2 and 2.6
+of Ibukiyama:
+Dimension Formulas of Siegel Modular Forms of Weight 3 
+and Supersingular Abelian Surfaces(Revised version).
+We start with the case k=3 (Theorem 2.2) 
+'''
+
+def case1(p):
+    if (p % 8) == 1:
+       return -QQ(2)**(-1)
+    if (p % 8) == 3:
+       return -QQ(2)**(-2)
+    if (p % 8) == 5:
+       return -QQ(2)**(-2)
+    if (p % 8) == 7:
+       return 0
+                      
+def case2(p):
+    if (p % 5) == 1:
+       return -4*QQ(5)**(-1)
+    if (p % 5) == 2:
+       return 0
+    if (p % 5) == 3:
+       return 0
+    if (p % 5) == 4:
+       return 0
+    if p == 5:
+       return -QQ(5)**(-1)
+       
+       
+def cusp_form_gamma_0_p_k_is_3_dim(p):
+    '''
+    This implements the formula of Theorem 2.2
+    Returns the dimension of S_{3}(Gamma_0(p))
+    p prime 
+    '''
+    if p == 2:
+        return  0
+    if p == 3:
+        return  0
+    if p >= 5:
+        a = (p+1)*(p**2+1)*QQ(2880)**(-1)-7*((p+1)**2)*QQ(576)**(-1)+55*(p+1)*QQ(288)**(-1)
+        b = 1+ IK_legendre(-1,p)  
+        c = 1+ IK_legendre(-3,p)
+        d = (p-23)*c*QQ(36)**(-1)
+        e = (2*p-25)*b*QQ(96)**(-1)
+        f = -b*c*QQ(12)**(-1)
+        return a+d+e+f+case1(p)+case2(p)
+ 
+def case3(p):
+       if (p % 8) == 1:
+         return QQ(2)**(-1)
+       if (p % 8) == 3:
+         return QQ(2)**(-2)
+       if (p % 8) == 5:
+         return QQ(2)**(-2)
+       if (p % 8) == 7:
+         return 0
+
+def case4(p):
+      if (p % 12) == 1:
+       return QQ(3)**(-1)
+      if (p % 12) == 3:
+       return QQ(2)**(-2)*QQ(3)**(-1)
+      if (p % 12) == 5:
+       return QQ(2)**(-1)*QQ(3)**(-1)
+      if (p % 12) == 7:
+       return QQ(2)**(-1)*QQ(3)**(-1)
+      if (p % 12) == 11:
+       return 0
+       
+               
+def cusp_form_gamma_0_p_k_is_4_dim(p):
+    '''
+    This implements the formula of Theorem 2.6
+    Returns the dimension of S_{4}(Gamma_0(p))
+    p prime.
+    Unfortunately, the formula given there is wrong, need to look at
+    Hashimoto: 
+    The dimension of the spaces of cusp forms on Siegel upper half-plane of degree two. I, 1983 
+    Theorem 7.1 to get the right expression, thank you Ibukiyama-san!
+    '''
+    if p == 2:
+        return  0
+    if p == 3:
+        return  1
+    if p == 5:
+        return  1    
+    if p >= 7:
+        a = (p+1)*(p**2+1)*QQ(576)**(-1)+QQ(7)*((p+1)**2)*QQ(192)**(-1)-QQ(11)*(p+12)*QQ(288)**(-1)
+        b = (p-1)*IK_legendre(-3,p)*QQ(36)**(-1)   
+        c = (2*p-41)*IK_legendre(-1,p)*QQ(96)**(-1)
+        d = IK_legendre(3,p)*QQ(12)**(-1)
+        return a+b+c-d+case3(p)+case4(p)       
+
+'''
+For j=0, k=2 and chi trivial, we use Theorems 1.3 
+C. POOR and D. S. YUEN
+Dimensions of Cusp Forms for Gamma_0(p) in Degree Two and Small Weights
+Abh. Math. Sem. Univ. Hamburg 77 (2007), 59-80
+This is fo p = 2, ...,41
+'''
+def cusp_form_gamma_0_p_k_is_2_dim(p):
+      if p == 2 or p == 3 or p == 5 or p == 7 or p == 13:
+       return 0
+      if p == 11 or p == 17 or p == 19: 
+       return 1
+      if p == 23 or p == 29 or p == 31: 
+       return 3
+      if p  == 37:
+       return 2
+      if p  == 41:
+       return 6
+
+'''
+For j=0, k=1  and chi trivial, we use 
+T. IBUKIYAMA and N. SKORUPPA, 
+A vanishing theorem for Siegel modular forms of weight one. 
+Abh. Math. Sem. Univ. Hamburg 77 (2007), 229-235
+We have 
+S_{1}(Gamma_0(N))=0 for any N
+'''
+
+def cusp_form_gamma_0_N_k_is_1_dim(N):
+      return 0
+
+def scalar_valued_form_gamma_0_p_dim(p,k):
+      f = ConstantFunction(1)
+      if (k % 2) == 1 and k>=5: 
+          return cusp_form_gamma_0_p_chi_dim(k,0,p,f)
+      if k  == 3 : 
+          return cusp_form_gamma_0_p_k_is_3_dim(p)
+      if k == 1:
+          return 0              
+      if (k % 2) == 0 and k>=6:
+          return cusp_form_gamma_0_p_chi_dim(k,0,p,f)+2*dimension_cusp_forms(Gamma0(p),k)+3       
+      if k == 4:
+          return cusp_form_gamma_0_p_k_is_4_dim(p)+2*dimension_cusp_forms(Gamma0(p),4)+3
+      if k == 2:
+          return cusp_form_gamma_0_p_k_is_2_dim(p)+2*dimension_cusp_forms(Gamma0(p),2)+1
+          
+
+def vector_valued_form_gamma_0_p_dim(p,k,j):
+      f = ConstantFunction(1)
+      if (k % 2) == 1 and k>=5: 
+          return cusp_form_gamma_0_p_chi_dim(k,j,p,f)          
+      if (k % 2) == 0 and k>=5: 
+          return cusp_form_gamma_0_p_chi_dim(k,j,p,f)+2*dimension_cusp_forms(Gamma0(p),j+k)     
+          
