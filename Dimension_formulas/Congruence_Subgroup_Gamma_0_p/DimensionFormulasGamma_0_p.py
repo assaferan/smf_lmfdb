@@ -1,8 +1,9 @@
 from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree)
 
 '''
-Here we implement the dimenion formulas for cuspidal spaces of paramodular forms,
-following the paper of Wakatsuki:
+Here we implement the dimension formulas for spaces of modular forms 
+on the congruence subgroup Gamma_0[p]. For cusp forms, we follow 
+the paper of Wakatsuki:
 Dimension formulas for spaces of vector-valued Siegel cusp forms of degree two
 Journal of Number Theory 132 (2012) 200–253
 '''
@@ -315,7 +316,7 @@ def cusp_form_gamma_0_p_k_is_4_dim(p):
     Unfortunately, the formula given there is wrong, need to look at
     Hashimoto: 
     The dimension of the spaces of cusp forms on Siegel upper half-plane of degree two. I, 1983 
-    Theorem 7.1 to get the right expression, thank you Ibukiyama-san!
+    Theorem 7.1 to get the right expression, thank you Ibukiyama-san for fixing it!
     '''
     if p == 2:
         return  0
