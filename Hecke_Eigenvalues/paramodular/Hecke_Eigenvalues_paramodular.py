@@ -6,7 +6,7 @@ from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 from lmfdb import db
 
 def parse_omf5(k,j,N,hecke_ring=True):
-    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/"
+    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
@@ -66,7 +66,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     return traces   
 
 def num_forms_paramodular(k,j,N):
-    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/"
+    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
     pickled = open(fname, "rb").read()
     forms = pickle.loads(pickled)
