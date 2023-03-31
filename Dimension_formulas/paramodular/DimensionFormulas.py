@@ -533,7 +533,7 @@ def paramodular_non_lift_new_cusp_dim(k,j,N):
     assert dim >= 0
     return dim
 
-def smf_dims_paramodular(k,j,N):
+def smf_dims_paramodular_squarefree(k,j,N):
     space = {}
     space['degree'] =  2 
     space['family'] = 'K' 
@@ -556,6 +556,32 @@ def smf_dims_paramodular(k,j,N):
         space['old_' + col] = space[col] - space['new_' + col]
     space['old_cusp_dim'] = space['cusp_dim'] - space['new_cusp_dim']
     return space
+
+def smf_dims_paramodular_not_squarefree(k,j,N):
+    space = {}
+    space['degree'] =  2 
+    space['family'] = 'K' 
+    space['level'] = N 
+    space['weight'] = [k, j]
+    space['char_orbit_index'] = 1
+    space['cusp_dim'] = 'NULL'
+    space['cusp_Y_dim'] = 0
+    space['cusp_P_dim'] = Saito_Kurokawa_lift_dim(k,N) if j == 0 else 0
+    space['cusp_G_dim'] = 'NULL'
+    space['new_cusp_dim'] = 'NULL'
+    space['new_cusp_Y_dim'] = 0
+    space['new_cusp_P_dim'] = Saito_Kurokawa_new_lift_dim(k,N) if j == 0 else 0
+    space['new_cusp_G_dim'] = 'NULL'
+    for aut_type in ['Y', 'P']:
+        col = 'cusp_' + aut_type + '_dim'
+        space['old_' + col] = space[col] - space['new_' + col]
+    space['old_cusp_dim'] = 'NULL'
+    return space
+
+def smf_dims_paramodular(k,j,N):
+    if is_squarefree(N):
+        return smf_dims_paramodular_squarefree(k,j,N)
+    return smf_dims_paramodular_not_squarefree(k,j,N)
 
 def H1_prime(k,j,N):
     C = QQ(2)**(-7) * QQ(3)**(-3) * QQ(5)**(-1)

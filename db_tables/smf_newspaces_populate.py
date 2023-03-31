@@ -66,10 +66,13 @@ def create_entries(triple_list):
                 entry = smf_level2_space(k,j)
                 entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
-            # manually handling (3,0,61) for demo
-            if (k == 3) and (j == 0) and (N == 61):
+            if (k == 3) and (j == 0) and (not is_square(N)):
                 entry.update(Hecke_Eigenvalues_Traces_paramodular(k,j,N))
-                entry['num_forms'] = num_forms_paramodular(k,j,N)
+                entry['num_forms'], num_G = num_forms_paramodular(k,j,N)
+                if not is_squarefree(N):
+                    entry['new_cusp_G_dim'] = num_G
+                else:
+                    assert entry['new_cusp_G_dim'] == num_G
         entries.append(entry)
     return entries
 

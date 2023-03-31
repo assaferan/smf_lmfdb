@@ -1,4 +1,4 @@
-from sage.all import (is_squarefree)
+from sage.all import (is_square, is_squarefree)
 from smf_lmfdb.db_tables.smf_newspaces_create_table import create_table_smf_newspaces
 from smf_lmfdb.db_tables.smf_newforms_create_table import create_table_smf_newforms
 from smf_lmfdb.db_tables.smf_hecke_nf_create_table import create_table_smf_hecke_nf
@@ -26,6 +26,7 @@ def get_box_triples(max_k = 20, max_j = 20):
     triple_list = [(k,j,1) for k in range(max_k+1) for j in range(max_j+1)]
     triple_list += [(k,j,N) for k in range(3,max_k+1) for j in range(max_j+1) for N
                     in range(2,N_bound(2*k+j-2)+1) if is_squarefree(N)]
+    triple_list += [(3,0,N) for N in range(2,N_bound(2*k+j-2)+1) if (not is_squarefree(N)) and (not is_square(N))]
     return triple_list
 
 def create_and_populate_smf_newspaces():

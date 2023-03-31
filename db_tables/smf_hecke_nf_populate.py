@@ -32,9 +32,8 @@ def create_entries(triple_list):
         if (j % 2 == 1) or (k == 1):
             continue
         # right now we only have implemented forms for full level
-        if (N > 1):
-            # adding the (3,0,61) space for demo
-            if (k == 3) and (j == 0) and (N == 61):
+        if (not is_square(N)):
+            if (k == 3) and (j == 0):
                 entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)
                 for ev in evs:

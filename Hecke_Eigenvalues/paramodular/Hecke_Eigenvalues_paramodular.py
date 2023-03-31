@@ -1,3 +1,4 @@
+import pickle
 from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, QQ)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
@@ -9,38 +10,42 @@ def parse_omf5(k,j,N,hecke_ring=True):
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
-    al_signs = eval(open(fname).read())
+    pickled = open(fname, "rb").read()
+    forms = pickle.loads(pickled)
     ret = []
-    for al_sign in al_signs:
-        forms = al_signs[al_sign]
-        for f in forms:
-            pol = Qx([int(c) for c in f['field_poly'].split()[1:]])
-            F = NumberField(pol, name = "a")
-            a = F.gens()[0]
-            f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
-            f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
-            # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
-            coeffs = [int(c) for c in pol.coefficients(sparse=False)]
-            f['field_poly'] = coeffs
-            f['atkin_lehner_eigenvals'] = [[p, -1 if al_sign % p == 0 else 1] for p in prime_divisors(N)]
-            f['atkin_lehner_string'] = ''.join(['-' if al_sign % p == 0 else '+' for p in prime_divisors(N)])
-            if (hecke_ring):
-                # !!! This can be very slow
-                # hecke_ring = F.order(orbit['lambda_p'])
-                index = 0
-                p_idx = 0
-                nbound = 0
-                while ((index != 1) and (p_idx < len(f['lambda_p']))):
-                    H = F.order(f['lambda_p'][:p_idx+1])
-                    new_index = H.index_in(F.ring_of_integers())
-                    if (new_index != index):
-                        index = new_index
-                        nbound = p_idx
-                        p_idx += 1
-                f['hecke_ring'] = H
-                f['hecke_ring_index'] = index
-                f['hecke_ring_generator_nbound'] = nbound
-                        
+    if (len(forms) > 0):
+        f = forms[0]
+        bad_ps = [p for p in primes_first_n(len(f['lambda_p'])) if N % p == 0]
+        ps = primes_first_n(len(f['lambda_p']) + len(bad_ps))
+        good_ps = [p for p in ps if p not in bad_ps]
+        assert len(good_ps) == len(f['lambda_p'])
+        
+    for f in forms:
+        pol = Qx(f['field_poly'])
+        F = NumberField(pol, name = "a")
+        a = F.gens()[0]
+        f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
+        f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
+        # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
+        f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
+        f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
+                                for i in range(len(f['lambda_p_square']))]
+        if (hecke_ring):
+            # !!! This can be very slow
+            # hecke_ring = F.order(orbit['lambda_p'])
+            index = 0
+            p_idx = 0
+            nbound = 0
+            while ((index != 1) and (p_idx < len(f['lambda_p']))):
+                H = F.order(f['lambda_p'][:p_idx+1])
+                new_index = H.index_in(F.ring_of_integers())
+                if (new_index != index):
+                    index = new_index
+                    nbound = p_idx
+                    p_idx += 1
+            f['hecke_ring'] = H
+            f['hecke_ring_index'] = index
+            f['hecke_ring_generator_nbound'] = nbound            
             ret.append(f)
     return ret
 
@@ -63,8 +68,11 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-    forms = eval(open(fname).read())
-    return sum([len(forms[al_sign]) for al_sign in forms])
+    pickled = open(fname, "rb").read()
+    forms = pickle.loads(pickled)
+    # forms = eval(open(fname).read())
+    # return sum([len(forms[al_sign]) for al_sign in forms])
+    return len(forms), len([f for f in forms if f['aut_rep_type'] == 'G'])
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
@@ -99,19 +107,8 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
                                                    orbit['hecke_ring_index'].factor()]
         orbit['hecke_ring_index_proved'] = False
-        orbit['related_objects'] = []
-        if orbit['aut_rep_type'] == 'P':
-            res = db.mf_newforms.search({'level' : N, 'weight' : 2*k-2, 'char_order' : 1, 'dim' : orbit['dim']}, ['label', 'traces'])
-            for f in res:
-                is_lift = True
-                for n in range(len(orbit['lambda_p'])):
-                    p = nth_prime(n+1)
-                    is_lift = (f['traces'][p-1] == orbit['lambda_p'][n].trace() - orbit['dim']*(p+p**2))
-                    if (not is_lift):
-                        break
-                if (is_lift):
-                    orbit['related_objects'] = [ 'ModularForm/GL2/Q/holomorphic/' + '/'.join(f['label'].split('.'))]
-                    break
+        if 'related_objects' not in orbit:
+            orbit['related_objects'] = []
             
         for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
             dummy = orbit.pop(field_name)
