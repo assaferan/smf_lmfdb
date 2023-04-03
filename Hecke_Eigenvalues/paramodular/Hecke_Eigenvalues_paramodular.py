@@ -32,26 +32,26 @@ def parse_omf5(k,j,N,hecke_ring=True):
             f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
             f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
                                     for i in range(len(f['lambda_p_square']))]
-        if (hecke_ring):
-            print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
-            # !!! This can be very slow
-            # hecke_ring = F.order(orbit['lambda_p'])
-            index = 0
-            p_idx = 0
-            nbound = 0
-            while (type(f['lambda_p'][p_idx]) == str):
-                p_idx += 1
-            while ((index != 1) and (p_idx < len(f['lambda_p']))):
-                print("p_idx = ", p_idx)
-                H = F.order([x for x in f['lambda_p'][:p_idx+1] if type(x) != str])
-                new_index = H.index_in(F.ring_of_integers())
-                if (new_index != index):
-                    index = new_index
-                    nbound = p_idx
-                p_idx += 1
-            f['hecke_ring'] = H
-            f['hecke_ring_index'] = index
-            f['hecke_ring_generator_nbound'] = nbound            
+            if (hecke_ring):
+                print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
+                # !!! This can be very slow
+                # hecke_ring = F.order(orbit['lambda_p'])
+                index = 0
+                p_idx = 0
+                nbound = 0
+                while (type(f['lambda_p'][p_idx]) == str):
+                    p_idx += 1
+                while ((index != 1) and (p_idx < len(f['lambda_p']))):
+                    print("p_idx = ", p_idx)
+                    H = F.order([x for x in f['lambda_p'][:p_idx+1] if type(x) != str])
+                    new_index = H.index_in(F.ring_of_integers())
+                    if (new_index != index):
+                        index = new_index
+                        nbound = p_idx
+                    p_idx += 1
+                f['hecke_ring'] = H
+                f['hecke_ring_index'] = index
+                f['hecke_ring_generator_nbound'] = nbound            
             ret.append(f)
     return ret
 
