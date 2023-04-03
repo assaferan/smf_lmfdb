@@ -22,27 +22,32 @@ def parse_omf5(k,j,N,hecke_ring=True):
         
     for f in forms:
         pol = Qx(f['field_poly'])
-        F = NumberField(pol, name = "a")
+        # F = NumberField(pol, name = "a")
+        F = f['lambda_p'][0].parent()
         a = F.gens()[0]
-        f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
-        f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
+        # f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
+        # f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
         # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
         f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
         f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
                                 for i in range(len(f['lambda_p_square']))]
         if (hecke_ring):
+            print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
             # !!! This can be very slow
             # hecke_ring = F.order(orbit['lambda_p'])
             index = 0
             p_idx = 0
             nbound = 0
+            while (type(f['lambda_p'][p_idx]) == str):
+                p_idx += 1
             while ((index != 1) and (p_idx < len(f['lambda_p']))):
-                H = F.order(f['lambda_p'][:p_idx+1])
+                print("p_idx = ", p_idx)
+                H = F.order([x for x in f['lambda_p'][:p_idx+1] if type(x) != str])
                 new_index = H.index_in(F.ring_of_integers())
                 if (new_index != index):
                     index = new_index
                     nbound = p_idx
-                    p_idx += 1
+                p_idx += 1
             f['hecke_ring'] = H
             f['hecke_ring_index'] = index
             f['hecke_ring_generator_nbound'] = nbound            
@@ -75,7 +80,7 @@ def num_forms_paramodular(k,j,N):
     forms = pickle.loads(pickled)
     # forms = eval(open(fname).read())
     # return sum([len(forms[al_sign]) for al_sign in forms])
-    return len(forms), len([f for f in forms if f['aut_rep_type'] == 'G'])
+    return len(forms), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
@@ -89,8 +94,8 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     for orbit in forms:
         orbit['is_cuspidal'] = True
         orbit['dim'] = len(orbit['field_poly']) - 1
-        orbit['trace_lambda_p'] = [x.trace() for x in orbit['lambda_p']]
-        orbit['trace_lambda_p_square'] = [x.trace() for x in orbit['lambda_p_square']]
+        orbit['trace_lambda_p'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p']]
+        orbit['trace_lambda_p_square'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p_square']]
         orbit['is_polredabs'] = False
         # For now, all our fields are absolute. Change that in the future
         orbit['relative_dim'] = orbit['dim']

@@ -1,4 +1,4 @@
-from sage.all import (prime_range, nth_prime)
+from sage.all import (prime_range, nth_prime, is_square)
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
@@ -35,8 +35,8 @@ def create_entries(triple_list):
                 num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
                 for i in range(num_orbits):
                     entries += get_form_entries(2, F, N, k, j, i+1)
-        # manually adding (3,0,61)
-        if (N == 61) and (k == 3) and (j == 0):
+        # manually adding (3,0,N)
+        if (not is_square(N)) and (k == 3) and (j == 0):
             query = {'hecke_orbit_code' : make_orbit_code(2, 'K', N, k, j, 1, 1)}
             num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
             for i in range(num_orbits):

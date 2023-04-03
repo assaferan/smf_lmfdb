@@ -1,4 +1,4 @@
-from sage.all import (prime_range, nth_prime)
+from sage.all import (prime_range, nth_prime, is_square)
 from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
@@ -14,8 +14,8 @@ def get_space_entries(g, F, N, k, j):
     # !! TODO : For now, we take cusp_Y until we have cusp_G
     M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p'])
     aps = M['cusp_Y_lambda_p']
-    # manually adding (3,0,61)
-    if (k == 3) and (j == 0) and (N == 61):
+    # manually adding (3,0,N)
+    if (k == 3) and (j == 0) and (not is_square(N)):
          M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p'])
          aps = M['cusp_G_lambda_p']
     max_p = min(MAX_P, nth_prime(len(aps)))
@@ -32,8 +32,8 @@ def create_entries(triple_list):
         if (N == 1):
             for F in ['K','S','P']:
                 entries += get_space_entries(2, F, N, k, j)
-        # manually adding (3,0,61)
-        if (N == 61) and (k == 3) and (j == 0):
+        # manually adding (3,0,N)
+        if (not is_square(N)) and (k == 3) and (j == 0):
             entries += get_space_entries(2, 'K', N, k, j)
        # else:
            # For now we don't yet have traces for the higher level spaces

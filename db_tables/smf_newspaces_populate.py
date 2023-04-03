@@ -1,4 +1,4 @@
-from sage.all import (is_square)
+from sage.all import (is_square, is_squarefree)
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
@@ -69,11 +69,11 @@ def create_entries(triple_list):
             entry = smf_dims_paramodular(k,j,N)
             if (k == 3) and (j == 0) and (not is_square(N)):
                 entry.update(Hecke_Eigenvalues_Traces_paramodular(k,j,N))
-                entry['num_forms'], num_G = num_forms_paramodular(k,j,N)
+                entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
                 if not is_squarefree(N):
-                    entry['new_cusp_G_dim'] = num_G
+                    entry['new_cusp_G_dim'] = dim_G_new
                 else:
-                    assert entry['new_cusp_G_dim'] == num_G
+                    assert entry['new_cusp_G_dim'] == dim_G_new
         entries.append(entry)
     return entries
 

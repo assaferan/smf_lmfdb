@@ -57,5 +57,7 @@ def nf_elts_to_lists(elts, inv_basis):
     def to_list(elt):
         if type(elt) == int:
             return [elt] + [0 for i in range(d-1)]
+        elif type(elt) == str:
+            return elt
         return list(elt)
-    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) for elt in elts]
+    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]
