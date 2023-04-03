@@ -23,14 +23,15 @@ def parse_omf5(k,j,N,hecke_ring=True):
     for f in forms:
         pol = Qx(f['field_poly'])
         # F = NumberField(pol, name = "a")
-        F = f['lambda_p'][0].parent()
-        a = F.gens()[0]
-        # f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
-        # f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
-        # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
-        f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
-        f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
-                                for i in range(len(f['lambda_p_square']))]
+        if len(f['lambda_p']) > 0:
+            F = f['lambda_p'][0].parent()
+            a = F.gens()[0]
+            # f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
+            # f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
+            # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
+            f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
+            f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
+                                    for i in range(len(f['lambda_p_square']))]
         if (hecke_ring):
             print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
             # !!! This can be very slow
@@ -69,7 +70,16 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     for f in forms:
         for ht in hecke_types:
             for i in range(len(f[ht])):
-                traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f[ht][i].trace()
+                if type(f[ht][i]) == str:
+                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
+                else:
+                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f[ht][i].trace()
+            if len(f[ht]) == 0:
+                for i in range(len(f['trace_' + ht])):
+                    if type(f['trace_' + ht][i]) == str:
+                        traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
+                    else:
+                        traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
     
     return traces   
 
