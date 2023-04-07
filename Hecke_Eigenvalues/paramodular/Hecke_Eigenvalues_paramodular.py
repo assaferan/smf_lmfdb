@@ -24,10 +24,6 @@ def parse_omf5(k,j,N,hecke_ring=True):
         pol = Qx(f['field_poly'])
         # F = NumberField(pol, name = "a")
         if len(f['lambda_p']) > 0:
-            F = f['lambda_p'][0].parent()
-            a = F.gens()[0]
-            # f['lambda_p'] = [F(lamda) for lamda in f['lambda_p']]
-            # f['lambda_p_square'] = [F(lamda) for lamda in f['lambda_p_square']]
             # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
             f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
             f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
@@ -36,6 +32,8 @@ def parse_omf5(k,j,N,hecke_ring=True):
                 print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
                 # !!! This can be very slow
                 # hecke_ring = F.order(orbit['lambda_p'])
+                F = f['lambda_p'][0].parent()
+                a = F.gens()[0]
                 index = 0
                 p_idx = 0
                 nbound = 0
@@ -53,6 +51,10 @@ def parse_omf5(k,j,N,hecke_ring=True):
                 f['hecke_ring_index'] = index
                 f['hecke_ring_generator_nbound'] = nbound            
             ret.append(f)
+        else:
+            f['trace_lambda_p'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
+            f['trace_lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p_square'][good_ps.index(ps[i])]
+                                    for i in range(len(f['trace_lambda_p_square']))]
     return ret
 
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
@@ -147,13 +149,14 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
         nu = F.gen(0)
-        basis = ev['hecke_ring'].basis()
-        # basis = F.integral_basis()
-        mat = Matrix([list(b) for b in basis])
-        ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
-        ev['hecke_ring_numerators'] = [list(row.denominator()*row) for row in mat]  
-        ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat**(-1)]
-        ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat**(-1)]
+        if 'hecke_ring' in ev:
+            basis = ev['hecke_ring'].basis()
+            mat = Matrix([list(b) for b in basis])
+            ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
+            ev['hecke_ring_numerators'] = [list(row.denominator()*row) for row in mat]  
+            ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat**(-1)]
+            ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat**(-1)]
+            
         inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
         inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
         ev['hecke_ring_power_basis'] = False
