@@ -50,7 +50,7 @@ def get_nf_basis(ev):
 
 def nf_lists_to_elements(coeffs, basis):
     d = len(basis)
-    return [sum([coeff[i]*basis[i] for i in range(d)]) for coeff in coeffs]
+    return [sum([coeff[i]*basis[i] for i in range(d)]) if type(coeff) != str else coeff for coeff in coeffs]
 
 def nf_elts_to_lists(elts, inv_basis):
     d = len(inv_basis)
@@ -61,3 +61,18 @@ def nf_elts_to_lists(elts, inv_basis):
             return elt
         return list(elt)
     return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]
+
+
+#def nf_lists_to_elements(coeffs, basis):
+#    d = len(basis)
+#    return [sum([coeff[i]*basis[i] for i in range(d)]) for coeff in coeffs]
+
+#def nf_elts_to_lists(elts, inv_basis):
+#    d = len(inv_basis)
+#    def to_list(elt):
+#        if type(elt) == int:
+#            return [elt] + [0 for i in range(d-1)]
+#        elif type(elt) == str:
+#            return elt
+#        return list(elt)
+#    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]

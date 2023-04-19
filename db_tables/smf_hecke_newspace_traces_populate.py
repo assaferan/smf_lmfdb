@@ -33,7 +33,7 @@ def create_entries(triple_list):
             for F in ['K','S','P']:
                 entries += get_space_entries(2, F, N, k, j)
         # manually adding (3,0,N)
-        if (not is_square(N)) and (k == 3) and (j == 0):
+        if (not is_square(N)) and (k == 3) and (j == 0) and (N <= 100):
             entries += get_space_entries(2, 'K', N, k, j)
        # else:
            # For now we don't yet have traces for the higher level spaces

@@ -1,4 +1,4 @@
-from sage.all import *
+from sage.all import (factor, load, Integer, is_prime, PowerSeriesRing, prime_range, ZZ)
 from smf_lmfdb.db_tables.common_populate import MAX_P
 import os
 cwd = os.getcwd()
@@ -97,8 +97,14 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
     prime_idx = {primes[i] : i for i in range(len(primes))}
     for n in range(1,prec+1):
         if n == 1:
-            ZZ = ap[0].parent()
-            an = ZZ(1)
+            idx = 0
+            while (ap[idx] == 'NULL'):
+                idx += 1
+            if (type(ap[idx]) == int):
+                F = ZZ
+            else:
+                F = ap[idx].parent()
+            an = F(1)
         elif is_prime(n):
             an = ap[prime_idx[n]]
         else:
@@ -112,14 +118,23 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
                     an = ap2[i]
                 else:
                     mu = j + 2*k - 3
-                    ZZ = ap[i].parent()
-                    R = PowerSeriesRing(ZZ, 't')
-                    t = R.gen()
-                    P = 1 - p**(mu - 1) * t**2
-                    Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
-                    an = (P/Q).coefficients()[r]
+                    if (ap[i] == 'NULL'):
+                        an = 'NULL'
+                    else:
+                        if (type(ap[i]) == int):
+                            F = ZZ
+                        else:
+                            F = ap[i].parent()
+                        R = PowerSeriesRing(F, 't')
+                        t = R.gen()
+                        P = 1 - p**(mu - 1) * t**2
+                        Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
+                        an = (P/Q).coefficients()[r]
             else:  # a_m*a_r := a_{mr} and we know all a_i for i<n.
                 m  = fac[0][0]**fac[0][1]
-                an = a[m]*a[n//m]
+                if (a[m] == 'NULL') or (a[n//m] == 'NULL'):
+                    an = 'NULL'
+                else:
+                    an = a[m]*a[n//m]
         a += [an]
     return a

@@ -1,96 +1,100 @@
-import pickle
-from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, QQ, primes_first_n)
+# import pickle
+from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, QQ, primes_first_n, factor)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 
 from lmfdb import db
 
 def parse_omf5(k,j,N,hecke_ring=True):
-    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
+    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/bugfix/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-    Qx = PolynomialRing(QQ, name="x")
-    x = Qx.gens()[0]
-    pickled = open(fname, "rb").read()
-    forms = pickle.loads(pickled)
-    ret = []
-    if (len(forms) > 0):
-        f = forms[0]
-        bad_ps = [p for p in primes_first_n(len(f['lambda_p'])) if N % p == 0]
-        ps = primes_first_n(len(f['lambda_p']) + len(bad_ps))
-        good_ps = [p for p in ps if p not in bad_ps]
-        assert len(good_ps) == len(f['lambda_p'])
+    # Qx = PolynomialRing(QQ, name="x")
+    # x = Qx.gens()[0]
+    # pickled = open(fname, "rb").read()
+    # forms = pickle.loads(pickled)
+    fl = open(fname)
+    r = fl.read()
+    fl.close()
+    # handling long numbers
+    for num in range(10):
+      r = r.replace(str(num) + "L", str(num))
+    forms = eval(r)
+    return forms
+    # ret = []
+    # if (len(forms) > 0):
+    #   f = forms[0]
+    #    bad_ps = [p for p in primes_first_n(len(f['lambda_p'])) if N % p == 0]
+    #    ps = primes_first_n(len(f['lambda_p']) + len(bad_ps))
+    #    good_ps = [p for p in ps if p not in bad_ps]
+    #    assert len(good_ps) == len(f['lambda_p'])
         
-    for f in forms:
-        pol = Qx(f['field_poly'])
+    # for f in forms:
+    #    pol = Qx(f['field_poly'])
         # F = NumberField(pol, name = "a")
-        if len(f['lambda_p']) > 0:
+    #    if len(f['lambda_p']) > 0:
             # !! TODO : represent the eigenvalues in the polredabs field, currently some things break
-            f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
-            f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
-                                    for i in range(len(f['lambda_p_square']))]
-            if (hecke_ring):
-                print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
+    #        f['lambda_p'] = ['NULL' if ps[i] in bad_ps else f['lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
+    #        f['lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['lambda_p_square'][good_ps.index(ps[i])]
+    #                                for i in range(len(f['lambda_p_square']))]
+    #        if (hecke_ring):
+    #            print("Computing hecke ring form form no.", forms.index(f), ", N = ", N)
                 # !!! This can be very slow
                 # hecke_ring = F.order(orbit['lambda_p'])
-                F = f['lambda_p'][0].parent()
-                a = F.gens()[0]
-                index = 0
-                p_idx = 0
-                nbound = 0
-                while (type(f['lambda_p'][p_idx]) == str):
-                    p_idx += 1
-                while ((index != 1) and (p_idx < len(f['lambda_p']))):
-                    print("p_idx = ", p_idx)
-                    H = F.order([x for x in f['lambda_p'][:p_idx+1] if type(x) != str])
-                    new_index = H.index_in(F.ring_of_integers())
-                    if (new_index != index):
-                        index = new_index
-                        nbound = p_idx
-                    p_idx += 1
-                f['hecke_ring'] = H
-                f['hecke_ring_index'] = index
-                f['hecke_ring_generator_nbound'] = nbound            
-            ret.append(f)
-        else:
-            f['trace_lambda_p'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
-            f['trace_lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p_square'][good_ps.index(ps[i])]
-                                    for i in range(len(f['trace_lambda_p_square']))]
-    return ret
+    #            F = f['lambda_p'][0].parent()
+    #            a = F.gens()[0]
+    #            index = 0
+    #            p_idx = 0
+    #            nbound = 0
+    #            while (type(f['lambda_p'][p_idx]) == str):
+    #                p_idx += 1
+    #            while ((index != 1) and (p_idx < len(f['lambda_p']))):
+    #                print("p_idx = ", p_idx)
+    #                H = F.order([x for x in f['lambda_p'][:p_idx+1] if type(x) != str])
+    #                new_index = H.index_in(F.ring_of_integers())
+    #                if (new_index != index):
+    #                    index = new_index
+    #                    nbound = p_idx
+    #                p_idx += 1
+    #            f['hecke_ring'] = H
+    #            f['hecke_ring_index'] = index
+    #            f['hecke_ring_generator_nbound'] = nbound            
+    #        ret.append(f)
+    #    else:
+    #        f['trace_lambda_p'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p'][good_ps.index(ps[i])] for i in range(len(ps))]
+    #        f['trace_lambda_p_square'] = ['NULL' if ps[i] in bad_ps else f['trace_lambda_p_square'][good_ps.index(ps[i])]
+    #                                for i in range(len(f['trace_lambda_p_square']))]
+    # return ret
 
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     """
-    Compute                     
+    Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
     """
     forms = parse_omf5(k,j,N,False)
     hecke_types = ['lambda_' + suff for suff in ['p', 'p_square']]
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     if len(forms) > 0:
-        traces = { aut_types[aut] + '_' + ht : [0 for t in forms[0][ht]]
+        traces = { aut_types[aut] + '_' + ht : [0 for t in forms[0]['trace_' + ht]]
                    for aut in aut_types for ht in hecke_types}
     else:
         traces = {aut_types[aut] + '_' + ht : [] for aut in aut_types for ht in hecke_types}
     for f in forms:
+        # !! TODO - handle the old forms and classify them as well
+        if f['aut_rep_type'] == 'O':
+            continue
         for ht in hecke_types:
-            for i in range(len(f[ht])):
-                if type(f[ht][i]) == str:
+            for i in range(len(f['trace_' + ht])):
+                if type(f['trace_' + ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
-                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f[ht][i].trace()
-            if len(f[ht]) == 0:
-                for i in range(len(f['trace_' + ht])):
-                    if type(f['trace_' + ht][i]) == str:
-                        traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
-                    else:
-                        traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    
+                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
     return traces   
 
 def num_forms_paramodular(k,j,N):
-    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
+    folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/bugfix/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-    pickled = open(fname, "rb").read()
-    forms = pickle.loads(pickled)
-    # forms = eval(open(fname).read())
+    #pickled = open(fname, "rb").read()
+    #forms = pickle.loads(pickled)
+    forms = eval(open(fname).read())
     # return sum([len(forms[al_sign]) for al_sign in forms])
     return len(forms), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
 
@@ -104,10 +108,13 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     x = Qx.gens()[0]
     
     for orbit in forms:
+        # if we have not saved the eigenvalues
+        if 'hecke_ring_index' not in orbit:
+            continue
         orbit['is_cuspidal'] = True
         orbit['dim'] = len(orbit['field_poly']) - 1
-        orbit['trace_lambda_p'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p']]
-        orbit['trace_lambda_p_square'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p_square']]
+        # orbit['trace_lambda_p'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p']]
+        # orbit['trace_lambda_p_square'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p_square']]
         orbit['is_polredabs'] = False
         # For now, all our fields are absolute. Change that in the future
         orbit['relative_dim'] = orbit['dim']
@@ -125,12 +132,13 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         if F.disc() < 0:
             orbit['field_disc_factorization'] = [[-1,1]] + orbit['field_disc_factorization']
         orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
-                                                   orbit['hecke_ring_index'].factor()]
+                                                   factor(orbit['hecke_ring_index'])]
         orbit['hecke_ring_index_proved'] = False
         if 'related_objects' not in orbit:
             orbit['related_objects'] = []
             
-        for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
+        # for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
+        for field_name in ['lambda_p', 'lambda_p_square']:
             dummy = orbit.pop(field_name)
         
     return forms
@@ -145,33 +153,37 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     evs = parse_omf5(k,j,N)
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
+
+    # we will only use those for which we have a representation of the hecke ring
+    evs = [ev for ev in evs if 'hecke_ring_numerators' in ev]
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
         nu = F.gen(0)
-        if 'hecke_ring' in ev:
-            basis = ev['hecke_ring'].basis()
-            mat = Matrix([list(b) for b in basis])
-            ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
-            ev['hecke_ring_numerators'] = [list(row.denominator()*row) for row in mat]  
-            ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat**(-1)]
-            ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat**(-1)]
+        # if 'hecke_ring' in ev:
+        #    basis = ev['hecke_ring'].basis()
+        #    mat = Matrix([list(b) for b in basis])
+        #    ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
+        #    ev['hecke_ring_numerators'] = [list(row.denominator()*row) for row in mat]  
+        #    ev['hecke_ring_inverse_denominators'] = [row.denominator() for row in mat**(-1)]
+        #    ev['hecke_ring_inverse_numerators'] = [list(row.denominator()*row) for row in mat**(-1)]
             
-        inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
-        inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
-        ev['hecke_ring_power_basis'] = False
+        # inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
+        # inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
+        # ev['hecke_ring_power_basis'] = False
         ev['hecke_ring_cyclotomic_generator'] = 0
         ev['hecke_ring_rank'] = F.degree()
-        ev['maxp'] = nth_prime(len(ev['lambda_p']))
-        ev['maxp_square'] = nth_prime(len(ev['lambda_p_square']))
-        ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
-        ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
+        ev['maxp'] = nth_prime(len(ev['trace_lambda_p']))
+        ev['maxp_square'] = nth_prime(len(ev['trace_lambda_p_square']))
+        # ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
+        # ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
 
         for field_name in ['atkin_lehner_eigenvals',
                            'atkin_lehner_string',
                            'aut_rep_type',
-                           'hecke_ring',
+                           # 'hecke_ring',
                            'hecke_ring_index',
                            'hecke_ring_generator_nbound']:
-            dummy = ev.pop(field_name)
+            if field_name in ev:
+                dummy = ev.pop(field_name)   
     return evs

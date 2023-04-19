@@ -32,8 +32,8 @@ def create_entries(triple_list):
         k,j,N = triple
         if (j % 2 == 1) or (k == 1):
             continue
-        # right now we only have implemented forms for full level
-        if (not is_square(N)):
+        # at the moment we stop at 100 for paramodulars
+        if (not is_square(N)) and (N <= 100):
             if (k == 3) and (j == 0):
                 entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)
@@ -41,9 +41,8 @@ def create_entries(triple_list):
                     entry_sub = entry.copy()
                     entry_sub.update(ev)
                     entries.append(entry_sub)
-            else:
-                continue
             continue
+        # right now we only have implemented forms for full level in the principal series case
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1,'P')
             sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
