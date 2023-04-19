@@ -1,4 +1,5 @@
-from sage.all import (factor, load, Integer, is_prime, PowerSeriesRing, prime_range, ZZ)
+#from sage.all import (factor, load, Integer, is_prime, PowerSeriesRing, previous_prime, prime_range, ZZ)
+from sage.all import *
 from smf_lmfdb.db_tables.common_populate import MAX_P
 import os
 cwd = os.getcwd()
