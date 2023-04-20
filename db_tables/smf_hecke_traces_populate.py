@@ -36,7 +36,7 @@ def create_entries(triple_list):
                 for i in range(num_orbits):
                     entries += get_form_entries(2, F, N, k, j, i+1)
         # manually adding (3,0,N)
-        if (not is_square(N)) and (k == 3) and (j == 0) and (N <= 100):
+        if (not is_square(N)) and (k == 3) and (j == 0) and (N <= 1000):
             query = {'hecke_orbit_code' : make_orbit_code(2, 'K', N, k, j, 1, 1)}
             num_orbits = db.smf_newspaces.lucky(query, ['num_forms'])['num_forms']
             for i in range(num_orbits):

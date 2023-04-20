@@ -20,7 +20,7 @@ def entry_add_columns(e, ext_data):
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], hecke_orbit)
     # sometimes we don't have the Hecke eigenvalues
     if 'lambda_p_square' in e:
-        basis, inv_basis = get_nf_basis(e)
+        basis, inv_basis = get_nf_basis(e, False)
         e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
                                                                    nf_lists_to_elements(e['lambda_p_square'], basis), e['weight']),
                                    inv_basis)
@@ -33,7 +33,7 @@ def create_entries(triple_list):
         if (j % 2 == 1) or (k == 1):
             continue
         # at the moment we stop at 100 for paramodulars
-        if (not is_square(N)) and (N <= 100):
+        if (not is_square(N)) and (N <= 1000):
             if (k == 3) and (j == 0):
                 entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)

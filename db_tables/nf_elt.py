@@ -1,7 +1,7 @@
 from sage.all import (PolynomialRing, NumberField, ZZ, QQ, gcd, lcm, vector)
 from lmfdb.utils import integer_squarefree_part
 
-def get_nf_basis(ev):
+def get_nf_basis(ev, two=True):
     R = PolynomialRing(QQ, 'x')
     K = NumberField(R(ev['field_poly']), 'nu')
     nu = K.gen(0)
@@ -16,7 +16,7 @@ def get_nf_basis(ev):
         basis = inv_basis = [1, nu]
         return basis, inv_basis
     
-    if dim == 2:
+    if (dim == 2) and (two):
         c, b, a = map(ZZ, ev['field_poly'])
         D = b**2 - 4*a*c
         d = integer_squarefree_part(D)
