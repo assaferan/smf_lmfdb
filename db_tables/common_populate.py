@@ -7,7 +7,7 @@ MAX_P = 199
 MAX_P_SQUARE = 13
 
 def dict_to_json(d):
-    return "{" + ",".join(['"' + str(k) + '" : ' + str(d[k]) for k in d.keys()]) + "}"
+    return ("{" + ",".join(['"' + str(k) + '" : ' + str(d[k]) for k in d.keys()]) + "}").replace("'NULL'", "NULL")
 
 def entry_to_text(val, col_type):
     if (type(val) == dict) and (col_type == 'jsonb'):
