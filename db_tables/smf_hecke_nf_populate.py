@@ -32,8 +32,8 @@ def create_entries(triple_list):
         k,j,N = triple
         if (j % 2 == 1) or (k == 1):
             continue
-        # at the moment we stop at 100 for paramodulars
-        if (not is_square(N)) and (N <= 1000):
+        # at the moment we stop at 1000 for paramodulars
+        if (not is_square(N)) and (N < 1000):
             if (k == 3) and (j == 0):
                 entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)

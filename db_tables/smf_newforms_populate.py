@@ -38,7 +38,7 @@ def create_entries(triple_list):
             continue
         # right now we only have implemented forms for full level
         # for paramodular we stop at 1000 at the moment
-        if (not is_square(N)) and (N <= 1000):
+        if (not is_square(N)) and (N < 1000):
             if (k == 3) and (j == 0):
                 entry = common_entry_values(k,j,N, 'K')
                 forms = Hecke_Eigenforms_paramodular(k,j,N)

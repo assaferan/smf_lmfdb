@@ -68,7 +68,7 @@ def create_entries(triple_list):
                 entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
-            if (k == 3) and (j == 0) and (not is_square(N)) and (N <= 1000):
+            if (k == 3) and (j == 0) and (not is_square(N)) and (N < 1000):
                 entry.update(Hecke_Eigenvalues_Traces_paramodular(k,j,N))
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
                 if not is_squarefree(N):
