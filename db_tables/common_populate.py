@@ -13,6 +13,8 @@ def entry_to_text(val, col_type):
     if (type(val) == dict) and (col_type == 'jsonb'):
         return dict_to_json(val)
     if (type(val) == list) and (col_type[-2:] == "[]"):
+        if (type(val[0]) == list):
+            return str(val).replace("'NULL'", '"NULL"')
         # if (len(val) > 0) and (type(val[0]) == str):
         #     return '{' + ','.join(val) + '}'
         return str(val).replace('[','{').replace(']','}').replace("'NULL'", "NULL")
