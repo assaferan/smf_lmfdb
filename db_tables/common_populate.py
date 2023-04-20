@@ -15,7 +15,7 @@ def entry_to_text(val, col_type):
     if (type(val) == list) and (col_type[-2:] == "[]"):
         # if (len(val) > 0) and (type(val[0]) == str):
         #     return '{' + ','.join(val) + '}'
-        return str(val).replace('[','{').replace(']','}')
+        return str(val).replace('[','{').replace(']','}').replace("'NULL'", "NULL")
     return str(val)
 
 def make_space_label(e, label=True):
