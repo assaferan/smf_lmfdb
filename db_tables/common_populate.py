@@ -18,7 +18,7 @@ def entry_to_text(val, col_type):
         # if (len(val) > 0) and (type(val[0]) == str):
         #     return '{' + ','.join(val) + '}'
         return str(val).replace('[','{').replace(']','}').replace("'NULL'", "NULL")
-    return str(val).replace("'NULL'", "NULL")
+    return str(val)
 
 def make_space_label(e, label=True):
     last_key = 'char_orbit'
