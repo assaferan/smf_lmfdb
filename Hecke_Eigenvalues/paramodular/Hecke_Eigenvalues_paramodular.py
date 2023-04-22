@@ -1,5 +1,5 @@
 # import pickle
-from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, factor)
+from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 
@@ -71,7 +71,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     forms = parse_omf5(k,j,N,False)
     hecke_types = ['lambda_' + suff for suff in ['p', 'p_square']]
-    num_ps = { 'lambda_p' : len(prime_range(B)), 'lambda_p_square' : len(prime_range(B.sqrt()))}
+    num_ps = { 'lambda_p' : len(prime_range(B)), 'lambda_p_square' : len(prime_range(floor(sqrt(B))))}
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
