@@ -1,5 +1,5 @@
 # import pickle
-from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, QQ, primes_first_n, factor)
+from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, factor)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 
