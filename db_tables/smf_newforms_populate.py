@@ -33,6 +33,7 @@ def entry_add_columns(e, ext_data):
 def create_entries(triple_list):
     entries = []
     for triple in triple_list:
+        print("creating newform entry for triple", triple)
         k,j,N = triple
         if (j % 2 == 1) or (k == 1):
             continue
