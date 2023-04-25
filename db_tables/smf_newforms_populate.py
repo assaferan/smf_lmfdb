@@ -8,7 +8,7 @@ from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular impor
 from lmfdb import db
 
 def make_orbit_code(g, F, N, k, j, i, X):
-    return g + (ord(F)<<8) + (N<<12) + (k<<28) + (j<<36) + ((i-1)<<44) + ((X-1)<<60)
+    return g + (ord(F)<<8) + (N<<12) + (k<<28) + (j<<36) + ((i-1)<<44) + ((X-1)<<52)
 
 def entry_add_columns(e, ext_data):
     e = entry_add_common_columns(e, ext_data)
