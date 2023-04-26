@@ -108,8 +108,6 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     
     for orbit in forms:
         # if we have not saved the eigenvalues
-        if 'hecke_ring_index' not in orbit:
-            continue
         orbit['is_cuspidal'] = True
         orbit['dim'] = len(orbit['field_poly']) - 1
         # orbit['trace_lambda_p'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p']]
@@ -130,15 +128,17 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
         if F.disc() < 0:
             orbit['field_disc_factorization'] = [[-1,1]] + orbit['field_disc_factorization']
-        orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
-                                                   factor(orbit['hecke_ring_index'])]
+        if 'hecke_ring_index' in orbit:
+            orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
+                                                       factor(orbit['hecke_ring_index'])]
         orbit['hecke_ring_index_proved'] = False
         if 'related_objects' not in orbit:
             orbit['related_objects'] = []
             
         # for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
         for field_name in ['lambda_p', 'lambda_p_square']:
-            dummy = orbit.pop(field_name)
+            if field_name in orbit:
+                dummy = orbit.pop(field_name)
         
     return forms
 
