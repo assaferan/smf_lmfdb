@@ -120,15 +120,15 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         # !! TODO - check if that actually happens to be true
         orbit['field_poly_is_real_cyclotomic'] = False
         orbit['field_poly_root_of_unity'] = pol.is_cyclotomic(certificate=True)
-        # pol = Qx(pari(pol).polredbest().polredabs())
-        coeffs = [int(c) for c in pol.coefficients(sparse=False)]
-        orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : coeffs}, 'label')
-        F = NumberField(pol, name = "a")
-        orbit['field_disc'] = F.disc()
-        orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
-        if F.disc() < 0:
-            orbit['field_disc_factorization'] = [[-1,1]] + orbit['field_disc_factorization']
         if 'hecke_ring_index' in orbit:
+            pol = Qx(pari(pol).polredbest().polredabs())
+            F = NumberField(pol, name = "a")
+            coeffs = [int(c) for c in pol.coefficients(sparse=False)]
+            orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : coeffs}, 'label')
+            orbit['field_disc'] = F.disc()
+            orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
+            if F.disc() < 0:
+                orbit['field_disc_factorization'] = [[-1,1]] + orbit['field_disc_factorization']
             orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
                                                        factor(orbit['hecke_ring_index'])]
         orbit['hecke_ring_index_proved'] = False
