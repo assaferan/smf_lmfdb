@@ -46,5 +46,5 @@ def populate_smf_hecke_newspace_traces(triple_list):
     table = db.smf_hecke_newspace_traces
     aux_fname = "smf_lmfdb/db_tables/smf_hecke_newspace_traces_table.dat"
     entries = create_entries(triple_list)
-    table_reload_plain(table, entries, entry_add_columns, aux_fname)
+    table_reload_plain(table, entries, entry_add_columns, aux_fname, "hecke_newspace_traces")
     return

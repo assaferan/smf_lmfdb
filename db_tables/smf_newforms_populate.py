@@ -100,5 +100,5 @@ def populate_smf_newforms(triple_list):
     table = db.smf_newforms
     aux_fname = "smf_lmfdb/db_tables/smf_newforms_table.dat"
     entries = create_entries(triple_list)
-    table_reload(table, entries, entry_add_columns, aux_fname)
+    table_reload(table, entries, entry_add_columns, aux_fname, "newforms")
     return

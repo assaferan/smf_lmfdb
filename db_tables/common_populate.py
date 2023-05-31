@@ -87,7 +87,14 @@ def fill_nulls(entry, table):
             entry[field_name]= 'NULL'
     return entry
 
-def write_data_plain(table, entries, entry_postprocess, aux_fname):
+def write_entry(entry, folder)
+    fname = "data/" + folder + "/" + entry['id'];
+    f = open(fname, 'w');
+    f.write(entry);
+    f.close();
+    return
+
+def write_data_plain(table, entries, entry_postprocess, aux_fname, folder):
     keys = [k for k in table.col_type.keys()]
     types = [table.col_type[k] for k in keys]
     column_names = '|'.join(keys)
@@ -96,6 +103,7 @@ def write_data_plain(table, entries, entry_postprocess, aux_fname):
     for i,e in enumerate(entries):
         e = entry_postprocess(e, {'id' : i})
         e = fill_nulls(e, table)
+        write_entry(e, folder)
         e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
         e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
@@ -104,7 +112,7 @@ def write_data_plain(table, entries, entry_postprocess, aux_fname):
     f.close()
     return
 
-def write_data(table, entries, entry_postprocess, aux_fname):
+def write_data(table, entries, entry_postprocess, aux_fname, folder):
     keys = [k for k in table.col_type.keys()]
     types = [table.col_type[k] for k in keys]
     column_names = '|'.join(keys)
@@ -127,6 +135,7 @@ def write_data(table, entries, entry_postprocess, aux_fname):
         e = entry_postprocess(e, {'id' : i,
                                   'num_forms' : space_num_forms[space_label]})
         e = fill_nulls(e, table)
+        write_entry(e, folder)
         e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
         e_data.append(e_datum)
     write_data = "\n".join([column_names, column_types, ""] + e_data)
@@ -151,4 +160,3 @@ def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1):
     prime_bound = prime_bound**(1/deg)
     vals = func(k,j,e)['lambda_' + hecke_type]
     return [vals[p] for p in prime_range(prime_bound)]
-
