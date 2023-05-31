@@ -144,14 +144,14 @@ def write_data(table, entries, entry_postprocess, aux_fname, folder):
     f.close()
     return
 
-def table_reload_plain(table, entries, entry_postprocess, aux_fname):
-    write_data_plain(table, entries, entry_postprocess, aux_fname)
+def table_reload_plain(table, entries, entry_postprocess, aux_fname, folder):
+    write_data_plain(table, entries, entry_postprocess, aux_fname, folder)
     table.reload(aux_fname, null="NULL")
     table.cleanup_from_reload()
     return
 
-def table_reload(table, entries, entry_postprocess, aux_fname):
-    write_data(table, entries, entry_postprocess, aux_fname)
+def table_reload(table, entries, entry_postprocess, aux_fname, folder):
+    write_data(table, entries, entry_postprocess, aux_fname, folder)
     table.reload(aux_fname, null="NULL")
     table.cleanup_from_reload()
     return
