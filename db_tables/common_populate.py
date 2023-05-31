@@ -87,7 +87,7 @@ def fill_nulls(entry, table):
             entry[field_name]= 'NULL'
     return entry
 
-def write_entry(entry, folder)
+def write_entry(entry, folder):
     fname = "data/" + folder + "/" + entry['id'];
     f = open(fname, 'w');
     f.write(entry);
