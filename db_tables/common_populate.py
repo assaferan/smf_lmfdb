@@ -88,7 +88,7 @@ def fill_nulls(entry, table):
     return entry
 
 def write_entry(entry, folder):
-    fname = "data/" + folder + "/" + str(entry['id']);
+    fname = "smf_lmfdb/db_tables/data/" + folder + "/" + str(entry['id']);
     f = open(fname, 'w');
     f.write(entry);
     f.close();
