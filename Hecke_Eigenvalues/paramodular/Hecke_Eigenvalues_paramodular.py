@@ -155,7 +155,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     x = Qx.gens()[0]
 
     # we will only use those for which we have a representation of the hecke ring
-    evs = [ev for ev in evs if 'hecke_ring_numerators' in ev]
+    evs = [ev for ev in evs if 'hecke_ring_numerators' in ev and ev['aut_rep_type'] != 'O']
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
