@@ -7,3 +7,4 @@
 */__pycache__
 db_tables/*.dat
 *.log
+db_tables/data/*
