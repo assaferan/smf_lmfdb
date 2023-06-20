@@ -105,7 +105,8 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     forms = parse_omf5(k,j,N)
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
-    
+
+    forms = [f for f in forms if f['aut_rep_type'] != 'O']
     for orbit in forms:
         # if we have not saved the eigenvalues
         orbit['is_cuspidal'] = True
