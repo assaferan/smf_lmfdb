@@ -95,8 +95,7 @@ def num_forms_paramodular(k,j,N):
     #forms = eval(open(fname).read())
     forms = parse_omf5(k,j,N)
     # return sum([len(forms[al_sign]) for al_sign in forms])
-    return len([f for f in forms if f['aut_rep_type'] not in ['Y', 'O']]),
-           sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
+    return len(forms), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
