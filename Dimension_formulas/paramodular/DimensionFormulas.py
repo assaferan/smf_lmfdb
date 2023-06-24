@@ -1,4 +1,4 @@
-from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree)
+from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, WeightedIntegerVectors)
 from lmfdb import db
 
 '''
@@ -466,7 +466,7 @@ def Yoshida_new_lift_dim_orth(k,j,N,p0):
 def num_level_raise(M,N):
     ret = 1
     for p, e in factor(N // M):
-        ret *= (2*e)
+        ret *= WeightedIntegerVectors(e, [1,1,2]).cardinality()
     return ret
 
 def Yoshida_lift_dim_orth(k,j,N,p0):

@@ -1,4 +1,4 @@
-from sage.all import (is_square, is_squarefree, prime_range, prime_divisors)
+from sage.all import (is_square, is_squarefree, prime_range, factor)
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, write_data_from_files
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
@@ -103,7 +103,8 @@ def update_cusp_dim(idx, space_folder, hecke_row_folder):
     hecke_row_file = open(hecke_row_folder + "hecke_row_" + str(N) + "_" + str(p) + ".dat")
     hecke_row_data = eval(hecke_row_file.read())
     hecke_row_file.close()
-    p0 = max(prime_divisors(N))
+    # our choice of p0
+    p0 = max([p for p,e in factor(N) if e == 1])
     yosh_all = Yoshida_lift_dim_orth(3,0,N,p0)
     yosh_new = Yoshida_new_lift_dim_orth(3,0,N,p0)
     # Subtract Eisenstein series and Yoshida lifts
