@@ -114,10 +114,10 @@ def update_yoshida(idx, forms_folder, space_num_forms):
         
     space_num_forms['space_label'] = space_num_forms.get(form_data['space_label'],0)+1
     form_data['hecke_orbit'] = space_num_forms['space_label']
-    ret = {'old_label' : form_data['label'], 'old_orbit_code' = form_data['hecke_orbit_code']}
+    ret = {'old_label' : form_data['label'], 'old_orbit_code' : form_data['hecke_orbit_code']}
     form_data['label'] = form_data['space_label'] + '.' + base_26(form_data['hecke_orbit'])
     form_data['hecke_orbit_code'] = make_orbit_code(form_data['degree'], form_data['family'], form_data['level'], form_data['weight'][0], form_data['weight'][1], form_data['char_orbit_index'], form_data['hecke_orbit'])
-    ret.update({'new_label' : form_data['label'], 'new_orbit_code' = form_data['hecke_orbit_code']})
+    ret.update({'new_label' : form_data['label'], 'new_orbit_code' : form_data['hecke_orbit_code']})
     form_file = open(forms_folder + str(idx), "w")
     form_file.write(str(form_data))
     form_file.close()
