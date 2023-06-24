@@ -116,6 +116,9 @@ def update_cusp_dim(idx, space_folder, hecke_row_folder):
     space_data['old_cusp_dim'] = space_data['cusp_dim'] - space_data['new_cusp_dim']
     space_data['cusp_G_dim'] = space_data['cusp_dim'] - space_data['cusp_P_dim']
     space_data['old_cusp_G_dim'] = space_data['cusp_G_dim'] - space_data['new_cusp_G_dim']
+    forms = parse_omf5(k,j,N)
+    # Also updating the forms to include only new non-Yoshida
+    space_data['num_forms'] = len([f for f in forms if f['aut_rep_type'] not in ['O', 'Y']])
     space_file = open(space_folder + str(idx), "w")
     space_file.write(str(space_data))
     space_file.close()
