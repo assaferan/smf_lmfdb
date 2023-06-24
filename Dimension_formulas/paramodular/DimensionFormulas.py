@@ -459,6 +459,22 @@ def Yoshida_new_lift_dim(k,j,N):
     Ms = [M for M in divisors(N) if is_odd(omega(M))]
     return sum([Yoshida_lift_dim_sub(k,j,N,M) for M in Ms])
 
+def Yoshida_new_lift_dim_orth(k,j,N,p0):
+    Ms = [M*p0 for M in divisors(N // p0)]
+    return sum([Yoshida_lift_dim_sub(k,j,N,M) for M in Ms])
+
+def num_level_raise(M,N):
+    ret = 1
+    for p, e in factor(N // M):
+        ret *= (2*e)
+    return ret
+
+def Yoshida_lift_dim_orth(k,j,N,p0):
+    '''
+    Returns the dimension of the total space of Yoshida lifts, including old forms
+    '''
+    return sum([num_level_raise(M*p0,N)*Yoshida_new_lift_dim_orth(k,j,M*p0,p0) for M in divisors(N//p0)])
+
 def Yoshida_lift_dim(k,j,N):
     '''
     Returns the dimension of the total space of Yoshida lifts, including old forms
