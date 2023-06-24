@@ -89,18 +89,22 @@ def update_cusp_dim(idx, space_folder, hecke_row_folder):
     space_file = open(space_folder + str(idx))
     space_data = eval(space_file.read())
     space_file.close()
-    if (space_data['cusp_dim'] != 'NULL'):
+    # if (space_data['cusp_dim'] != 'NULL'):
+    #    return
+    # assert (space_data['family'] == 'K')
+    if (space_data['family'] != 'K'):
         return
-    assert (space_data['family'] == 'K')
     N = space_data['level']
     # Why do we have these when they are not squarefree?
-    if (N >= 1000):
+    if (N >= 1000) or (N == 1):
         return
-    p = [x for x in prime_range(N) if N % x != 0][0]
+    # We add +2 for the case N = 2
+    p = [x for x in prime_range(N+2) if N % x != 0][0]
     hecke_row_file = open(hecke_row_folder + "hecke_row_" + str(N) + "_" + str(p) + ".dat")
     hecke_row_data = eval(hecke_row_file.read())
     hecke_row_file.close()
-    space_data['cusp_dim'] = sum([len(hecke_row_data[k]) for k in hecke_row_data.keys()])
+    # Eisenstein series
+    space_data['cusp_dim'] = sum([len(hecke_row_data[k]) for k in hecke_row_data.keys()])-1
     space_file = open(space_folder + str(idx), "w")
     space_file.write(str(space_data))
     space_file.close()
