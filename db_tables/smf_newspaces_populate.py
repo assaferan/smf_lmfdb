@@ -104,7 +104,10 @@ def update_cusp_dim(idx, space_folder, hecke_row_folder):
     hecke_row_data = eval(hecke_row_file.read())
     hecke_row_file.close()
     # our choice of p0
-    p0 = max([p for p,e in factor(N) if e == 1])
+    exactly_divides = [p for p,e in factor(N) if e == 1]
+    if (len(exactly_divides) == 0):
+        return
+    p0 = max(exactly_divides)
     yosh_all = Yoshida_lift_dim_orth(3,0,N,p0)
     yosh_new = Yoshida_new_lift_dim_orth(3,0,N,p0)
     # Subtract Eisenstein series and Yoshida lifts
