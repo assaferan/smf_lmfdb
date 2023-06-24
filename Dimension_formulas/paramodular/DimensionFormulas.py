@@ -1,4 +1,4 @@
-from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, WeightedIntegerVectors)
+from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, WeightedIntegerVectors, factor)
 from lmfdb import db
 
 '''
