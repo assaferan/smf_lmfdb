@@ -160,3 +160,21 @@ def get_hecke(func,deg,hecke_type,j,k,e,prime_bound=MAX_P+1):
     prime_bound = prime_bound**(1/deg)
     vals = func(k,j,e)['lambda_' + hecke_type]
     return [vals[p] for p in prime_range(prime_bound)]
+
+def write_data_from_files(table, aux_fname, folder):
+    keys = [k for k in table.col_type.keys()]
+    types = [table.col_type[k] for k in keys]
+    column_names = '|'.join(keys)
+    column_types = '|'.join(types)
+    e_data = []
+    for i in range(table.count()):
+        f = open(folder + str(i))
+        e = eval(f.read())
+        f.close()
+        e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])
+        e_data.append(e_datum)
+    write_data = "\n".join([column_names, column_types, ""] + e_data)
+    f = open(aux_fname, "w")
+    f.write(write_data)
+    f.close()
+    return

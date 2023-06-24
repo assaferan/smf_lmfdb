@@ -85,6 +85,27 @@ def populate_smf_newspaces(triple_list):
     table_reload(table, entries, entry_add_columns, aux_fname, "newspaces")
     return
 
+def update_cusp_dim(idx, space_folder, hecke_row_folder):
+    space_file = open(space_folder + str(idx))
+    space_data = eval(space_file.read())
+    space_file.close()
+    if (space_data['cusp_dim'] != 'NULL'):
+        return
+    assert (space_data['family'] == 'K')
+    N = space_data['level']
+    # Why do we have these when they are not squarefree?
+    if (N >= 1000):
+        return
+    p = [x for x in prime_range(N) if N % x != 0][0]
+    hecke_row_file = open(hecke_row_folder + "hecke_row_" + str(N) + "_" + str(p) + ".dat")
+    hecke_row_data = eval(hecke_row_file.read())
+    hecke_row_file.close()
+    space_data['cusp_dim'] = sum([len(hecke_row_data[k]) for k in hecke_row_data.keys()])
+    space_file = open(space_folder + str(idx), "w")
+    space_file.write(str(space_data))
+    space_file.close()
+    return
+
 # old code
 
 # triple_list consists of triples (k,j,e) of weight and character
