@@ -1,6 +1,6 @@
 from sage.all import (nth_prime, is_square)
 
-from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenforms_paramodular
@@ -102,3 +102,36 @@ def populate_smf_newforms(triple_list):
     entries = create_entries(triple_list)
     table_reload(table, entries, entry_add_columns, aux_fname, "newforms")
     return
+
+def update_yoshida(idx, forms_folder, space_num_forms):
+    form_file = open(forms_folder + str(idx))
+    form_data = eval(form_file.read())
+    form_file.close()
+    # Changing Yoshida to be Siegel
+    if (form_data['aut_rep_type'] == 'Y'):
+        form_data['family'] = 'S'
+        form_data['space_label'] = make_space_label(form_data)
+        
+    space_num_forms['space_label'] = space_num_forms.get(form_data['space_label'],0)+1
+    form_data['hecke_orbit'] = space_num_forms['space_label']
+    ret = {'old_label' : form_data['label'], 'old_orbit_code' = form_data['hecke_orbit_code']}
+    form_data['label'] = form_data['space_label'] + '.' + base_26(form_data['hecke_orbit'])
+    form_data['hecke_orbit_code'] = make_orbit_code(form_data['degree'], form_data['family'], form_data['level'], form_data['weight'][0], form_data['weight'][1], form_data['char_orbit_index'], form_data['hecke_orbit'])
+    ret.update({'new_label' : form_data['label'], 'new_orbit_code' = form_data['hecke_orbit_code']})
+    form_file = open(forms_folder + str(idx), "w")
+    form_file.write(str(form_data))
+    form_file.close()
+    return ret
+
+def update_all_yoshida(forms_folder):
+    table = db.smf_newforms
+    aux_fname = "smf_lmfdb/db_tables/smf_newforms_table.dat"
+    space_num_forms = {}
+    track_changes = []
+    for idx in range(table.count()):
+        print("updating Yoshida lifts for idx =  ", idx, "out of ", table.count())
+        track_changes.append(update_yoshida(idx, forms_folder, space_num_forms))
+    label_dict = {t['old_label'] : t['new_label'] for t in track_changes}
+    orbit_code_dict = {t['old_orbit_code'] : t['new_orbit_code'] for t in track_changes}
+    write_data_from_files(table, aux_fname, forms_folder)
+    return label_dict, orbit_code_dict

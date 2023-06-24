@@ -1,5 +1,5 @@
 from sage.all import (is_square)
-from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE
+from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE, write_data_from_files
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Hecke_Eigenvalues_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_lists_to_elements, nf_elts_to_lists
@@ -82,4 +82,27 @@ def populate_smf_hecke_nf(triple_list):
     aux_fname = "smf_lmfdb/db_tables/smf_hecke_nf_table.dat"
     entries = create_entries(triple_list)
     table_reload(table, entries, entry_add_columns, aux_fname, "hecke_nf")
+    return
+
+def update_labels_and_codes(idx, hecke_nf_folder, label_dict, orbit_code_dict):
+    hecke_nf_file = open(hecke_nf_folder + str(idx))
+    hecke_nf_data = eval(hecke_nf_file.read())
+    hecke_nf_file.close()
+    hecke_nf_data['label'] = label_dict[hecke_nf_data['label']]
+    hecke_nf_data['hecke_orbit_code'] = orbit_code_dict[hecke_nf_data['hecke_orbit_code']]
+    hecke_nf_data['family'] = hecke_nf_data['label'].split('.')[1]
+    # Verifying we are not way off...
+    assert str(hecke_nf_data['level']) == hecke_nf_data['label'].split('.')[2]
+    hecke_nf_file = open(hecke_nf_folder + str(idx), "w")
+    hecke_nf_file.write(str(hecke_nf_data))
+    hecke_nf_file.close()
+    return
+
+def update_all_labels_and_codes(hecke_nf_folder, label_dict, orbit_code_dict):
+    table = db.smf_hecke_nf
+    aux_fname = "smf_lmfdb/db_tables/smf_hecke_nf_table.dat"
+    for idx in range(table.count()):
+        print("updating labels and codes for idx =  ", idx, "out of ", table.count())
+        update_labels_and_codes(idx, hecke_nf_folder, label_dict, orbit_code_dict)
+    write_data_from_files(table, aux_fname, hecke_nf_folder)
     return

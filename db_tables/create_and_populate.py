@@ -2,13 +2,13 @@ from sage.all import (is_square, is_squarefree)
 from smf_lmfdb.db_tables.smf_newspaces_create_table import create_table_smf_newspaces
 from smf_lmfdb.db_tables.smf_newforms_create_table import create_table_smf_newforms
 from smf_lmfdb.db_tables.smf_hecke_nf_create_table import create_table_smf_hecke_nf
-from smf_lmfdb.db_tables.smf_newspaces_populate import populate_smf_newspaces
-from smf_lmfdb.db_tables.smf_hecke_nf_populate import populate_smf_hecke_nf
-from smf_lmfdb.db_tables.smf_newforms_populate import populate_smf_newforms
+from smf_lmfdb.db_tables.smf_newspaces_populate import populate_smf_newspaces, update_all_cusp_dim
+from smf_lmfdb.db_tables.smf_hecke_nf_populate import populate_smf_hecke_nf, update_all_labels_and_codes
+from smf_lmfdb.db_tables.smf_newforms_populate import populate_smf_newforms, update_all_yoshida
 from smf_lmfdb.db_tables.smf_hecke_newspace_traces_create_table import create_table_smf_hecke_newspace_traces
 from smf_lmfdb.db_tables.smf_hecke_traces_create_table import create_table_smf_hecke_traces
 from smf_lmfdb.db_tables.smf_hecke_newspace_traces_populate import populate_smf_hecke_newspace_traces
-from smf_lmfdb.db_tables.smf_hecke_traces_populate import populate_smf_hecke_traces
+from smf_lmfdb.db_tables.smf_hecke_traces_populate import populate_smf_hecke_traces, update_all_codes
 
 def N_bound(k):
     '''
@@ -57,4 +57,17 @@ def populate_smf_all_tables():
 def create_and_populate_smf_all_tables():
     create_smf_all_tables()
     populate_smf_all_tables()
+    return
+
+def update_smf_all_tables():
+    data_folder = space_folder = "smf_lmfdb/db_tables/data/"
+    space_folder = data_folder + "newspaces/"
+    forms_folder = data_folder + "newforms/"
+    hecke_nf_folder = data_folder + "hecke_nf/"
+    hecke_traces_folder = data_folder + "hecke_traces/"
+    hecke_row_folder = "../omf5_data/hecke_rows/"
+    update_all_cusp_dim(space_folder, hecke_row_folder)
+    label_dict, orbit_code_dict = update_all_yoshida(forms_folder)
+    update_all_labels_and_codes(hecke_nf_folder, label_dict, orbit_code_dict)
+    update_all_codes(hecke_traces_folder, orbit_code_dict)
     return

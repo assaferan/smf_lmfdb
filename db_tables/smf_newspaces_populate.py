@@ -1,5 +1,5 @@
 from sage.all import (is_square, is_squarefree)
-from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, write_data_from_files
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth
@@ -115,6 +115,15 @@ def update_cusp_dim(idx, space_folder, hecke_row_folder):
     space_file = open(space_folder + str(idx), "w")
     space_file.write(str(space_data))
     space_file.close()
+    return
+
+def update_all_cusp_dim(space_folder, hecke_row_folder):
+    table = db.smf_newspaces
+    aux_fname = "smf_lmfdb/db_tables/smf_newspaces_table.dat"
+    for idx in range(table.count()):
+        print("updating cusp dim for idx = ", idx, " out of ", table.count())
+        update_cusp_dim(idx, space_folder, hecke_row_folder)
+    write_data_from_files(table, aux_fname, space_folder)
     return
 
 # old code

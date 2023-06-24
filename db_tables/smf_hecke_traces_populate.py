@@ -1,5 +1,5 @@
 from sage.all import (prime_range, nth_prime, is_square)
-from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain
+from smf_lmfdb.db_tables.common_populate import MAX_P, table_reload_plain, write_data_from_files
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
 from lmfdb import db
@@ -48,4 +48,23 @@ def populate_smf_hecke_traces(triple_list):
     aux_fname = "smf_lmfdb/db_tables/smf_hecke_traces_table.dat"
     entries = create_entries(triple_list)
     table_reload_plain(table, entries, entry_add_columns, aux_fname, "hecke_traces")
+    return
+
+def update_codes(idx, hecke_traces_folder, orbit_code_dict):
+    hecke_traces_file = open(hecke_traces_folder + str(idx))
+    hecke_traces_data = eval(hecke_traces_file.read())
+    hecke_traces_file.close()
+    hecke_traces_data['hecke_orbit_code'] = orbit_code_dict[hecke_traces_data['hecke_orbit_code']]
+    hecke_traces_file = open(hecke_traces_folder + str(idx), "w")
+    hecke_traces_file.write(str(hecke_traces_data))
+    hecke_traces_file.close()
+    return
+
+def update_all_codes(hecke_traces_folder, orbit_code_dict):
+    table = db.smf_hecke_traces
+    aux_fname = "smf_lmfdb/db_tables/smf_hecke_traces_table.dat"
+    for idx in range(table.count()):
+        print("updating codes for idx =  ", idx, "out of ", table.count())
+        update_codes(idx, hecke_traces_folder, orbit_code_dict)
+    write_data_from_files(table, aux_fname, hecke_traces_folder)
     return
