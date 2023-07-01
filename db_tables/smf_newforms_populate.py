@@ -30,7 +30,7 @@ def entry_add_columns(e, ext_data):
         e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
     return e
 
-def create_entries(triple_list):
+def create_entries(triple_list, folder):
     entries = []
     for triple in triple_list:
         print("creating newform entry for triple", triple)
@@ -47,6 +47,7 @@ def create_entries(triple_list):
                     entry_sub = entry.copy()
                     entry_sub.update(f)
                     entries.append(entry_sub)
+                    write_entry(entry_sub, folder)
             continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1, 'P')
@@ -71,6 +72,7 @@ def create_entries(triple_list):
                         if (k == 12):
                             entry_sub['qexp_display'] = get_qexp_display_Chi12()
                     entries.append(entry_sub)
+                    write_entry(entry_sub, folder)
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):
             entry = common_entry_values(k,j,N, 'P')
@@ -94,12 +96,13 @@ def create_entries(triple_list):
             entry['is_polredabs'] = True
             entry['trace_lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
             entries.append(entry)
+            write_entry(entry, folder)
     return entries
 
 def populate_smf_newforms(triple_list):
     table = db.smf_newforms
     aux_fname = "smf_lmfdb/db_tables/smf_newforms_table.dat"
-    entries = create_entries(triple_list)
+    entries = create_entries(triple_list, "newforms")
     table_reload(table, entries, entry_add_columns, aux_fname, "newforms")
     return
 
