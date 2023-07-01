@@ -30,8 +30,8 @@ def entry_add_columns(e, ext_data):
         e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
     return e
 
-def write_temp_entry(entry, folder, idx, table):
-    entry = entry_add_columns(entry, {'id' : idx})
+def write_temp_entry(entry, folder, ext_data, table):
+    entry = entry_add_columns(entry, ext_data)
     entry = fill_nulls(entry, table)
     fname = "smf_lmfdb/db_tables/data/" + folder + "/" + str(entry['id']);
     f = open(fname, 'w');
@@ -40,6 +40,7 @@ def write_temp_entry(entry, folder, idx, table):
     return
 
 def create_entries(triple_list, folder, table):
+    space_num_forms = {}
     entries = []
     idx = 0
     for triple in triple_list:
@@ -57,7 +58,9 @@ def create_entries(triple_list, folder, table):
                     entry_sub = entry.copy()
                     entry_sub.update(f)
                     entries.append(entry_sub)
-                    write_temp_entry(entry_sub, folder, idx, table)
+                    space_label = make_space_label(entry_sub, False)
+                    space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
+                    write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
                     idx += 1
             continue
         for e in [0,1]:
@@ -83,7 +86,9 @@ def create_entries(triple_list, folder, table):
                         if (k == 12):
                             entry_sub['qexp_display'] = get_qexp_display_Chi12()
                     entries.append(entry_sub)
-                    write_temp_entry(entry_sub, folder, idx, table)
+                    space_label = make_space_label(entry_sub, False)
+                    space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
+                    write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
                     idx += 1
         # adding for demonstration a single function
         if (k == 20) and (j == 0) and (N == 1):
@@ -108,7 +113,9 @@ def create_entries(triple_list, folder, table):
             entry['is_polredabs'] = True
             entry['trace_lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
             entries.append(entry)
-            write_temp_entry(entry_sub, folder, idx, table)
+            space_label = make_space_label(entry, False)
+            space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
+            write_temp_entry(entry, folder, {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
             idx += 1
     return entries
 
