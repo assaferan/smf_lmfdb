@@ -121,7 +121,7 @@ def update_yoshida(idx, forms_folder, space_num_forms):
     form_file = open(forms_folder + str(idx), "w")
     form_file.write(str(form_data))
     form_file.close()
-    return ret
+    return ret, space_num_forms
 
 def update_all_yoshida(forms_folder):
     table = db.smf_newforms
@@ -130,7 +130,8 @@ def update_all_yoshida(forms_folder):
     track_changes = []
     for idx in range(table.count()):
         print("updating Yoshida lifts for idx =  ", idx, "out of ", table.count())
-        track_changes.append(update_yoshida(idx, forms_folder, space_num_forms))
+        yosh, space_num_forms = update_yoshida(idx, forms_folder, space_num_forms)
+        track_changes.append(yosh)
     label_dict = {t['old_label'] : t['new_label'] for t in track_changes}
     orbit_code_dict = {t['old_orbit_code'] : t['new_orbit_code'] for t in track_changes}
     write_data_from_files(table, aux_fname, forms_folder)
