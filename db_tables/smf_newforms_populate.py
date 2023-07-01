@@ -1,6 +1,6 @@
 from sage.all import (nth_prime, is_square)
 
-from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files
+from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files, write_entry
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenforms_paramodular
