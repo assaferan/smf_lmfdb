@@ -112,7 +112,7 @@ def update_yoshida(idx, forms_folder, space_num_forms):
         form_data['family'] = 'S'
         form_data['space_label'] = make_space_label(form_data)
         
-    space_num_forms['space_label'] = space_num_forms.get(form_data['space_label'],0)+1
+    space_num_forms[form_data['space_label']] = space_num_forms.get(form_data['space_label'],0)+1
     form_data['hecke_orbit'] = space_num_forms['space_label']
     ret = {'old_label' : form_data['label'], 'old_orbit_code' : form_data['hecke_orbit_code']}
     form_data['label'] = form_data['space_label'] + '.' + base_26(form_data['hecke_orbit'])
