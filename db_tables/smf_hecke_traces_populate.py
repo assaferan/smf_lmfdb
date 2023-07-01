@@ -67,4 +67,5 @@ def update_all_codes(hecke_traces_folder, orbit_code_dict):
         print("updating codes for idx =  ", idx, "out of ", table.count())
         update_codes(idx, hecke_traces_folder, orbit_code_dict)
     write_data_from_files(table, aux_fname, hecke_traces_folder)
+    table.reload(aux_fname, null="NULL")
     return

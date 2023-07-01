@@ -105,4 +105,5 @@ def update_all_labels_and_codes(hecke_nf_folder, label_dict, orbit_code_dict):
         print("updating labels and codes for idx =  ", idx, "out of ", table.count())
         update_labels_and_codes(idx, hecke_nf_folder, label_dict, orbit_code_dict)
     write_data_from_files(table, aux_fname, hecke_nf_folder)
+    table.reload(aux_fname, null="NULL")
     return

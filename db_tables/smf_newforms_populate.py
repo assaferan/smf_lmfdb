@@ -135,4 +135,5 @@ def update_all_yoshida(forms_folder):
     label_dict = {t['old_label'] : t['new_label'] for t in track_changes}
     orbit_code_dict = {t['old_orbit_code'] : t['new_orbit_code'] for t in track_changes}
     write_data_from_files(table, aux_fname, forms_folder)
+    table.reload(aux_fname, null="NULL")
     return label_dict, orbit_code_dict
