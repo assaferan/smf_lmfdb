@@ -134,6 +134,8 @@ def write_data(table, entries, entry_postprocess, aux_fname, folder):
         space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
         e = entry_postprocess(e, {'id' : i,
                                   'num_forms' : space_num_forms[space_label]})
+        if ('hecke_ring_numerators' in keys) and ('hecke_ring_numerators' not in e):
+            continue
         e = fill_nulls(e, table)
         write_entry(e, folder)
         e_datum = '|'.join([entry_to_text(e[k], table.col_type[k]) for k in keys])

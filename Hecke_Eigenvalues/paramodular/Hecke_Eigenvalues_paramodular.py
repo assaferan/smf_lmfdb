@@ -155,7 +155,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     x = Qx.gens()[0]
 
     # we will only use those for which we have a representation of the hecke ring
-    evs = [ev for ev in evs if 'hecke_ring_numerators' in ev and ev['aut_rep_type'] != 'O']
+    evs = [ev for ev in evs if ev['aut_rep_type'] != 'O']
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
@@ -171,12 +171,13 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
         # inv_coeff_data = zip(ev['hecke_ring_inverse_numerators'], ev['hecke_ring_inverse_denominators'])
         # inv_basis = [sum([nums[i] * nu**i for i in range(len(nums))])/den for (nums, den) in inv_coeff_data]         
         # ev['hecke_ring_power_basis'] = False
-        ev['hecke_ring_cyclotomic_generator'] = 0
-        ev['hecke_ring_rank'] = F.degree()
-        ev['maxp'] = nth_prime(len(ev['trace_lambda_p']))
-        ev['maxp_square'] = nth_prime(len(ev['trace_lambda_p_square']))
-        # ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
-        # ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
+        if 'hecke_ring_numerators' in ev:
+            ev['hecke_ring_cyclotomic_generator'] = 0
+            ev['hecke_ring_rank'] = F.degree()
+            ev['maxp'] = nth_prime(len(ev['trace_lambda_p']))
+            ev['maxp_square'] = nth_prime(len(ev['trace_lambda_p_square']))
+            # ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
+            # ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
 
         for field_name in ['atkin_lehner_eigenvals',
                            'atkin_lehner_string',
@@ -185,5 +186,5 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
                            'hecke_ring_index',
                            'hecke_ring_generator_nbound']:
             if field_name in ev:
-                dummy = ev.pop(field_name)   
+                dummy = ev.pop(field_name)
     return evs
