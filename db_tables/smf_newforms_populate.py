@@ -1,5 +1,6 @@
 from sage.all import (nth_prime, is_square)
 
+from smf_lmfdb.db_tables.common_create_table import FAMILY_DICT
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files, fill_nulls
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
@@ -31,13 +32,23 @@ def entry_add_columns(e, ext_data):
     return e
 
 def write_temp_entry(entry, folder, ext_data, table):
-    entry = entry_add_columns(entry, ext_data)
-    entry = fill_nulls(entry, table)
-    fname = "smf_lmfdb/db_tables/data/" + folder + "/" + str(entry['id']);
-    f = open(fname, 'w');
-    f.write(str(entry));
-    f.close();
-    return
+    if entry['level'] == 1:
+        families = FAMILY_DICT.values()
+    else:
+        families = [entry['family']]
+    num_entries = 0
+    for family in families:
+        entry['family'] = family
+        e = entry.copy()
+        e['id'] = entry['id'] + num_entries
+        e = entry_add_columns(e, ext_data)
+        e = fill_nulls(e, table)
+        fname = "smf_lmfdb/db_tables/data/" + folder + "/" + str(e['id'])
+        f = open(fname, 'w')
+        f.write(str(e))
+        f.close()
+        num_entries += 1
+    return num_entries
 
 def create_entries(triple_list, folder, table):
     space_num_forms = {}
@@ -60,8 +71,7 @@ def create_entries(triple_list, folder, table):
                     entries.append(entry_sub)
                     space_label = make_space_label(entry_sub, False)
                     space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
-                    write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
-                    idx += 1
+                    idx += write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
             continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1, 'P')
@@ -131,7 +141,7 @@ def update_yoshida(idx, forms_folder, space_num_forms):
     form_data = eval(form_file.read())
     form_file.close()
     # Changing Yoshida to be Siegel
-    if (form_data['aut_rep_type'] == 'Y'):
+    if (form_data['family'] == 'K') and (form_data['aut_rep_type'] == 'Y'):
         form_data['family'] = 'S'
         form_data['space_label'] = make_space_label(form_data)
         
