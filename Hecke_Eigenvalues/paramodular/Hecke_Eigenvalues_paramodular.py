@@ -77,7 +77,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
                for aut in aut_types for ht in hecke_types}
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
-        if f['aut_rep_type'] == 'O':
+        if f['aut_rep_type'] in ['O','F','Y']:
             continue
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
@@ -106,7 +106,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
 
-    forms = [f for f in forms if f['aut_rep_type'] != 'O']
+    forms = [f for f in forms if f['aut_rep_type'] not in ['O','F','Y']]
     for orbit in forms:
         # if we have not saved the eigenvalues
         orbit['is_cuspidal'] = True
@@ -155,7 +155,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     x = Qx.gens()[0]
 
     # we will only use those for which we have a representation of the hecke ring
-    evs = [ev for ev in evs if ev['aut_rep_type'] != 'O']
+    evs = [ev for ev in evs if ev['aut_rep_type'] not in ['O','F','Y']]
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
