@@ -1,7 +1,7 @@
-from sage.all import (is_square)
+from sage.all import (is_square, prime_divisors)
 from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE, write_data_from_files
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
-from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Hecke_Eigenvalues_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
+from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Hecke_Eigenvalues_Yoshida, Get_All_Hecke_Eigenvalues_Up_To, Get_All_Dirichlet_Coeffs_Up_To
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_lists_to_elements, nf_elts_to_lists
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_F20G, get_qexp_E4, get_qexp_E6, get_qexp_Chi10, get_qexp_Chi12
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_paramodular
@@ -19,10 +19,15 @@ def entry_add_columns(e, ext_data):
     e['label'] = space_label + '.' + base_26(hecke_orbit)
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], hecke_orbit)
     # sometimes we don't have the Hecke eigenvalues
-    if 'lambda_p_square' in e:
+    if ('lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL'):
         basis, inv_basis = get_nf_basis(e, False)
-        e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
-                                                                   nf_lists_to_elements(e['lambda_p_square'], basis), e['weight']),
+        #e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
+        bad_ps = prime_divisors(e['level'])
+        eps = { p : 1 for p in bad_ps }
+        if len(bad_ps) > 0:
+            eps[max(bad_ps)] = -1
+        e['an'] = nf_elts_to_lists(Get_All_Dirichlet_Coeffs_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
+                                                                   nf_lists_to_elements(e['lambda_p_square'], basis), e['weight'], e['level'], eps),
                                    inv_basis)
     return e
 

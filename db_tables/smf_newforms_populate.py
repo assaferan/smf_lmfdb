@@ -2,7 +2,7 @@ from sage.all import (nth_prime, is_square)
 
 from smf_lmfdb.db_tables.common_create_table import FAMILY_DICT
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files, fill_nulls
-from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To
+from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenforms_Siegel_Eisenstein, Hecke_Eigenforms_Klingen_Eisenstein, Hecke_Eigenforms_Saito_Kurokawa, Hecke_Eigenforms_Yoshida, Get_All_Hecke_Eigenvalues_Up_To, Get_All_Dirichlet_Coeffs_Up_To
 from smf_lmfdb.qExpansions.qexp_display import get_qexp_display_F20G, get_qexp_display_E4, get_qexp_display_E6, get_qexp_display_Chi10, get_qexp_display_Chi12
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenforms_paramodular
 
@@ -25,10 +25,22 @@ def entry_add_columns(e, ext_data):
         e['qexp_display'] = 'NULL'
     e['embedded_related_objects'] = []
     # sometimes we just have q-expansions and no hecke eigenvalues
-    if 'trace_lambda_p_square' in e:
+    if ('trace_lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL'):
         max_p = min(MAX_P, nth_prime(len(e['trace_lambda_p'])))
+        bad_ps = prime_divisors(e['level'])
+        eps = { p : 1 for p in bad_ps }
+        if len(bad_ps) > 0: 
+            eps[max(bad_ps)] = -1
+            assert e['atkin_lehner_eigenvals'][-1][0] == max(bad_ps)
+            e['atkin_lehner_eigenvals'][-1][1] *= (-1)
+            if (e['atkin_lehner_string'][-1] == '+'):
+                e['atkin_lehner_string'][-1] = '-'
+            else:
+                e['atkin_lehner_string'][-1] = '+'
+            e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
         e['trace_display'] = e['trace_lambda_p'][:4]
-        e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
+        # e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
+        e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'], e['level'], eps)
     return e
 
 def write_temp_entry(entry, folder, ext_data, table):

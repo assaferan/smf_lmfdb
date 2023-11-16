@@ -139,3 +139,54 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
                     an = a[m]*a[n//m]
         a += [an]
     return a
+
+
+def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):
+    k,j = wt
+    if (k == 0) and (j == 0):
+        return [0 for n in range(prec)]
+    a = []
+    primes = prime_range(prec+1)
+    prime_idx = {primes[i] : i for i in range(len(primes))}
+    for n in range(1,prec+1):
+        if n == 1:
+            idx = 0
+            while (ap[idx] == 'NULL'):
+                idx += 1
+            if (type(ap[idx]) == int):
+                F = ZZ
+            else:
+                F = ap[idx].parent()
+            an = F(1)
+        elif is_prime(n):
+            an = ap[prime_idx[n]]
+        else:
+            fac = factor(n) 
+            if len(fac) == 1:
+                # computing a_{p^r} 
+                p  = fac[0][0]
+                r  = fac[0][1]
+                i = prime_idx[p]
+                mu = j + 2*k - 3
+                if (ap[i] == 'NULL'):
+                    an = 'NULL'
+                else:
+                    if (type(ap[i]) == int):
+                        F = ZZ
+                    else:
+                        F = ap[i].parent()
+                    R = PowerSeriesRing(F, 't')
+                    t = R.gen()
+                    if (level % p != 0):
+                        Q = 1 - ap[i] * t + (ap2[i] + p**2 + 1)* p**(mu-2)*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
+                    else:
+                        Q = (1 - (ap[i]+eps[p]*p) * t + p**3 * t**2)*(1+eps[p]*p*t)
+                    an = (1/Q).dict().get(r,F(0))
+            else:  # a_m*a_r := a_{mr} and we know all a_i for i<n.
+                m  = fac[0][0]**fac[0][1]
+                if (a[m - 1] == 'NULL') or (a[n//m - 1] == 'NULL'):
+                    an = 'NULL'
+                else:
+                    an = a[m - 1]*a[n//m - 1]
+        a += [an]
+    return a
