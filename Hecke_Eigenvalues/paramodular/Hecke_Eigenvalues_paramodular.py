@@ -65,6 +65,10 @@ def parse_omf5(k,j,N,hecke_ring=True):
     #                                for i in range(len(f['trace_lambda_p_square']))]
     # return ret
 
+def al_str_to_num(al_str, N):
+    ps = prime_divisors(N)
+    return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])   
+    
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
@@ -81,7 +85,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         # !! TODO - handle the old forms and classify them as well
         if f['aut_rep_type'] in ['O','F','Y']:
             continue
-        div_idx = al_str_to_num(f['atkin_lehner_string'])
+        div_idx = al_str_to_num(f['atkin_lehner_string'], N)
         al_dims['ALdims'][div_idx] += f['dim']
         al_dims['ALdims_' + f['aut_rep_type']] += f['dim']
         for ht in hecke_types:
