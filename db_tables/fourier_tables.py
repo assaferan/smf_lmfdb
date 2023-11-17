@@ -10,18 +10,18 @@ def smf_qexp_short_col_type():
     cols['n1'] = 'smallint'
     cols['n2'] = 'smallint'
     cols['n12'] = 'smallint'
-    cols['index'] = 'smallint',
+    cols['index'] = 'smallint'
     cols['coeff'] = 'integer[]'
     return cols
 
 def smf_qexp_short_col_desc():
     desc = {}
-    desc['smf_label'] = 'Label of the Siegel modular form',
-    desc['nmax'] = 'Degree in q1, q2',
-    desc['n1'] = 'Degree in q1',
-    desc['n2'] = 'Degree in q2',
-    desc['n12'] = 'Degree in q12',
-    desc['index'] = 'Index of coefficient in case of vector-valued forms',
+    desc['smf_label'] = 'Label of the Siegel modular form'
+    desc['nmax'] = 'Degree in q1, q2'
+    desc['n1'] = 'Degree in q1'
+    desc['n2'] = 'Degree in q2'
+    desc['n12'] = 'Degree in q12'
+    desc['index'] = 'Index of coefficient in case of vector-valued forms'
     desc['coeff'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
     return desc
 
@@ -36,10 +36,10 @@ def smf_qexp_reps_col_type():
 
 def smf_qexp_reps_col_desc():
     desc = {}
-    desc['smf_label'] = 'Label of the Siegel modular form',
-    desc['qf'] = 'Reduced quadratic form encoded as a triple of integers',
-    desc['disc'] = 'Discriminant of the quadratic form',
-    desc['index'] = 'Index of coefficient in case of vector-valued forms',
+    desc['smf_label'] = 'Label of the Siegel modular form'
+    desc['qf'] = 'Reduced quadratic form encoded as a triple of integers'
+    desc['disc'] = 'Discriminant of the quadratic form'
+    desc['index'] = 'Index of coefficient in case of vector-valued forms'
     desc['coeffs'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
 
 def smf_qexp_short_header():
