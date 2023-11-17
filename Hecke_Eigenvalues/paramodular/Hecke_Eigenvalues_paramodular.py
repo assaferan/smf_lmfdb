@@ -85,10 +85,10 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         # !! TODO - handle the old forms and classify them as well
         if f['aut_rep_type'] in ['O','F','Y']:
             continue
-        div_idx = al_str_to_num(f['atkin_lehner_string'], N)
+        div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
         f_dim = len(f['field_poly'])-1
         al_dims['ALdims'][div_idx] += f_dim
-        al_dims['ALdims_' + f['aut_rep_type']] += f_dim
+        al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
