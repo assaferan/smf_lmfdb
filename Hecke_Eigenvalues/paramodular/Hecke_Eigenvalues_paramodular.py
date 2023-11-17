@@ -75,17 +75,22 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
+    divs = [d for d in divisors(N) if is_squarefree(d)]
+    al_dims = {'ALdims' : [0 for d in divs], 'ALdims_G' : [0 for d in divs], 'ALdims_P' : [0 for d in divs]}
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
         if f['aut_rep_type'] in ['O','F','Y']:
             continue
+        div_idx = al_str_to_num(f['atkin_lehner_string'])
+        al_dims['ALdims'][div_idx] += f['dim']
+        al_dims['ALdims_' + f['aut_rep_type']] += f['dim']
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    return traces   
+    return traces.update(al_dims)   
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
