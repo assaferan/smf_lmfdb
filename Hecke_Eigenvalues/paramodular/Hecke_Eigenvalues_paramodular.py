@@ -95,7 +95,8 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    return traces.update(al_dims)   
+    traces.update(al_dims)
+    return traces
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
