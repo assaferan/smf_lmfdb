@@ -68,12 +68,22 @@ def create_entries(triple_list):
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
             if (k == 3) and (j == 0) and (not is_square(N)) and (N < 1000):
-                entry.update(Hecke_Eigenvalues_Traces_paramodular(k,j,N))
+                traces, cusp_dim = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
+                entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new
+                    entry['cusp_dim'] = cusp_dim
+                    entry['cusp_G_dim'] = entry['cusp_dim'] - entry['cusp_P_dim']
+                    entry['new_cusp_dim'] = dim_G_new + entry['new_cusp_P_dim']
+                    entry['old_cusp_dim'] = entry['cusp_dim'] - entry['new_cusp_dim']
+                    entry['old_cusp_G_dim'] = entry['cusp_G_dim'] - entry['new_cusp_G_dim']
+                    assert entry['old_cusp_G_dim'] >= 0
+                    assert entry['old_cusp_dim'] >= 0
+                    assert entry['cusp_G_dim'] >= 0
                 else:
                     assert entry['new_cusp_G_dim'] == dim_G_new
+                    assert entry['cusp_dim'] == cusp_dim
         entries.append(entry)
     return entries
 

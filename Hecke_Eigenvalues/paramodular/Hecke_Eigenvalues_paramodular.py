@@ -1,5 +1,5 @@
 # import pickle
-from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor)
+from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 
@@ -65,6 +65,15 @@ def parse_omf5(k,j,N,hecke_ring=True):
     #                                for i in range(len(f['trace_lambda_p_square']))]
     # return ret
 
+def al_str_to_num(al_str, N):
+    ps = prime_divisors(N)
+    return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])   
+
+def is_eisenstein(e):
+    traces = e['trace_lambda_p']
+    ps = primes_first_n(len(traces))
+    return all([traces[i] == ps[i]**3+ps[i]**2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
+
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
@@ -75,17 +84,29 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
+    divs = [d for d in divisors(N) if is_squarefree(d)]
+    al_dims = {'ALdims' : [0 for d in divs], 'ALdims_G' : [0 for d in divs], 'ALdims_P' : [0 for d in divs]}
+    cusp_dim = 0
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
-        if f['aut_rep_type'] in ['O','F','Y']:
+        if f['aut_rep_type'] in ['F','Y']:
             continue
+        f_dim = len(f['field_poly'])-1
+        if not is_eisenstein(f):
+            cusp_dim += f_dim
+        if f['aut_rep_type'] == 'O':
+            continue
+        div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
+        al_dims['ALdims'][div_idx] += f_dim
+        al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    return traces   
+    traces.update(al_dims)
+    return traces, cusp_dim
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
