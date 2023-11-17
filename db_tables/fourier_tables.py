@@ -62,17 +62,17 @@ def load_smf_qexp_reps():
     with open(aux_fname, "w") as f:
         f.write(header)
     print_E4_qexp_reps(aux_fname)
-    table.reload(aux_fname)
+    table.reload(aux_fname, sep=":")
     return
 
 def load_smf_qexp_short():
-    table = db.smf_qexp_reps
-    aux_fname = "smf_lmfdb/db_tables/smf_qexp_reps_table.dat"
+    table = db.smf_qexp_short
+    aux_fname = "smf_qexp_short_table.dat"
     header = smf_qexp_short_header()
     with open(aux_fname, "w") as f:
         f.write(header)
     print_E4_qexp_short(aux_fname)
-    table.reload(aux_fname)
+    table.reload(aux_fname, sep=":")
     return
 
 def E4_coefficients():
@@ -358,12 +358,12 @@ def print_E4_qexp_short(filename):
     smf_label = '2.K.1.4.0.a.a'
     with open(filename, "a") as f:
         #label,nmax,n1,n2,n12,coeff
-        f.write("{}:0:0:0:0:{{1}}\n".format(smf_label))
-        f.write("{}:1:1:0:0:{{240}}\n".format(smf_label))
-        f.write("{}:1:0:0:1:{{240}}\n".format(smf_label))
-        f.write("{}:1:1:2:1:{{240}}\n".format(smf_label))
-        f.write("{}:1:1:1:1:{{13440}}\n".format(smf_label))
-        f.write("{}:1:1:0:1:{{30240}}\n".format(smf_label))
-        f.write("{}:1:1:-1:1:{{13440}}\n".format(smf_label))
-        f.write("{}:1:1:-2:1:{{240}}\n".format(smf_label))
+        f.write("{}:0:0:0:0:0:{1}\n".format(smf_label))
+        f.write("{}:1:1:0:0:0:{240}\n".format(smf_label))
+        f.write("{}:1:0:0:1:0:{240}\n".format(smf_label))
+        f.write("{}:1:1:2:1:0:{240}\n".format(smf_label))
+        f.write("{}:1:1:1:1:0:{13440}\n".format(smf_label))
+        f.write("{}:1:1:0:1:0:{30240}\n".format(smf_label))
+        f.write("{}:1:1:-1:1:0:{13440}\n".format(smf_label))
+        f.write("{}:1:1:-2:1:0:{240}\n".format(smf_label))
 
