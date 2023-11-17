@@ -85,9 +85,6 @@ def check_sk(f, N, B = 100):
     fricke = {orb["label"] : orb["fricke_eigenval"] for orb in orbits}
     orbits = {orb["hecke_orbit_code"] : orb["label"] for orb in orbits}
     
-    for q in alpha_q.keys():
-        tr_orbits = db.mf_hecke_traces.search({"hecke_orbit_code" : {"$in" : list(orbits.keys())}, "n" : q, "trace_an" : alpha_q[q]}, "hecke_orbit_code")
-        orbits = { tr : orbits[tr] for tr in tr_orbits}
     aps = {hoc : {a["n"] : int(a["trace_an"]) for a in db.mf_hecke_traces.search({"hecke_orbit_code" : hoc})} for hoc in orbits.keys()}
     lamda_ps = { orbits[hoc] : [dim*p*(p+1) + aps[hoc][p] for p in primes_N] for hoc in aps.keys()}
     res = [label for label in lamda_ps.keys() if lamda_ps[label] == ap_array]
