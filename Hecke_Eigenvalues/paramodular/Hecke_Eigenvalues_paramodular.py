@@ -68,7 +68,12 @@ def parse_omf5(k,j,N,hecke_ring=True):
 def al_str_to_num(al_str, N):
     ps = prime_divisors(N)
     return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])   
-    
+
+def is_eisenstein(e):
+    traces = e['trace_lambda_p']
+    ps = primes_first_n(len(traces))
+    return all([traces[i] == ps[i]^3+ps[i]^2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
+
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
@@ -87,7 +92,8 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         if f['aut_rep_type'] in ['F','Y']:
             continue
         f_dim = len(f['field_poly'])-1
-        cusp_dim += f_dim
+        if not is_eisenstein(e):
+            cusp_dim += f_dim
         if f['aut_rep_type'] == 'O':
             continue
         div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
