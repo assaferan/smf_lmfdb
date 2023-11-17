@@ -10,7 +10,8 @@ def smf_qexp_short_col_type():
     cols['n1'] = 'smallint'
     cols['n2'] = 'smallint'
     cols['n12'] = 'smallint'
-    cols['coeff'] = 'integer[][]'
+    cols['index'] = 'smallint',
+    cols['coeff'] = 'integer[]'
     return cols
 
 def smf_qexp_short_col_desc():
@@ -20,7 +21,8 @@ def smf_qexp_short_col_desc():
     desc['n1'] = 'Degree in q1',
     desc['n2'] = 'Degree in q2',
     desc['n12'] = 'Degree in q12',
-    desc['coeffs'] = 'List of coefficients (just one element for scalar-valued forms), where each coefficient is encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    desc['index'] = 'Index of coefficient in case of vector-valued forms',
+    desc['coeff'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
     return desc
 
 def smf_qexp_reps_col_type():
@@ -28,7 +30,8 @@ def smf_qexp_reps_col_type():
     cols['smf_label'] = 'text'
     cols['qf'] = 'integer[]'
     cols['disc'] = 'integer'
-    cols['coeffs'] = 'integer[][]'
+    cols['index'] = 'smallint'
+    cols['coeff'] = 'integer[]'
     return cols
 
 def smf_qexp_reps_col_desc():
@@ -36,19 +39,20 @@ def smf_qexp_reps_col_desc():
     desc['smf_label'] = 'Label of the Siegel modular form',
     desc['qf'] = 'Reduced quadratic form encoded as a triple of integers',
     desc['disc'] = 'Discriminant of the quadratic form',
-    desc['coeffs'] = 'List of coefficients (just one element for scalar-valued forms), where each coefficient is encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    desc['index'] = 'Index of coefficient in case of vector-valued forms',
+    desc['coeffs'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
 
 def smf_qexp_short_header():
-    header = "smf_label:nmax:n1:n2:n12:coeffs\ntext:smallint:smallint:smallint:smallint:integer[][]\n\n"
+    header = "smf_label:nmax:n1:n2:n12:index:coeff\ntext:smallint:smallint:smallint:smallint:smallint:integer[]\n\n"
     return header
 
-def smf_qexp_reps_heafer():
-    header = "smf_label:qf:disc:coeffs\ntext:integer[]:integer:integer[][]\n\n"
+def smf_qexp_reps_header():
+    header = "smf_label:qf:disc:index:coeff\ntext:integer[]:integer:smallint:integer[]\n\n"
     return header
 
-#generate_table('smf_qexp_short', "Short, fully expanded q-expansions of Siegel modular forms", smf_qexp_short_col_type, smf_qexp_short_col_desc, label=None)
+#generate_table('smf_qexp_short', "Short, fully expanded q-expansions of Siegel modular forms", smf_qexp_short_col_type, smf_qexp_short_col_desc, label_col=None)
 
-#generate_table('smf_qexp_reps', "q-expansions of Siegel modular forms indexed by reduced quadratic forms", smf_qexp_reps_col_type, smf_qexp_reps_col_desc, label=None)
+#generate_table('smf_qexp_reps', "q-expansions of Siegel modular forms indexed by reduced quadratic forms", smf_qexp_reps_col_type, smf_qexp_reps_col_desc, label_col=None)
 
 def load_smf_qexp_reps():
     table = db.smf_qexp_reps
