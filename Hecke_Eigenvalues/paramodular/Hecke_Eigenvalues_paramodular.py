@@ -92,7 +92,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         if f['aut_rep_type'] in ['F','Y']:
             continue
         f_dim = len(f['field_poly'])-1
-        if not is_eisenstein(e):
+        if not is_eisenstein(f):
             cusp_dim += f_dim
         if f['aut_rep_type'] == 'O':
             continue
