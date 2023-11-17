@@ -358,12 +358,19 @@ def print_E4_qexp_short(filename):
     smf_label = '2.K.1.4.0.a.a'
     with open(filename, "a") as f:
         #label,nmax,n1,n2,n12,coeff
-        f.write("{}:0:0:0:0:0:{1}\n".format(smf_label))
-        f.write("{}:1:1:0:0:0:{240}\n".format(smf_label))
-        f.write("{}:1:0:0:1:0:{240}\n".format(smf_label))
-        f.write("{}:1:1:2:1:0:{240}\n".format(smf_label))
-        f.write("{}:1:1:1:1:0:{13440}\n".format(smf_label))
-        f.write("{}:1:1:0:1:0:{30240}\n".format(smf_label))
-        f.write("{}:1:1:-1:1:0:{13440}\n".format(smf_label))
-        f.write("{}:1:1:-2:1:0:{240}\n".format(smf_label))
+        f.write(smf_label)
+        f.write(":0:0:0:0:0:{1}\n")
+        f.write("{}:1:1:0:0:0:{240}\n")
+	f.write(smf_label)
+        f.write("{}:1:0:0:1:0:{240}\n")
+	f.write(smf_label)
+        f.write("{}:1:1:2:1:0:{240}\n")
+	f.write(smf_label)
+        f.write("{}:1:1:1:1:0:{13440}\n")
+	f.write(smf_label)
+        f.write("{}:1:1:0:1:0:{30240}\n")
+	f.write(smf_label)
+        f.write("{}:1:1:-1:1:0:{13440}\n")
+	f.write(smf_label)
+        f.write("{}:1:1:-2:1:0:{240}\n")
 
