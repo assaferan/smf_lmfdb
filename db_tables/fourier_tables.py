@@ -40,7 +40,8 @@ def smf_qexp_reps_col_desc():
     desc['qf'] = 'Reduced quadratic form encoded as a triple of integers'
     desc['disc'] = 'Discriminant of the quadratic form'
     desc['index'] = 'Index of coefficient in case of vector-valued forms'
-    desc['coeffs'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    desc['coeff'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    return desc
 
 def smf_qexp_short_header():
     header = "smf_label:nmax:n1:n2:n12:index:coeff\ntext:smallint:smallint:smallint:smallint:smallint:integer[]\n\n"
@@ -56,7 +57,7 @@ def smf_qexp_reps_header():
 
 def load_smf_qexp_reps():
     table = db.smf_qexp_reps
-    aux_fname = "smf_lmfdb/db_tables/smf_qexp_reps_table.dat"
+    aux_fname = "smf_qexp_reps_table.dat"
     header = smf_qexp_reps_header()
     with open(aux_fname, "w") as f:
         f.write(header)
@@ -346,7 +347,7 @@ def print_E4_qexp_reps(filename):
         for disc in coefs.keys():
             for tup in (coefs[disc]).keys():
                 coef = coefs[disc][tup]
-                line = "{}:{}:{}:[[{}]]".format(smf_label, tup, disc, coef)
+                line = "{}:[{},{},{}]:{}:{}:[{}]".format(smf_label, tup[0], tup[1], tup[2], disc, 0, coef)
                 line = line.replace("[", "{")
                 line = line.replace("]", "}")
                 f.write(line)
