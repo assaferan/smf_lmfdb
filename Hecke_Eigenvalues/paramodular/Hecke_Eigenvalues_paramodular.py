@@ -81,12 +81,16 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
                for aut in aut_types for ht in hecke_types}
     divs = [d for d in divisors(N) if is_squarefree(d)]
     al_dims = {'ALdims' : [0 for d in divs], 'ALdims_G' : [0 for d in divs], 'ALdims_P' : [0 for d in divs]}
+    cusp_dim = 0
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
-        if f['aut_rep_type'] in ['O','F','Y']:
+        if f['aut_rep_type'] in ['F','Y']:
+            continue
+        f_dim = len(f['field_poly'])-1
+        cusp_dim += f_dim
+        if f['aut_rep_type'] == 'O':
             continue
         div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
-        f_dim = len(f['field_poly'])-1
         al_dims['ALdims'][div_idx] += f_dim
         al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
         for ht in hecke_types:
@@ -96,7 +100,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
     traces.update(al_dims)
-    return traces
+    return traces, cusp_dim
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
