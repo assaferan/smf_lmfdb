@@ -74,6 +74,30 @@ def is_eisenstein(e):
     ps = primes_first_n(len(traces))
     return all([traces[i] == ps[i]**3+ps[i]**2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
 
+# Last parameter if it is actually paramodular
+def check_sk(f, N, B = 100):
+    primes_N = [p for p in prime_range(B) if N % p != 0]
+    divs_N = divisors(N)
+    dim = len(f['field_poly'])-1
+    tr_array = [ x for x in f['trace_lambda_p'] if x != 'NULL']
+    orbits = db.mf_newforms.search({"level" : {"$in" : divs_N}, "weight" : 4, "char_order" : 1}, ["hecke_orbit_code", "label", "fricke_eigenval"])
+    orbits = [orb for orb in orbits]
+    fricke = {orb["label"] : orb["fricke_eigenval"] for orb in orbits}
+    orbits = {orb["hecke_orbit_code"] : orb["label"] for orb in orbits}
+    
+    for q in alpha_q.keys():
+        tr_orbits = db.mf_hecke_traces.search({"hecke_orbit_code" : {"$in" : list(orbits.keys())}, "n" : q, "trace_an" : alpha_q[q]}, "hecke_orbit_code")
+        orbits = { tr : orbits[tr] for tr in tr_orbits}
+    aps = {hoc : {a["n"] : int(a["trace_an"]) for a in db.mf_hecke_traces.search({"hecke_orbit_code" : hoc})} for hoc in orbits.keys()}
+    lamda_ps = { orbits[hoc] : [dim*p*(p+1) + aps[hoc][p] for p in primes_N] for hoc in aps.keys()}
+    res = [label for label in lamda_ps.keys() if lamda_ps[label] == ap_array]
+    if len(res) == 0:
+        return False, []
+
+    assert(len(res) == 1);
+    
+    return True, [res[0]], fricke[res[0]] == -1
+
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
@@ -93,6 +117,9 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
             continue
         f_dim = len(f['field_poly'])-1
         if not is_eisenstein(f):
+            is_sk, modfrm, is_para = check_sk(f, N)
+            if (is_sk) and not (is_para):
+                continue
             cusp_dim += f_dim
         if f['aut_rep_type'] == 'O':
             continue
