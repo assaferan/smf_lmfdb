@@ -86,8 +86,9 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         if f['aut_rep_type'] in ['O','F','Y']:
             continue
         div_idx = al_str_to_num(f['atkin_lehner_string'], N)
-        al_dims['ALdims'][div_idx] += f['dim']
-        al_dims['ALdims_' + f['aut_rep_type']] += f['dim']
+        f_dim = len(f['field_poly'])-1
+        al_dims['ALdims'][div_idx] += f_dim
+        al_dims['ALdims_' + f['aut_rep_type']] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
