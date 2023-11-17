@@ -72,7 +72,7 @@ def al_str_to_num(al_str, N):
 def is_eisenstein(e):
     traces = e['trace_lambda_p']
     ps = primes_first_n(len(traces))
-    return all([traces[i] == ps[i]^3+ps[i]^2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
+    return all([traces[i] == ps[i]**3+ps[i]**2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
 
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
