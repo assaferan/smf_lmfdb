@@ -79,7 +79,7 @@ def check_sk(f, N, B = 100):
     primes_N = [p for p in prime_range(B) if N % p != 0]
     divs_N = divisors(N)
     dim = len(f['field_poly'])-1
-    tr_array = [ x for x in f['trace_lambda_p'] if x != 'NULL']
+    ap_array = [ x for x in f['trace_lambda_p'] if x != 'NULL']
     orbits = db.mf_newforms.search({"level" : {"$in" : divs_N}, "weight" : 4, "char_order" : 1}, ["hecke_orbit_code", "label", "fricke_eigenval"])
     orbits = [orb for orb in orbits]
     fricke = {orb["label"] : orb["fricke_eigenval"] for orb in orbits}
