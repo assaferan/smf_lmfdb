@@ -92,7 +92,7 @@ def check_sk(f, N, db, B = 100, alpha_q = {}):
     lamda_ps = { orbits[hoc] : [dim*p*(p+1) + aps[hoc][p] for p in primes_N] for hoc in aps.keys()}
     res = [label for label in lamda_ps.keys() if lamda_ps[label] == ap_array]
     if len(res) == 0:
-        return False, []
+        return False, [], False
 
     assert(len(res) == 1);
     
@@ -159,9 +159,11 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
         f_dim = len(f['field_poly'])-1
         if is_eisenstein(f):
             continue
-        if check_sk(f,N,db):
+        is_sk, _, _ = check_sk(f,N,db)
+        if is_sk:
             continue
-        if check_yoshida(f,N,db):
+        is_yosh, _ = check_yoshida(f,N,db)
+        if is_yosh:
             continue
         # if not is_eisenstein(f):
         #    is_sk, modfrm, is_para = check_sk(f, N)
