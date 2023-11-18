@@ -110,16 +110,17 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     cusp_dim = 0
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
-        if f['aut_rep_type'] in ['F','Y']:
+        # if f['aut_rep_type'] in ['F','Y']:
+        if f['aut_rep_type'] ne 'G':
             continue
         f_dim = len(f['field_poly'])-1
-        if not is_eisenstein(f):
-            is_sk, modfrm, is_para = check_sk(f, N)
-            if (is_sk) and not (is_para):
-                continue
-            cusp_dim += f_dim
-        if f['aut_rep_type'] == 'O':
-            continue
+        # if not is_eisenstein(f):
+        #    is_sk, modfrm, is_para = check_sk(f, N)
+        #    if (is_sk) and not (is_para):
+        #       continue
+        cusp_dim += f_dim
+        #if f['aut_rep_type'] == 'O':
+        #    continue
         div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
         al_dims['ALdims'][div_idx] += f_dim
         al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
@@ -129,6 +130,10 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
+    if (j == 0):
+        cusp_dim += Saito_Kurokawa_lift_dim(k,N)
+        for i in range(len(divs)):
+            al_dims['ALdims_P'][i] += Saito_Kurokawa_lift_dim(k,N,al=divs[i])
     traces.update(al_dims)
     return traces, cusp_dim
 
