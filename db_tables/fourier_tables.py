@@ -129,17 +129,53 @@ def load_smf_qexp_reduction():
             f.write(line + "\n")
     table.reload(aux_fname, sep=":")
 
+def encode_hecke_orbit(label):
+    level, weight, char_orbit_label, hecke_orbit_label = label.split('.')
+    level = int(level)
+    weight = int(weight)
+    char_orbit = class_to_int(char_orbit_label)
+    hecke_orbit = class_to_int(hecke_orbit_label)
+    return level + (weight << 24) + (char_orbit << 36) + (hecke_orbit << 52)
+
+def smf_qexp_coeffs_process_file_poor_yuen(fname):
+    with open("../qexp_reduction_data/" + fname, "r") as f:
+        data = f.readlines()
+    nb = len(data)
+    R = PolynomialRing(QQ, "a")
+    label = fname.replace(".txt", "")
+    hecke_orbit_code = encode_hecke_orbit(label)
+    lines = []
+    for i in range(5, nb):
+        s = data[i]
+        s = s.replace("(","")
+        s = s.replace(")","")
+        entries = s.split(",")
+        if len(entries) < 6:
+            break
+
+        #hecke_orbit_code:qf_legendre:qf_tag:coeff
+        line = "{}:[{},{},{}]:[{},{}]:".format(
+            hecke_orbit_code, entries[0], entries[1], entries[2], entries[3], entries[4])
+        coeff = R(entries[5]).list()
+        line += str(coeff)
+        line = line.replace(", ",",")
+        line = line.replace("[","{")
+        line = line.replace("]","}")
+        lines.append(line)
+    return lines
+
 def load_smf_qexp_coeffs():
     table = db.smf_qexp_coeffs
     aux_fname = "smf_qexp_coeffs_table.dat"
     header = smf_qexp_coeffs_header()
     lines = []
-    for f in listdir("../")
+    for f in listdir("../qexp_coeffs_data"):
+        lines += smf_qexp_coeffs_process_file_poor_yuen(f)
     with open(aux_fname, "w") as f:
         f.write(header)
-    print_E4_qexp_reps(aux_fname)
+        for line in lines:
+            f.write(line + "\n")
     table.reload(aux_fname, sep=":")
-    return
 
 def E4_coefficients():
     coefs = {
