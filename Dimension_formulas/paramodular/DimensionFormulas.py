@@ -335,7 +335,7 @@ def classical_minus_cusp_dim(k,N,al=0):
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
     if f['dim'] == 0:
         return 0
     if (al != 0):
@@ -361,7 +361,7 @@ def classical_plus_cusp_dim(k,N,al=0):
      [0, 0, 0, 0, 1, 0, 1, 0, 1]]
     
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
     if f['dim'] == 0:
         return 0
     if (al != 0):
