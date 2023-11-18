@@ -2,7 +2,7 @@ from sage.all import (is_square, is_squarefree, prime_range, factor, divisors, W
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, write_data_from_files
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
-from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth, Saito_Kurokawa_lift_dim
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_Traces_paramodular, num_forms_paramodular, parse_omf5
 from lmfdb import db
