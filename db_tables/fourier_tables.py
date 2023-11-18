@@ -1,46 +1,73 @@
 import sys
+from os import listdir
 sys.path.append("/home/jean/code/lmfdb")
 from lmfdb import db
 from common_create_table import generate_table
 
+def smf_qexp_reduction_col_type():
+    cols = {}
+    cols['level'] = 'integer'
+    cols['family'] = 'text'
+    cols['qf_legendre'] = 'integer[]'
+    cols['qf_tag'] = 'integer[]'
+    cols['qf_orbit_rep'] = 'integer[]'
+    cols['is_minimal'] = 'boolean'
+    cols['index'] = 'bigint'
+    return cols
+
+def smf_qexp_reduction_col_desc():
+    desc = {}
+    desc['level'] = 'Level of the newspace'
+    desc['family'] = "Family of arithmetic subgroups ('F' = full, 'K' = paramodular, 'S' = Siegel, 'C' = principal)"
+    desc['qf_legendre'] = 'Legendre-reduced quadratic form'
+    desc['qf_tag'] = 'Tag attached to Legendre-reduced quadratic form'
+    desc['qf_orbit_rep'] = 'Orbit representative'
+    desc['is_minimal'] = 'True iff the orbit representative is minimal'
+    desc['index'] = 'Index of this quadratic form in the display ordering'
+    return desc
+
 def smf_qexp_short_col_type():
     cols = {}
-    cols['smf_label'] = 'text'
-    cols['nmax'] = 'smallint'
-    cols['n1'] = 'smallint'
-    cols['n2'] = 'smallint'
-    cols['n12'] = 'smallint'
+    cols['hecke_orbit_code'] = 'bigint'
+    cols['trace'] = 'smallint'
+    cols['qf'] = 'integer[]'
     cols['index'] = 'smallint'
     cols['coeff'] = 'integer[]'
     return cols
 
 def smf_qexp_short_col_desc():
     desc = {}
-    desc['smf_label'] = 'Label of the Siegel modular form'
-    desc['nmax'] = 'Degree in q1, q2'
-    desc['n1'] = 'Degree in q1'
-    desc['n2'] = 'Degree in q2'
-    desc['n12'] = 'Degree in q12'
+    desc['hecke_orbit_code'] = 'Hecke orbit code identifying the newform'
+    desc['trace'] = 'Trace of the 2*2 matrix representing the quadratic form'
+    desc['qf'] = 'Quadratic form encoded as a triple of integers'
     desc['index'] = 'Index of coefficient in case of vector-valued forms'
-    desc['coeff'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    desc['coeff'] = 'Coordinates of the coefficient in integral basis of the Hecke ring'
     return desc
 
 def smf_qexp_reps_col_type():
     cols = {}
-    cols['smf_label'] = 'text'
-    cols['qf'] = 'integer[]'
-    cols['disc'] = 'integer'
+    cols['hecke_orbit_code'] = 'bigint'
+    cols['qf_minimal'] = 'integer[]'
+    cols['qf_legendre'] = 'integer[]'
+    cols['qf_tag'] = 'integer[]'
+    cols['det'] = 'integer'
+    cols['trace_minimal'] = 'integer'
+    cols['slot'] = 'bigint'
     cols['index'] = 'smallint'
     cols['coeff'] = 'integer[]'
     return cols
 
 def smf_qexp_reps_col_desc():
     desc = {}
-    desc['smf_label'] = 'Label of the Siegel modular form'
-    desc['qf'] = 'Reduced quadratic form encoded as a triple of integers'
-    desc['disc'] = 'Discriminant of the quadratic form'
+    desc['hecke_orbit_code'] = 'Hecke orbit code identifying the newform'
+    desc['qf_minimal'] = 'Minimal representative in orbit of quadratic forms'
+    desc['qf_legendre'] = 'Legendre-reduced quadratic form'
+    desc['qf_tag'] = 'Tag attached to Legendre-reduced quadratic form'
+    desc['det'] = 'Determinant of 2T where the 2*2 matrix T represents any quadratic form in the orbit'
+    desc['trace_minimal'] = 'Trace of T where the 2*2 matrix T represents the minimal quadratic form'
+    desc['slot'] = 'Index of orbit of quadratic forms in the canonical ordering'
     desc['index'] = 'Index of coefficient in case of vector-valued forms'
-    desc['coeff'] = 'Coefficient encoded as a list of integers (coordinates in an integral basis of the Hecke field)'
+    desc['coeff'] = 'Coordinates of the coefficient in integral basis of the Hecke ring'
     return desc
 
 def smf_qexp_short_header():
@@ -51,9 +78,15 @@ def smf_qexp_reps_header():
     header = "smf_label:qf:disc:index:coeff\ntext:integer[]:integer:smallint:integer[]\n\n"
     return header
 
+def smf_qexp_reduction_header():
+    header = "level:family:qf_legendre:qf_tag:qf_orbit_rep:is_minimal:index\ninteger:text:integer[]:integer[]:integer[]:boolean:bigint\n\n"
+    return header
+
 #generate_table('smf_qexp_short', "Short, fully expanded q-expansions of Siegel modular forms", smf_qexp_short_col_type, smf_qexp_short_col_desc, label_col=None)
 
-#generate_table('smf_qexp_reps', "q-expansions of Siegel modular forms indexed by reduced quadratic forms", smf_qexp_reps_col_type, smf_qexp_reps_col_desc, label_col=None)
+#generate_table('smf_qexp_reduction', "Reduction of quadratic forms in q-expansions for Siegel modular forms", smf_qexp_reduction_col_type, smf_qexp_reduction_col_desc, label_col=None)
+
+#generate_table('smf_qexp_reps', "Coefficients in q-expansions of Siegel modular forms indexed by orbits of quadratic forms", smf_qexp_reps_col_type, smf_qexp_reps_col_desc, label_col=None)
 
 def load_smf_qexp_reps():
     table = db.smf_qexp_reps
@@ -74,6 +107,48 @@ def load_smf_qexp_short():
     print_E4_qexp_short(aux_fname)
     table.reload(aux_fname, sep=":")
     return
+
+def smf_qexp_reduction_process_file(fname):
+    with open("../qexp_reduction_data/" + fname, "r") as f:
+        data = f.readlines()
+    nb = len(data)
+    lines = []
+    level = fname.split(".")[2]
+    family = fname.split(".")[1]
+    for i in range(2, nb):
+        s = data[i]
+        s = s.replace(")","")
+        s = s.replace("(","")
+        entries = s.split(",")
+        if len(entries) < 8:
+            break
+        print(entries)
+
+        line = "{}:{}:[{},{},{}]:[{},{}]:[{},{},{}]:".format(
+            level, family, entries[0], entries[1], entries[2], entries[3], entries[4],
+            entries[5], entries[6], entries[7])
+        if entries[8] == "minc":
+            line += "true"
+        else:
+            line += "false"
+        line += ":{}".format(i - 2)
+        lines.append(line)
+    return lines
+
+def load_smf_qexp_reduction():
+    table = db.smf_qexp_reduction
+    aux_fname = "smf_qexp_reduction.dat"
+    header = smf_qexp_reduction_header()
+    lines = []
+    for f in listdir("../qexp_reduction_data"):
+        lines += smf_qexp_reduction_process_file(f)
+    with open(aux_fname, "w") as f:
+        f.write(header)
+        for line in lines:
+            f.write(line)
+            f.write("\n")
+    table.reload(aux_fname, sep=":")
+    print(files)
 
 def E4_coefficients():
     coefs = {
@@ -374,4 +449,3 @@ def print_E4_qexp_short(filename):
         f.write(":1:1:1:-1:0:{13440}\n")
         f.write(smf_label)
         f.write(":1:1:1:-2:0:{240}\n")
-
