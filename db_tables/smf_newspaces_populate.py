@@ -63,7 +63,7 @@ def count_old_G_forms(k,j,N):
         c += num_level_raise(M,N)*dim_G_new
     return c
 
-def num_classical_minus_cusp_dim(k,N,al=0):
+def num_classical_minus_cusp_dim(k,N):
     '''
     Returns the dimension of S_k^{new, -}(N).
     We do it by querying the LMFDB for the total dimension and the
@@ -77,15 +77,11 @@ def num_classical_minus_cusp_dim(k,N,al=0):
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
-    if f['dim'] == 0:
-        return 0
-    if (al != 0):
-        divs = [d for d in divisors(N) if is_squarefree(d)]
-        Q_idx = divs.index(al)
-        sgn = len(prime_divisors(al))
-        return f['ALdims'][Q_idx] if is_odd(k//2 - sgn) else 0
-    return f['plus_dim'] if is_odd(k//2) else f['dim']-f['plus_dim']
+    sgn = (-1)**(k//2-1)
+    fs = db.mf_newforms.search({'weight' : k, 'level' : N, 'fricke_eigenval' : sgn,
+                                'char_order' : 1},['label'])
+    num_forms = len([f for f in fs])
+    return num_forms
 
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
@@ -109,6 +105,7 @@ def create_entries(triple_list):
                 traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
+                entry['num_forms'] += num_classical_minus_cusp_dim
                 entry['ALdims_G'] = al_dims_G
                 entry['ALdims_P'] = [0 for al in al_dims_G]
                 entry['ALdims'] = [0 for al in al_dims_G]
