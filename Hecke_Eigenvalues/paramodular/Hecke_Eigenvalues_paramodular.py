@@ -149,54 +149,29 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
     divs = [d for d in divisors(N) if is_squarefree(d)]
-    al_dims = {'ALdims' : [0 for d in divs], 'ALdims_G' : [0 for d in divs], 'ALdims_P' : [0 for d in divs]}
-    cusp_dim = 0
+    new_cusp_G_dim = 0
+    al_dims_G = [0 for d in divs]
     for f in forms:
-        # !! TODO - handle the old forms and classify them as well
-        # if f['aut_rep_type'] in ['F','Y']:
-        if f['aut_rep_type'] not in ['G','O']:
+        if f['aut_rep_type'] != 'G':
             continue
         f_dim = len(f['field_poly'])-1
-        if is_eisenstein(f):
-            continue
-        is_sk, _, _ = check_sk(f,N,db)
-        if is_sk:
-            continue
-        is_yosh, _ = check_yoshida(f,N,db)
-        if is_yosh:
-            continue
-        # if not is_eisenstein(f):
-        #    is_sk, modfrm, is_para = check_sk(f, N)
-        #    if (is_sk) and not (is_para):
-        #       continue
-        cusp_dim += f_dim
-        if f['aut_rep_type'] == 'O':
-            continue
+        new_cusp_G_dim += f_dim
         div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
-        al_dims['ALdims'][div_idx] += f_dim
-        al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
+        al_dims_G[div_idx] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    if (j == 0):
-        cusp_dim += Saito_Kurokawa_lift_dim(k,N)
-        for i in range(len(divs)):
-            al_dims['ALdims_P'][i] += Saito_Kurokawa_lift_dim(k,N,al=divs[i])
-    traces.update(al_dims)
-    return traces, cusp_dim
+    return traces, new_cusp_G_dim, al_dims_G
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-    #pickled = open(fname, "rb").read()
-    #forms = pickle.loads(pickled)
-    #forms = eval(open(fname).read())
     forms = parse_omf5(k,j,N)
-    # return sum([len(forms[al_sign]) for al_sign in forms])
-    return len(forms), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
+    # add SK to num_forms
+    return len([f for f in forms if f['aut_rep_type'] == 'G']), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''

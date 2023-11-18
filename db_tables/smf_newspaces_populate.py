@@ -49,6 +49,19 @@ def smf_level2_space(k,j):
     entry.update(common_entry_values(k,j,2,'P'))
     return entry
 
+def num_level_raise(M,N):
+    ret = 1
+    for p, e in factor(N // M):
+        ret *= WeightedIntegerVectors(e, [1,1,2]).cardinality()
+    return ret
+
+def count_old_G_forms(k,j,N):
+    c = 0
+    for M in divisors(N):
+        _, dim_G_new = num_forms_paramodular(k,j,M)
+        c += num_level_raise(M,N)*dim_G_new
+    return c
+
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
 def create_entries(triple_list):
@@ -68,16 +81,23 @@ def create_entries(triple_list):
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
             if (k == 3) and (j == 0) and (not is_square(N)) and (N < 1000):
-                traces, cusp_dim = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
+                traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
+                entry['ALdims_G'] = al_dims_G
+                entry['ALdims_P'] = [0 for al in al_dims_G]
+                entry['ALdims'] = [0 for al in al_dims_G]
+                for i in range(len(divs)):
+                    entry['ALdims_P'][i] = Saito_Kurokawa_lift_dim(k,N,al=divs[i])
+                    entry['ALdims'][i] = entry['ALdims_G'][i] + entry['ALdims_P'][i]
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new
                     entry['cusp_dim'] = cusp_dim
-                    entry['cusp_G_dim'] = entry['cusp_dim'] - entry['cusp_P_dim']
+                    entry['old_cusp_G_dim'] = count_old_G_forms(k,j,N)
+                    entry['cusp_G_dim'] = entry['old_cusp_G_dim'] + entry['new_cusp_G_dim']
+                    entry['cusp_dim'] = entry['cusp_G_dim'] + entry['cusp_P_dim']
                     entry['new_cusp_dim'] = dim_G_new + entry['new_cusp_P_dim']
                     entry['old_cusp_dim'] = entry['cusp_dim'] - entry['new_cusp_dim']
-                    entry['old_cusp_G_dim'] = entry['cusp_G_dim'] - entry['new_cusp_G_dim']
                     assert entry['old_cusp_G_dim'] >= 0
                     assert entry['old_cusp_dim'] >= 0
                     assert entry['cusp_G_dim'] >= 0
