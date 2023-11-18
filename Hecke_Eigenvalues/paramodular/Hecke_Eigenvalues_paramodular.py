@@ -111,7 +111,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     for f in forms:
         # !! TODO - handle the old forms and classify them as well
         # if f['aut_rep_type'] in ['F','Y']:
-        if f['aut_rep_type'] ne 'G':
+        if f['aut_rep_type'] != 'G':
             continue
         f_dim = len(f['field_poly'])-1
         # if not is_eisenstein(f):
