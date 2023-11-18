@@ -1,8 +1,11 @@
 import sys
 from os import listdir
+from sage.all import PolynomialRing, QQ
 sys.path.append("/home/jean/code/lmfdb")
 from lmfdb import db
+from lmfdb.siegel_modular_forms.web_newform import encode_hecke_orbit
 from common_create_table import generate_table
+from sage.databases.cremona import class_to_int
 
 def smf_qexp_reduction_col_type():
     cols = {}
@@ -129,19 +132,17 @@ def load_smf_qexp_reduction():
             f.write(line + "\n")
     table.reload(aux_fname, sep=":")
 
-def encode_hecke_orbit(label):
-    level, weight, char_orbit_label, hecke_orbit_label = label.split('.')
-    level = int(level)
-    weight = int(weight)
-    char_orbit = class_to_int(char_orbit_label)
-    hecke_orbit = class_to_int(hecke_orbit_label)
-    return level + (weight << 24) + (char_orbit << 36) + (hecke_orbit << 52)
-
 def smf_qexp_coeffs_process_file_poor_yuen(fname):
-    with open("../qexp_reduction_data/" + fname, "r") as f:
+    with open("../qexp_coeffs_data/" + fname, "r") as f:
         data = f.readlines()
     nb = len(data)
-    R = PolynomialRing(QQ, "a")
+    Ra = PolynomialRing(QQ, "a")
+    Rx = PolynomialRing(QQ, "x")
+    minpoly = data[0].replace("minPoly=","")
+    minpoly = minpoly.replace("'","")
+    minpoly = minpoly.replace("\"", "")
+    minpoly = Rx(minpoly)
+    dim = minpoly.degree()
     label = fname.replace(".txt", "")
     hecke_orbit_code = encode_hecke_orbit(label)
     lines = []
@@ -156,13 +157,28 @@ def smf_qexp_coeffs_process_file_poor_yuen(fname):
         #hecke_orbit_code:qf_legendre:qf_tag:coeff
         line = "{}:[{},{},{}]:[{},{}]:".format(
             hecke_orbit_code, entries[0], entries[1], entries[2], entries[3], entries[4])
-        coeff = R(entries[5]).list()
+        coeff = Ra(entries[5]).list()
+        padding = [0 for i in range(dim - len(coeff))]
+        coeff += padding
         line += str(coeff)
         line = line.replace(", ",",")
         line = line.replace("[","{")
         line = line.replace("]","}")
         lines.append(line)
     return lines
+
+def smf_qexp_coeffs_process_file_williams(fname):
+    with open("../Eigenforms_Weight4/" + fname, "r") as f:
+        data = f.readlines()
+    nb = len(data)
+    _, level, _, _, _, hecke_orbit_label = fname.split("_")
+    label = "2.K.{}.4.0.a.{}".format(level, hecke_orbit_label)
+    minpoly = data[0]
+    if minpoly == "Hecke field: QQ":
+        F = QQ
+    else:
+        Rx = PolynomialRing(QQ, "x")
+        minpoly = minpoly.replace("Hecke field: b = root of ", "")
 
 def load_smf_qexp_coeffs():
     table = db.smf_qexp_coeffs
