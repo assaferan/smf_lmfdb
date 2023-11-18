@@ -63,6 +63,30 @@ def count_old_G_forms(k,j,N):
         c += num_level_raise(M,N)*dim_G_new
     return c
 
+def num_classical_minus_cusp_dim(k,N,al=0):
+    '''
+    Returns the dimension of S_k^{new, -}(N).
+    We do it by querying the LMFDB for the total dimension and the
+    dimension of the plus subspace
+
+    Example #1 (p. 618):
+    >>> [[classical_minus_cusp_dim(2*k-2,N) for k in range(3,12)]
+    ... for N in [6,3,2,1]] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 1, 0, 1, 1, 1],
+     [0, 0, 0, 1, 0, 1, 1, 1, 1],
+     [0, 0, 0, 0, 0, 1, 0, 0, 1],
+     [0, 0, 0, 0, 0, 0, 0, 1, 0]]
+    '''
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
+    if f['dim'] == 0:
+        return 0
+    if (al != 0):
+        divs = [d for d in divisors(N) if is_squarefree(d)]
+        Q_idx = divs.index(al)
+        sgn = len(prime_divisors(al))
+        return f['ALdims'][Q_idx] if is_odd(k//2 - sgn) else 0
+    return f['plus_dim'] if is_odd(k//2) else f['dim']-f['plus_dim']
+
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
 def create_entries(triple_list):
