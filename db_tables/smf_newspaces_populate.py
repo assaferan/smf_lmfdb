@@ -105,7 +105,7 @@ def create_entries(triple_list):
                 traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
-                entry['num_forms'] += num_classical_minus_cusp_dim
+                entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
                 entry['ALdims_G'] = al_dims_G
                 entry['ALdims_P'] = [0 for al in al_dims_G]
                 entry['ALdims'] = [0 for al in al_dims_G]
