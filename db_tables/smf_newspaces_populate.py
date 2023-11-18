@@ -115,7 +115,6 @@ def create_entries(triple_list):
                     entry['ALdims'][i] = entry['ALdims_G'][i] + entry['ALdims_P'][i]
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new
-                    entry['cusp_dim'] = cusp_dim
                     entry['old_cusp_G_dim'] = count_old_G_forms(k,j,N)
                     entry['cusp_G_dim'] = entry['old_cusp_G_dim'] + entry['new_cusp_G_dim']
                     entry['cusp_dim'] = entry['cusp_G_dim'] + entry['cusp_P_dim']
