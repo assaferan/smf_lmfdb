@@ -1,4 +1,4 @@
-from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, WeightedIntegerVectors, factor)
+from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, WeightedIntegerVectors, factor, gcd)
 from lmfdb import db
 
 '''
@@ -321,7 +321,7 @@ def cmf_label(k,N):
 
 # Too tired to implement the trace formula here as well
 # for now we cheat
-def classical_minus_cusp_dim(k,N):
+def classical_minus_cusp_dim(k,N,al=0):
     '''
     Returns the dimension of S_k^{new, -}(N).
     We do it by querying the LMFDB for the total dimension and the
@@ -335,13 +335,18 @@ def classical_minus_cusp_dim(k,N):
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
     if f['dim'] == 0:
         return 0
+    if (al != 0):
+        divs = [d for d in divisors(N) if is_squarefree(d)]
+        Q_idx = divs.index(al)
+        sgn = len(prime_divisors(al))
+        return f['ALdims'][Q_idx] if is_odd(k//2 - sgn) else 0
     return f['plus_dim'] if is_odd(k//2) else f['dim']-f['plus_dim']
 
 # we could return them together, but we never call them with the same level
-def classical_plus_cusp_dim(k,N):
+def classical_plus_cusp_dim(k,N,al=0):
     '''
     Returns the dimension of S_k^{new, +}(N).
     We do it by querying the LMFDB for the total dimension and the
@@ -356,9 +361,14 @@ def classical_plus_cusp_dim(k,N):
      [0, 0, 0, 0, 1, 0, 1, 0, 1]]
     
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim'])
+    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
     if f['dim'] == 0:
         return 0
+    if (al != 0):
+        divs = [d for d in divisors(N) if is_squarefree(d)]
+        Q_idx = divs.index(al)
+        sgn = len(prime_divisors(al))
+        return f['ALdims'][Q_idx] if is_even(k//2 - sgn) else 0
     return f['plus_dim'] if is_even(k//2) else f['dim']-f['plus_dim']
 
 def paramodular_new_cusp_dim(k,j,N):
@@ -481,11 +491,11 @@ def Yoshida_lift_dim(k,j,N):
     '''
     return sum([Yoshida_new_lift_dim(k,j,M) for M in divisors(N)])
 
-def Saito_Kurokawa_new_lift_dim(k,N):
+def Saito_Kurokawa_new_lift_dim(k,N,al=0):
     # all the rest here are considered old
-    return classical_minus_cusp_dim(2*k-2,N)
+    return classical_minus_cusp_dim(2*k-2,N,al=al)
 
-def Saito_Kurokawa_lift_dim(k,N):
+def Saito_Kurokawa_lift_dim(k,N,al=0):
     '''
     Returns the dimension of the total space of SK(=Gritsenko) lifts, including old forms
 
@@ -505,7 +515,9 @@ def Saito_Kurokawa_lift_dim(k,N):
      [0, 1, 2, 4, 4, 6, 7, 9, 9, 12, 11, 14, 14, 17, 16, 20, 18, 22]]
     
     '''
-    return sum([Saito_Kurokawa_new_lift_dim(k,M) for M in divisors(N)])
+    def Q(M):
+        return gcd(al,M) if al != 0 else 0
+    return sum([Saito_Kurokawa_new_lift_dim(k,M,al=Q(M)) for M in divisors(N)])
 
 # This is the total dimension of the (cuspidal) lifts (see (7) in p. 617)
 def paramodular_new_lift_dim(k,j,N):

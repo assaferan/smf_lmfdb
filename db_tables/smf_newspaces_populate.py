@@ -1,4 +1,4 @@
-from sage.all import (is_square, is_squarefree, prime_range, factor)
+from sage.all import (is_square, is_squarefree, prime_range, factor, divisors, WeightedIntegerVectors)
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, write_data_from_files
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
@@ -49,6 +49,40 @@ def smf_level2_space(k,j):
     entry.update(common_entry_values(k,j,2,'P'))
     return entry
 
+def num_level_raise(M,N):
+    ret = 1
+    for p, e in factor(N // M):
+        ret *= WeightedIntegerVectors(e, [1,1,2]).cardinality()
+    return ret
+
+def count_old_G_forms(k,j,N):
+    c = 0
+    divs = [d for d in divisors(N) if d != N]
+    for M in divs:
+        _, dim_G_new = num_forms_paramodular(k,j,M)
+        c += num_level_raise(M,N)*dim_G_new
+    return c
+
+def num_classical_minus_cusp_dim(k,N):
+    '''
+    Returns the dimension of S_k^{new, -}(N).
+    We do it by querying the LMFDB for the total dimension and the
+    dimension of the plus subspace
+
+    Example #1 (p. 618):
+    >>> [[classical_minus_cusp_dim(2*k-2,N) for k in range(3,12)]
+    ... for N in [6,3,2,1]] # doctest: +NORMALIZE_WHITESPACE
+    [[0, 0, 0, 0, 1, 0, 1, 1, 1],
+     [0, 0, 0, 1, 0, 1, 1, 1, 1],
+     [0, 0, 0, 0, 0, 1, 0, 0, 1],
+     [0, 0, 0, 0, 0, 0, 0, 1, 0]]
+    '''
+    sgn = (-1)**(k//2-1)
+    fs = db.mf_newforms.search({'weight' : k, 'level' : N, 'fricke_eigenval' : sgn,
+                                'char_order' : 1},['label'])
+    num_forms = len([f for f in fs])
+    return num_forms
+
 # triple_list consists of triples (k,j,N) of weight and level
 # at the moment we restrict to trivial character
 def create_entries(triple_list):
@@ -68,22 +102,31 @@ def create_entries(triple_list):
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
             if (k == 3) and (j == 0) and (not is_square(N)) and (N < 1000):
-                traces, cusp_dim = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
+                traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
+                entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
+                entry['ALdims_G'] = al_dims_G
+                entry['ALdims_P'] = [0 for al in al_dims_G]
+                entry['ALdims'] = [0 for al in al_dims_G]
+                divs = [d for d in divisors(N) if is_squarefree(d)]
+                for i in range(len(divs)):
+                    entry['ALdims_P'][i] = Saito_Kurokawa_lift_dim(k,N,al=divs[i])
+                    entry['ALdims'][i] = entry['ALdims_G'][i] + entry['ALdims_P'][i]
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new
                     entry['cusp_dim'] = cusp_dim
-                    entry['cusp_G_dim'] = entry['cusp_dim'] - entry['cusp_P_dim']
+                    entry['old_cusp_G_dim'] = count_old_G_forms(k,j,N)
+                    entry['cusp_G_dim'] = entry['old_cusp_G_dim'] + entry['new_cusp_G_dim']
+                    entry['cusp_dim'] = entry['cusp_G_dim'] + entry['cusp_P_dim']
                     entry['new_cusp_dim'] = dim_G_new + entry['new_cusp_P_dim']
                     entry['old_cusp_dim'] = entry['cusp_dim'] - entry['new_cusp_dim']
-                    entry['old_cusp_G_dim'] = entry['cusp_G_dim'] - entry['new_cusp_G_dim']
                     assert entry['old_cusp_G_dim'] >= 0
                     assert entry['old_cusp_dim'] >= 0
                     assert entry['cusp_G_dim'] >= 0
                 else:
                     assert entry['new_cusp_G_dim'] == dim_G_new
-                    assert entry['cusp_dim'] == cusp_dim
+                    assert entry['old_cusp_G_dim'] == count_old_G_forms(k,j,N)
         entries.append(entry)
     return entries
 

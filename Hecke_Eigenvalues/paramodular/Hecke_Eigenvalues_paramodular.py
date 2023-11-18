@@ -2,6 +2,7 @@
 from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim
 
 from lmfdb import db
 
@@ -74,6 +75,69 @@ def is_eisenstein(e):
     ps = primes_first_n(len(traces))
     return all([traces[i] == ps[i]**3+ps[i]**2+ps[i]+1 for i in range(len(ps)) if traces[i] != 'NULL'])
 
+# Last parameter if it is actually paramodular
+def check_sk(f, N, db, B = 100, alpha_q = {}):
+    primes_N = [p for p in prime_range(B) if N % p != 0]
+    divs_N = divisors(N)
+    dim = len(f['field_poly'])-1
+    ap_array = [ x for x in f['trace_lambda_p'] if x != 'NULL']
+    orbits = db.mf_newforms.search({"level" : {"$in" : divs_N}, "weight" : 4, "char_order" : 1}, ["hecke_orbit_code", "label", "fricke_eigenval"])
+    orbits = [orb for orb in orbits]
+    fricke = {orb["label"] : orb["fricke_eigenval"] for orb in orbits}
+    orbits = {orb["hecke_orbit_code"] : orb["label"] for orb in orbits}
+    for q in alpha_q.keys():
+        tr_orbits = db.mf_hecke_traces.search({"hecke_orbit_code" : {"$in" : list(orbits.keys())}, "n" : q, "trace_an" : alpha_q[q]}, "hecke_orbit_code")
+        orbits = { tr : orbits[tr] for tr in tr_orbits}
+    aps = {hoc : {a["n"] : int(a["trace_an"]) for a in db.mf_hecke_traces.search({"hecke_orbit_code" : hoc})} for hoc in orbits.keys()}
+    lamda_ps = { orbits[hoc] : [dim*p*(p+1) + aps[hoc][p] for p in primes_N] for hoc in aps.keys()}
+    res = [label for label in lamda_ps.keys() if lamda_ps[label] == ap_array]
+    if len(res) == 0:
+        return False, [], False
+
+    assert(len(res) == 1);
+    
+    return True, [res[0]], fricke[res[0]] == -1
+
+def check_yoshida(f, N, db, B = 100, alpha_q={}):
+
+    primes_N = [p for p in prime_range(B) if N % p != 0]
+    divs_N = divisors(N)
+    dim = len(f['field_poly'])-1
+    ap_array = [ x for x in f['trace_lambda_p'] if x != 'NULL']
+ 
+    wts = [2,4]
+
+    divs_d = divisors(dim)
+    
+    orbits = { w : db.mf_newforms.search({"level" : {"$in" : divs_N}, "weight" : w, "char_order" : 1, "dim" : {"$in" : divs_d} }, ["hecke_orbit_code", "label", "dim"]) for w in wts}
+
+    orb_dict = {w : { d : {}  for d in divs_d } for w in wts}
+    for w in wts:
+        for orb in orbits[w]:
+            orb_dict[w][orb["dim"]][orb["hecke_orbit_code"]] = orb["label"]
+
+    orbits = orb_dict
+    for q in alpha_q.keys():
+        tr_orbits = { w : {d : db.mf_hecke_traces.search({"hecke_orbit_code" : {"$in" : list(orbits[w][d].keys())}, "n" : q, "trace_an" : alpha_q[q][w] * d // dim }, "hecke_orbit_code") for d in divs_d} for w in wts}
+    
+        orbits = { w : {d : { tr : orbits[w][d][tr] for tr in tr_orbits[w][d]} for d in divs_d} for w in wts}
+
+    aps = { w : {d : {hoc : {a["n"] : int(a["trace_an"]) for a in db.mf_hecke_traces.search({"hecke_orbit_code" : hoc})} for hoc in orbits[w][d].keys()} for d in divs_d} for w in wts}
+
+    lamda_ps = {}
+    for d in divs_d:
+        lamda_ps_d = {(orbits[2][d][hoc2], orbits[4][dim//d][hoc4]) : [p*aps[2][d][hoc2][p]*dim//d + aps[4][dim//d][hoc4][p]*d for p in primes_N] for hoc2 in aps[2][d].keys() for hoc4 in aps[4][dim//d].keys()}
+        lamda_ps.update(lamda_ps_d)
+
+    res = [labels for labels in lamda_ps.keys() if lamda_ps[labels] == ap_array]
+    
+    if len(res) == 0:
+        return False, []
+
+    assert(len(res) == 1)
+    
+    return True, list(res[0])
+
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
@@ -85,38 +149,29 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
     divs = [d for d in divisors(N) if is_squarefree(d)]
-    al_dims = {'ALdims' : [0 for d in divs], 'ALdims_G' : [0 for d in divs], 'ALdims_P' : [0 for d in divs]}
-    cusp_dim = 0
+    new_cusp_G_dim = 0
+    al_dims_G = [0 for d in divs]
     for f in forms:
-        # !! TODO - handle the old forms and classify them as well
-        if f['aut_rep_type'] in ['F','Y']:
+        if f['aut_rep_type'] != 'G':
             continue
         f_dim = len(f['field_poly'])-1
-        if not is_eisenstein(f):
-            cusp_dim += f_dim
-        if f['aut_rep_type'] == 'O':
-            continue
+        new_cusp_G_dim += f_dim
         div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
-        al_dims['ALdims'][div_idx] += f_dim
-        al_dims['ALdims_' + f['aut_rep_type']][div_idx] += f_dim
+        al_dims_G[div_idx] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
-    traces.update(al_dims)
-    return traces, cusp_dim
+    return traces, new_cusp_G_dim, al_dims_G
 
 def num_forms_paramodular(k,j,N):
     folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
     fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-    #pickled = open(fname, "rb").read()
-    #forms = pickle.loads(pickled)
-    #forms = eval(open(fname).read())
     forms = parse_omf5(k,j,N)
-    # return sum([len(forms[al_sign]) for al_sign in forms])
-    return len(forms), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
+    # add SK to num_forms
+    return len([f for f in forms if f['aut_rep_type'] == 'G']), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
