@@ -44,29 +44,19 @@ def smf_qexp_short_col_desc():
     desc['coeff'] = 'Coordinates of the coefficient in integral basis of the Hecke ring'
     return desc
 
-def smf_qexp_reps_col_type():
+def smf_qexp_coeffs_col_type():
     cols = {}
     cols['hecke_orbit_code'] = 'bigint'
-    cols['qf_minimal'] = 'integer[]'
     cols['qf_legendre'] = 'integer[]'
     cols['qf_tag'] = 'integer[]'
-    cols['det'] = 'integer'
-    cols['trace_minimal'] = 'integer'
-    cols['slot'] = 'bigint'
-    cols['index'] = 'smallint'
     cols['coeff'] = 'integer[]'
     return cols
 
-def smf_qexp_reps_col_desc():
+def smf_qexp_coeffs_col_desc():
     desc = {}
     desc['hecke_orbit_code'] = 'Hecke orbit code identifying the newform'
-    desc['qf_minimal'] = 'Minimal representative in orbit of quadratic forms'
     desc['qf_legendre'] = 'Legendre-reduced quadratic form'
     desc['qf_tag'] = 'Tag attached to Legendre-reduced quadratic form'
-    desc['det'] = 'Determinant of 2T where the 2*2 matrix T represents any quadratic form in the orbit'
-    desc['trace_minimal'] = 'Trace of T where the 2*2 matrix T represents the minimal quadratic form'
-    desc['slot'] = 'Index of orbit of quadratic forms in the canonical ordering'
-    desc['index'] = 'Index of coefficient in case of vector-valued forms'
     desc['coeff'] = 'Coordinates of the coefficient in integral basis of the Hecke ring'
     return desc
 
@@ -74,8 +64,8 @@ def smf_qexp_short_header():
     header = "smf_label:nmax:n1:n2:n12:index:coeff\ntext:smallint:smallint:smallint:smallint:smallint:integer[]\n\n"
     return header
 
-def smf_qexp_reps_header():
-    header = "smf_label:qf:disc:index:coeff\ntext:integer[]:integer:smallint:integer[]\n\n"
+def smf_qexp_coeffs_header():
+    header = "hecke_orbit_code:qf_legendre:qf_tag:coeff\nbigint:integer[]:integer[]:integer[]\n\n"
     return header
 
 def smf_qexp_reduction_header():
@@ -86,17 +76,7 @@ def smf_qexp_reduction_header():
 
 #generate_table('smf_qexp_reduction', "Reduction of quadratic forms in q-expansions for Siegel modular forms", smf_qexp_reduction_col_type, smf_qexp_reduction_col_desc, label_col=None)
 
-#generate_table('smf_qexp_reps', "Coefficients in q-expansions of Siegel modular forms indexed by orbits of quadratic forms", smf_qexp_reps_col_type, smf_qexp_reps_col_desc, label_col=None)
-
-def load_smf_qexp_reps():
-    table = db.smf_qexp_reps
-    aux_fname = "smf_qexp_reps_table.dat"
-    header = smf_qexp_reps_header()
-    with open(aux_fname, "w") as f:
-        f.write(header)
-    print_E4_qexp_reps(aux_fname)
-    table.reload(aux_fname, sep=":")
-    return
+#generate_table('smf_qexp_coeffs', "Coefficients in q-expansions of Siegel modular forms indexed by orbits of quadratic forms", smf_qexp_coeffs_col_type, smf_qexp_coeffs_col_desc, label_col=None)
 
 def load_smf_qexp_short():
     table = db.smf_qexp_short
@@ -122,7 +102,6 @@ def smf_qexp_reduction_process_file(fname):
         entries = s.split(",")
         if len(entries) < 8:
             break
-        print(entries)
 
         line = "{}:{}:[{},{},{}]:[{},{}]:[{},{},{}]:".format(
             level, family, entries[0], entries[1], entries[2], entries[3], entries[4],
@@ -132,6 +111,8 @@ def smf_qexp_reduction_process_file(fname):
         else:
             line += "false"
         line += ":{}".format(i - 2)
+        line = line.replace("[","{")
+        line = line.replace("]","}")
         lines.append(line)
     return lines
 
@@ -145,10 +126,20 @@ def load_smf_qexp_reduction():
     with open(aux_fname, "w") as f:
         f.write(header)
         for line in lines:
-            f.write(line)
-            f.write("\n")
+            f.write(line + "\n")
     table.reload(aux_fname, sep=":")
-    print(files)
+
+def load_smf_qexp_coeffs():
+    table = db.smf_qexp_coeffs
+    aux_fname = "smf_qexp_coeffs_table.dat"
+    header = smf_qexp_coeffs_header()
+    lines = []
+    for f in listdir("../")
+    with open(aux_fname, "w") as f:
+        f.write(header)
+    print_E4_qexp_reps(aux_fname)
+    table.reload(aux_fname, sep=":")
+    return
 
 def E4_coefficients():
     coefs = {
