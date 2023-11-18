@@ -175,10 +175,28 @@ def smf_qexp_coeffs_process_file_williams(fname):
     label = "2.K.{}.4.0.a.{}".format(level, hecke_orbit_label)
     minpoly = data[0]
     if minpoly == "Hecke field: QQ":
-        F = QQ
+        dim = 1
     else:
         Rx = PolynomialRing(QQ, "x")
         minpoly = minpoly.replace("Hecke field: b = root of ", "")
+        minpoly = Rx(minpoly)
+        dim = minpoly.degree()
+    Rb = PolynomialRing(QQ, "b")
+    Rbr = LaurentPolynomialRing(Rb, "r")
+    R = PowerSeriesRing(Rbr, ["q", "s"])
+    poly = R(data[2])
+    prec = poly.prec()
+
+    lines = []
+    coeffs_ac = poly.coefficients()
+    #Legendre-reduce all coefficients
+    # for a in range(prec):
+    #     for c in range(prec):
+    #         if a + c < prec:
+    #             bmax = floor(sqrt(
+    #             for b in coeffs_ac[q**a * s**c].dict():
+    #                 qf, tag = legendre_reduce(a, b, c, level)
+
 
 def load_smf_qexp_coeffs():
     table = db.smf_qexp_coeffs
