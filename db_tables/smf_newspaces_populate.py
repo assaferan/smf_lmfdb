@@ -57,7 +57,8 @@ def num_level_raise(M,N):
 
 def count_old_G_forms(k,j,N):
     c = 0
-    for M in divisors(N):
+    divs = [d for d in divisors(N) if d != N]
+    for M in divs:
         _, dim_G_new = num_forms_paramodular(k,j,M)
         c += num_level_raise(M,N)*dim_G_new
     return c
@@ -103,7 +104,7 @@ def create_entries(triple_list):
                     assert entry['cusp_G_dim'] >= 0
                 else:
                     assert entry['new_cusp_G_dim'] == dim_G_new
-                    assert entry['cusp_dim'] == cusp_dim
+                    assert entry['old_cusp_G_dim'] == count_old_G_forms(k,j,N)
         entries.append(entry)
     return entries
 
