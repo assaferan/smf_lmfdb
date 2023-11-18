@@ -515,8 +515,9 @@ def Saito_Kurokawa_lift_dim(k,N,al=0):
      [0, 1, 2, 4, 4, 6, 7, 9, 9, 12, 11, 14, 14, 17, 16, 20, 18, 22]]
     
     '''
-    Q = gcd(al,M) if al != 0 else 0
-    return sum([Saito_Kurokawa_new_lift_dim(k,M,al=Q) for M in divisors(N)])
+    def Q(M):
+        return gcd(al,M) if al != 0 else 0
+    return sum([Saito_Kurokawa_new_lift_dim(k,M,al=Q(M)) for M in divisors(N)])
 
 # This is the total dimension of the (cuspidal) lifts (see (7) in p. 617)
 def paramodular_new_lift_dim(k,j,N):
