@@ -10,10 +10,10 @@ def parse_omf5(k,j,N):
     if (k == 3) and (j == 0):
         folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
         fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
-
-    weight_str = str(k) + "_" + str(j)
-    folder = "smf_lmfdb/Eigenforms_Weight" + weight_str + "_omf/"
-    fname = folder + "hecke_ev_" + weight_str + "_" + str(N) + ".dat"
+    else:
+        weight_str = str(k) + "_" + str(j)
+        folder = "smf_lmfdb/Eigenforms_Weight" + weight_str + "_omf/"
+        fname = folder + "hecke_ev_" + weight_str + "_" + str(N) + ".dat"
     fl = open(fname)
     r = fl.read()
     fl.close()
