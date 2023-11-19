@@ -33,7 +33,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     """
     forms = parse_omf5(k,j,N)
     hecke_types = ['lambda_' + suff for suff in ['p', 'p_square']]
-    num_ps = { ht : max([len(f['trace_'+ht]) for f in forms]) for ht in hecke_types}
+    num_ps = { ht : max([0] + [len(f['trace_'+ht]) for f in forms]) for ht in hecke_types}
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
