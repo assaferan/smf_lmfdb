@@ -74,9 +74,9 @@ def create_entries(triple_list, folder, table):
         # right now we only have implemented forms for full level
         # for paramodular we stop at 1000 at the moment
         if (not is_square(N)) and (N < 1000):
-            if ((k == 3) and (j == 0)) or
-            ((k == 3) and (j == 2) and (N == 19)) or
-            ((k == 4) and (j == 0) and (N == 31)):
+            if (((k == 3) and (j == 0)) or
+                ((k == 3) and (j == 2) and (N == 19)) or
+                ((k == 4) and (j == 0) and (N == 31))):
                 entry = common_entry_values(k,j,N, 'K')
                 forms = Hecke_Eigenforms_paramodular(k,j,N)
                 forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
