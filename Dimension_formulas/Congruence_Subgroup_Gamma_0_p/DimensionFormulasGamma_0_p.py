@@ -1,4 +1,4 @@
-from sage.all import (QQ, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree)
+from sage.all import (Integers, PolynomialRing, QQ, dimension_cusp_forms, Gamma0, divisors, prime_divisors, prod, is_even, is_odd, is_squarefree, ConstantFunction)
 
 '''
 Here we implement the dimension formulas for spaces of modular forms 
@@ -8,8 +8,13 @@ Dimension formulas for spaces of vector-valued Siegel cusp forms of degree two
 Journal of Number Theory 132 (2012) 200–253
 '''
 
+
 def Sum_Char_Pol(p,f,ch):
-      L = L = f.roots(x, ring = Integers(p))
+      Zp = Integers(p)
+      ZZ = Integers()
+      Zp_x = PolynomialRing(Zp,"x")
+      x = Zp_x.gen()
+      L = f.roots(ring = Zp)
       l = len(L)
       S = sum([ch(ZZ(L[n][0])) for n in range(0,l)])
       return S 
@@ -91,6 +96,9 @@ def H2(k,j,p,ch):
     return C*D*E-F+G
 
 def H3(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
     S = Sum_Char_Pol(p, x**2+1, ch)
     a = [(-1)**(j//2),-1,-(-1)**(j//2), 1]
     aa = mux(a,k)
@@ -102,6 +110,9 @@ def H3(k,j,p,ch):
     
 
 def H4(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
     S = Sum_Char_Pol(p, x**2+x+1, ch)
     a = [1,-1,0]
     aa = mux(a,k)
@@ -121,6 +132,9 @@ def H4(k,j,p,ch):
     return C-A-B
 
 def H5(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
     S = Sum_Char_Pol(p, x**2-x+1, ch)
     a = [-1,-1,0,1,1,0]
     aa = mux(a,k)
@@ -153,6 +167,9 @@ def H6(k,j,p,ch):
      return  H6p(k,j,p,ch)
 
 def H7(k,j,p,ch):
+      Zp = Integers(p)
+      Zp_x = PolynomialRing(Zp,"x")
+      x = Zp_x.gen()
       S = Sum_Char_Pol(p, x**2+x+1, ch)
       a = [1,-1,0]
       aa = mux(a,j)
@@ -164,26 +181,38 @@ def H7(k,j,p,ch):
          return -QQ(2)**(-1)*QQ(3)**(-1)*aa*(2+S)+QQ(2)**(-1)*QQ(3)**(-3)*(j+2*k-3)*aa*(p+1+S)+QQ(2)**(-2)*QQ(3)**(-3)*(j+1)*bb*(p-1+S**2)   
       return -QQ(2)**(-1)*QQ(3)**(-1)*aa*(2+S)+QQ(2)**(-1)*QQ(3)**(-3)*(j+2*k-3)*aa*(p+1+S)+QQ(2)**(-2)*QQ(3)**(-3)*(j+1)*bb*(p+1)
 
-def H8(k,j,p,ch): 
-      S1 = Sum_Char_Pol(p, x**2+x+1, ch)
-      S2 = Sum_Char_Pol(p, x**2+1, ch)
-      A = QQ(2)**(-2)*QQ(3)**(-1)*C8(k,j)*S1*S2
-      return A
+def H8(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
+    S1 = Sum_Char_Pol(p, x**2+x+1, ch)
+    S2 = Sum_Char_Pol(p, x**2+1, ch)
+    A = QQ(2)**(-2)*QQ(3)**(-1)*C8(k,j)*S1*S2
+    return A
       
 
-def H9(k,j,p,ch):     
-     S1 = Sum_Char_Pol(p, x**2+x+1, ch)
-     S2 = Sum_Char_Pol(p, x**2-x+1, ch)
-     if p ==2:
-        return QQ(2)**(-1)*QQ(3)**(-1)*C9(k,j)
-     return QQ(3)**(-2)*C9(k,j)*S1*S2
+def H9(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
+    S1 = Sum_Char_Pol(p, x**2+x+1, ch)
+    S2 = Sum_Char_Pol(p, x**2-x+1, ch)
+    if p ==2:
+       return QQ(2)**(-1)*QQ(3)**(-1)*C9(k,j)
+    return QQ(3)**(-2)*C9(k,j)*S1*S2
 
-def H10(k,j,p,ch):     
-     S = Sum_Char_Pol(p, x**4+x**3+x**2+x+1, ch) 
-     A = QQ(5)**(-1)*C10(k,j)*S
-     return A
+def H10(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
+    S = Sum_Char_Pol(p, x**4+x**3+x**2+x+1, ch) 
+    A = QQ(5)**(-1)*C10(k,j)*S
+    return A
      
 def H11(k,j,p,ch):
+     Zp = Integers(p)
+     Zp_x = PolynomialRing(Zp,"x")
+     x = Zp_x.gen()
      S = Sum_Char_Pol(p, x**2+1, ch)
      if p == 2:
         return QQ(2)**(-3)*C11(k,j)
@@ -197,6 +226,9 @@ def H11(k,j,p,ch):
         return  0
         
 def H12(k,j,p,ch):
+    Zp = Integers(p)
+    Zp_x = PolynomialRing(Zp,"x")
+    x = Zp_x.gen()
     S = Sum_Char_Pol(p, x**2+x+1, ch)
     a = [0,-1,1]
     aa = mux(a,j+2*k)
@@ -362,26 +394,73 @@ S_{1}(Gamma_0(N))=0 for any N
 def cusp_form_gamma_0_N_k_is_1_dim(N):
       return 0
 
-def scalar_valued_form_gamma_0_p_dim(p,k):
-      f = ConstantFunction(1)
-      if (k % 2) == 1 and k>=5: 
-          return cusp_form_gamma_0_p_chi_dim(k,0,p,f)
-      if k  == 3 : 
-          return cusp_form_gamma_0_p_k_is_3_dim(p)
-      if k == 1:
-          return 0              
-      if (k % 2) == 0 and k>=6:
-          return cusp_form_gamma_0_p_chi_dim(k,0,p,f)+2*dimension_cusp_forms(Gamma0(p),k)+3       
-      if k == 4:
-          return cusp_form_gamma_0_p_k_is_4_dim(p)+2*dimension_cusp_forms(Gamma0(p),4)+3
-      if k == 2:
-          return cusp_form_gamma_0_p_k_is_2_dim(p)+2*dimension_cusp_forms(Gamma0(p),2)+1
-          
+def scalar_valued_form_gamma_0_p_cusp_dim(p,k):
+    ''' Returns the dimension of the cuspidal subspace of S_{k}(\Gamma_0(p)) for a prime p>2 and k>5 
 
-def vector_valued_form_gamma_0_p_dim(p,k,j):
-      f = ConstantFunction(1)
-      if (k % 2) == 1 and k>=5: 
-          return cusp_form_gamma_0_p_chi_dim(k,j,p,f)          
-      if (k % 2) == 0 and k>=5: 
-          return cusp_form_gamma_0_p_chi_dim(k,j,p,f)+2*dimension_cusp_forms(Gamma0(p),j+k)     
+      Verify example for prime 2<p<12, 4<k<21 from Hashimoto: The dimension of the spaces of cusp forms on Siegel upper half-plane of degree two. I, 1983, Table 7-11]:
+      [[scalar_valued_form_gamma_0_p_cusp_dim(p,k) for k in range(5,21)] for p in range(3,12) if is_prime(p)]
+      [[0, 2, 0, 5, 0, 10, 0, 16, 0, 23, 1, 35, 3, 47, 4, 61],
+       [0, 5, 0, 13, 0, 25, 3, 44, 6, 66, 16, 100, 25, 136, 45, 188],
+       [0, 11, 0, 26, 5, 56, 15, 95, 28, 145, 58, 222, 97, 312, 143, 417],
+       [2, 31, 9, 80, 33, 164, 80, 288, 158, 462, 278, 694, 444, 991, 666, 1365]]
+    '''  
+    f = ConstantFunction(1)
+    return cusp_form_gamma_0_p_chi_dim(k,0,p,f)
+
+def scalar_valued_form_gamma_0_p_mod_dim(p,k):
+    ''' Returns the dimension of the modular form space of M_{k}(\Gamma_0(p)) for a prime p>2 for k>5 (Using Hashimoto 1983 and Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
+
+            dim M_{k}(\Gamma_0(p))= S_{k}(\Gamma_0(p)) for k odd
+         
+            For dim M_{k,j}(\Gamma_0(p)), we have the follwoing example for 2<p<12 and 4<k<21.
+            [[scalar_valued_form_gamma_0_p_mod_dim(p,k) for k in range(5,21)] for p in range(3,12) if is_prime(p)]
+            [[0, 7, 0, 10, 0, 17, 0, 25, 0, 32, 1, 46, 3, 60, 4, 74],
+             [0, 10, 0, 22, 0, 34, 3, 57, 6, 79, 16, 117, 25, 153, 45, 209],
+             [0, 20, 0, 35, 5, 69, 15, 112, 28, 162, 58, 243, 97, 337, 143, 442],
+             [2, 42, 9, 95, 33, 183, 80, 311, 158, 489, 278, 725, 444, 1026, 666, 1404]]
+    '''
+    f = ConstantFunction(1)
+    if (k % 2) == 1 and k>=5: 
+        return cusp_form_gamma_0_p_chi_dim(k,0,p,f)
+    if k  == 3 : 
+        return cusp_form_gamma_0_p_k_is_3_dim(p)
+    if k == 1:
+        return 0              
+    if (k % 2) == 0 and k>=6:
+        return cusp_form_gamma_0_p_chi_dim(k,0,p,f)+2*dimension_cusp_forms(Gamma0(p),k)+3       
+    if k == 4:
+        return cusp_form_gamma_0_p_k_is_4_dim(p)+2*dimension_cusp_forms(Gamma0(p),4)+3
+    if k == 2:
+        return cusp_form_gamma_0_p_k_is_2_dim(p)+2*dimension_cusp_forms(Gamma0(p),2)+1
           
+def vector_valued_form_gamma_0_p_cusp_dim(p,k,j):
+    ''' Returns the dimension of the cuspidal subspace of S_{k,j}(\Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012) 
+
+    The following verify the example for p=3, 4<k<20 and 0<j<10 for j even from Wakatsuki JNT 2012 (page 251):
+    [[vector_valued_form_gamma_0_p_cusp_dim(3,k,j) for k in range(5,20)] for j in range(0,9) if is_even(j)]
+    [[0, 2, 0, 5, 0, 10, 0, 16, 0, 23, 1, 35, 3, 47, 4],
+    [0, 2, 0, 7, 3, 16, 6, 26, 12, 44, 24, 67, 37, 92, 54],
+    [0, 5, 3, 14, 10, 29, 20, 49, 36, 79, 61, 116, 90, 163, 130],
+    [4, 11, 11, 27, 25, 51, 46, 84, 74, 128, 116, 187, 168, 258, 232],
+    [7, 18, 19, 42, 43, 77, 74, 123, 118, 187, 181, 269, 256, 365, 349]]
+    '''
+    f = ConstantFunction(1)
+    return cusp_form_gamma_0_p_chi_dim(k,j,p,f)
+
+def vector_valued_form_gamma_0_p_mod_dim(p,k,j):
+    ''' Returns the dimension of the modular form space of M_{k,j}(\Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
+    dim M_{k,j}(\Gamma_0(p))= S_{k,j}(\Gamma_0(p)) for k odd
+    For dim M_{k,j}(\Gamma_0(p)) when k is even, we have the follwoing example for p=3,4<k<20 and 0=<j<10.
+    [[vector_valued_form_gamma_0_p_mod_dim(3,k,j) for k in range(5,20) if (k % 2) == 0] for j in range(0,9) if is_even(j)]
+    [[4, 7, 14, 22, 29, 43, 57],
+    [4, 11, 22, 32, 52, 77, 102],
+    [9, 20, 35, 57, 89, 126, 175],
+    [17, 33, 59, 94, 138, 199, 272],
+    [24, 50, 87, 133, 199, 283, 379]]
+    '''
+    f = ConstantFunction(1)
+    if (k % 2) == 1 and k>=5:
+        return cusp_form_gamma_0_p_chi_dim(k,j,p,f)
+    if (k % 2) == 0 and k>=5:
+        return cusp_form_gamma_0_p_chi_dim(k,j,p,f)+2*dimension_cusp_forms(Gamma0(p),j+k)     
+
