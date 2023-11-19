@@ -27,13 +27,13 @@ def al_str_to_num(al_str, N):
     ps = prime_divisors(N)
     return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])   
 
-def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
+def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
     """
     forms = parse_omf5(k,j,N)
     hecke_types = ['lambda_' + suff for suff in ['p', 'p_square']]
-    num_ps = { 'lambda_p' : len(prime_range(B)), 'lambda_p_square' : len(prime_range(floor(sqrt(B))))}
+    num_ps = { ht : max([len(f['trace_'+ht]) for f in forms]) for ht in hecke_types}
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
