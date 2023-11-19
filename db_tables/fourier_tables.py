@@ -1,11 +1,11 @@
 import sys
 from os import listdir
-from sage.all import PolynomialRing, QQ
+from sage.all import PolynomialRing, QQ, floor, ceil, BinaryQF
 sys.path.append("/home/jean/code/lmfdb")
 from lmfdb import db
 from lmfdb.siegel_modular_forms.web_newform import encode_hecke_orbit
 from common_create_table import generate_table
-from sage.databases.cremona import class_to_int
+from sage.databases.cremona import cremona_letter_code, class_to_int
 
 def smf_qexp_reduction_col_type():
     cols = {}
@@ -172,16 +172,93 @@ def all_abc_up_to_prec(prec, level):
     for a in range(prec):
         for c in range(prec):
             if a + c < prec:
-                bmax = floor(sqrt(4*a*c))
+                bmax = floor(sqrt(4*level*a*c))
                 for b in range(-bmax, bmax + 1):
                     res.append((a,b,c))
     return res
+
+def all_abc_up_to_prec_cusp_form(prec, level):
+    res = []
+    for a in range(1, prec):
+        for c in range(1, prec):
+            if a + c < prec:
+                bmax = ceil(sqrt(4*level*a*c)) - 1
+                for b in range(-bmax, bmax + 1):
+                    res.append((a,b,c))
+    return res
+
+def P1N_lex_minimize(vec, level):
+    #surely there is a more clever way?
+    L = [(i * vec) % level for i in ZZ(level).coprime_integers(level)]
+    L.sort()
+    return L[0]
+
+def orbit_on_P1N(auts, vec, level):
+    L = [vec]
+    done = False
+    while not done:
+        nextL = []
+        for v in L:
+            for m in auts:
+                newv = P1N_lex_minimize(m*v, level)
+                if not newv in nextL:
+                    nextL.append(newv)
+        done = (len(nextL) == len(L))
+        L = nextL
+    return L
+
+def legendre_reduce(abc, level):
+    a, b, c = abc
+    qf = BinaryQF(a, b, level * c)
+    S = MatrixSpace(ZZ, 2, 2)
+
+    if qf.is_zero():
+        return (0,0,0), (0,1)
+    elif qf.is_positive_definite():
+        qf_legendre = qf.reduced_form()
+        pol = qf_legendre.polynomial()
+        R = pol.parent()
+        x = R.gen(0)
+        y = R.gen(1)
+        ap = pol.coefficient(x**2)
+        bp = pol.coefficient(x*y)
+        cp = pol.coefficient(y**2)
+        m1 = S([2*a, b, b, 2*level*c])
+        m2 = S([2*ap, bp, bp, 2*cp])
+        u = S(pari.qfisom(m2, m1))
+        auts = [S(v) for v in pari.qfauto(m2)[1]]
+    else:
+        m = S([2*a, b, b, 2*level*c])
+        v = m.right_kernel().basis()[0]
+        a = v[0]
+        b = v[1]
+        _, c, d = a.xgcd(b)
+        u = S([a,-d,b,c])
+        #check we didn't mess up transpositions
+        m2 = u.transpose() * m * u
+        assert m2[0,0] == 0
+        assert m2[0,1] == 0
+        assert m2[1,0] == 0
+        ap = 0
+        bp = 0
+        cp = m2[1,1]
+        #can change sign of 2nd coordinate and add m1...
+        #todo: check the math
+        auts = [S([1,0,0,-1]), S([1,1,0,1])]
+
+    vec = S(u ** (-1)) * Matrix([[0],[1]])
+    orb = orbit_on_P1N(auts, vec, level)
+    orb.sort()
+    return (ap,bp,cp), (orb[0][0,0], orb[0][1,0])
 
 def smf_qexp_coeffs_process_file_williams(fname):
     with open("../Eigenforms_Weight4/" + fname, "r") as f:
         data = f.readlines()
     nb = len(data)
-    _, level, _, _, _, hecke_orbit_label = fname.split("_")
+    fname_cut = fname.replace(".txt","")
+    _, level, _, _, _, hecke_orbit_label = fname_cut.split("_")
+    level = int(level)
+    hecke_orbit_label = cremona_letter_code(int(hecke_orbit_label))
     label = "2.K.{}.4.0.a.{}".format(level, hecke_orbit_label)
     minpoly = data[0]
     if minpoly == "Hecke field: QQ":
@@ -197,22 +274,27 @@ def smf_qexp_coeffs_process_file_williams(fname):
     R = PowerSeriesRing(Rbr, ["q", "s"])
     q = R.gen(0)
     s = R.gen(1)
-    poly = R(data[2])
-    prec = poly.prec()
+    #Sage cannot read back what it prints, so we do:
+    poly, prec = data[2].split(" + O(q, s)^")
+    poly = R(poly)
+    prec = int(prec)
 
     coeffs = {}
-    for abc in all_abc_up_to_prec(prec, level):
+    for abc in all_abc_up_to_prec_cusp_form(prec, level):
         # Get coefficient
+        print("Doing {}".format(abc))
         a, b, c = abc
         try:
             coeff = poly.coefficients()[q**a * s**c]
-            coeff = coef.dict()[b]
+            coeff = coeff.dict()[b]
         except KeyError:
             coeff = Rb(0)
         # Legendre-reduce
         qf, tag = legendre_reduce(abc, level)
-        if (qf, tag) in coefs.keys():
+        print("Reduction: {}, {}".format(qf, tag))
+        if (qf, tag) in coeffs.keys():
             # Check that coefficient is the same!
+            print("Already there!")
             assert coeff == coeffs[(qf, tag)]
         else:
             coeffs[(qf, tag)] = coeff
@@ -221,8 +303,11 @@ def smf_qexp_coeffs_process_file_williams(fname):
     hecke_code = encode_hecke_orbit(label)
     for (qf, tag) in coeffs.keys():
         coeff = coeffs[(qf, tag)].list()
+        coeff += [0 for i in range(dim - len(coeff))]
         line = "{}:{}:{}:{}".format(hecke_code, qf, tag, coeff)
         line = line.replace(", ",",")
+        line = line.replace("(","{")
+        line = line.replace(")","}")
         line = line.replace("[","{")
         line = line.replace("]","}")
         lines.append(line)
