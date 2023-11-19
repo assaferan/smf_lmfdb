@@ -395,7 +395,7 @@ def cusp_form_gamma_0_N_k_is_1_dim(N):
       return 0
 
 def scalar_valued_form_gamma_0_p_cusp_dim(p,k):
-    ''' Returns the dimension of the cuspidal subspace of S_{k}(\Gamma_0(p)) for a prime p>2 and k>5 
+    ''' Returns the dimension of the cuspidal subspace of S_{k}(Gamma_0(p)) for a prime p>2 and k>5 
 
       Verify example for prime 2<p<12, 4<k<21 from Hashimoto: The dimension of the spaces of cusp forms on Siegel upper half-plane of degree two. I, 1983, Table 7-11]:
       [[scalar_valued_form_gamma_0_p_cusp_dim(p,k) for k in range(5,21)] for p in range(3,12) if is_prime(p)]
@@ -408,11 +408,11 @@ def scalar_valued_form_gamma_0_p_cusp_dim(p,k):
     return cusp_form_gamma_0_p_chi_dim(k,0,p,f)
 
 def scalar_valued_form_gamma_0_p_mod_dim(p,k):
-    ''' Returns the dimension of the modular form space of M_{k}(\Gamma_0(p)) for a prime p>2 for k>5 (Using Hashimoto 1983 and Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
+    ''' Returns the dimension of the modular form space of M_{k}(Gamma_0(p)) for a prime p>2 for k>5 (Using Hashimoto 1983 and Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
 
-            dim M_{k}(\Gamma_0(p))= S_{k}(\Gamma_0(p)) for k odd
+            dim M_{k}(Gamma_0(p))= S_{k}(Gamma_0(p)) for k odd
          
-            For dim M_{k,j}(\Gamma_0(p)), we have the follwoing example for 2<p<12 and 4<k<21.
+            For dim M_{k,j}(Gamma_0(p)), we have the follwoing example for 2<p<12 and 4<k<21.
             [[scalar_valued_form_gamma_0_p_mod_dim(p,k) for k in range(5,21)] for p in range(3,12) if is_prime(p)]
             [[0, 7, 0, 10, 0, 17, 0, 25, 0, 32, 1, 46, 3, 60, 4, 74],
              [0, 10, 0, 22, 0, 34, 3, 57, 6, 79, 16, 117, 25, 153, 45, 209],
@@ -434,7 +434,7 @@ def scalar_valued_form_gamma_0_p_mod_dim(p,k):
         return cusp_form_gamma_0_p_k_is_2_dim(p)+2*dimension_cusp_forms(Gamma0(p),2)+1
           
 def vector_valued_form_gamma_0_p_cusp_dim(p,k,j):
-    ''' Returns the dimension of the cuspidal subspace of S_{k,j}(\Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012) 
+    ''' Returns the dimension of the cuspidal subspace of S_{k,j}(Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012) 
 
     The following verify the example for p=3, 4<k<20 and 0<j<10 for j even from Wakatsuki JNT 2012 (page 251):
     [[vector_valued_form_gamma_0_p_cusp_dim(3,k,j) for k in range(5,20)] for j in range(0,9) if is_even(j)]
@@ -448,9 +448,9 @@ def vector_valued_form_gamma_0_p_cusp_dim(p,k,j):
     return cusp_form_gamma_0_p_chi_dim(k,j,p,f)
 
 def vector_valued_form_gamma_0_p_mod_dim(p,k,j):
-    ''' Returns the dimension of the modular form space of M_{k,j}(\Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
-    dim M_{k,j}(\Gamma_0(p))= S_{k,j}(\Gamma_0(p)) for k odd
-    For dim M_{k,j}(\Gamma_0(p)) when k is even, we have the follwoing example for p=3,4<k<20 and 0=<j<10.
+    ''' Returns the dimension of the modular form space of M_{k,j}(Gamma_0(p)) for a prime p for k>5 and j>=0 even (Uses Wakatsuki 2012, Böcherer-Ibukiyama, 2012)
+    dim M_{k,j}(Gamma_0(p))= S_{k,j}(Gamma_0(p)) for k odd
+    For dim M_{k,j}(Gamma_0(p)) when k is even, we have the follwoing example for p=3,4<k<20 and 0=<j<10.
     [[vector_valued_form_gamma_0_p_mod_dim(3,k,j) for k in range(5,20) if (k % 2) == 0] for j in range(0,9) if is_even(j)]
     [[4, 7, 14, 22, 29, 43, 57],
     [4, 11, 22, 32, 52, 77, 102],
