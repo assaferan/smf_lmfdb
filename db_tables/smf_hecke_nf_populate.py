@@ -8,8 +8,6 @@ from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular impor
 
 from lmfdb import db
 
-
-
 def entry_add_columns(e, ext_data):
     e['id'] = ext_data['id']
     e['char_orbit_label'] = base_26(e['char_orbit_index'])
@@ -39,7 +37,9 @@ def create_entries(triple_list):
             continue
         # at the moment we stop at 1000 for paramodulars
         if (not is_square(N)) and (N < 1000):
-            if (k == 3) and (j == 0):
+            if (((k == 3) and (j == 0)) or
+                ((k == 3) and (j == 2) and (N == 19)) or
+                ((k == 4) and (j == 0) and (N == 31))):
                 entry = common_entry_values(k,j,N,'K')
                 evs = Hecke_Eigenvalues_paramodular(k,j,N)
                 for ev in evs:
