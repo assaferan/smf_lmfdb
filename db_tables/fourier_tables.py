@@ -167,6 +167,16 @@ def smf_qexp_coeffs_process_file_poor_yuen(fname):
         lines.append(line)
     return lines
 
+def all_abc_up_to_prec(prec, level):
+    res = []
+    for a in range(prec):
+        for c in range(prec):
+            if a + c < prec:
+                bmax = floor(sqrt(4*a*c))
+                for b in range(-bmax, bmax + 1):
+                    res.append((a,b,c))
+    return res
+
 def smf_qexp_coeffs_process_file_williams(fname):
     with open("../Eigenforms_Weight4/" + fname, "r") as f:
         data = f.readlines()
@@ -183,20 +193,40 @@ def smf_qexp_coeffs_process_file_williams(fname):
         dim = minpoly.degree()
     Rb = PolynomialRing(QQ, "b")
     Rbr = LaurentPolynomialRing(Rb, "r")
+    r = Rbr.gen()
     R = PowerSeriesRing(Rbr, ["q", "s"])
+    q = R.gen(0)
+    s = R.gen(1)
     poly = R(data[2])
     prec = poly.prec()
 
-    lines = []
-    coeffs_ac = poly.coefficients()
-    #Legendre-reduce all coefficients
-    # for a in range(prec):
-    #     for c in range(prec):
-    #         if a + c < prec:
-    #             bmax = floor(sqrt(
-    #             for b in coeffs_ac[q**a * s**c].dict():
-    #                 qf, tag = legendre_reduce(a, b, c, level)
+    coeffs = {}
+    for abc in all_abc_up_to_prec(prec, level):
+        # Get coefficient
+        a, b, c = abc
+        try:
+            coeff = poly.coefficients()[q**a * s**c]
+            coeff = coef.dict()[b]
+        except KeyError:
+            coeff = Rb(0)
+        # Legendre-reduce
+        qf, tag = legendre_reduce(abc, level)
+        if (qf, tag) in coefs.keys():
+            # Check that coefficient is the same!
+            assert coeff == coeffs[(qf, tag)]
+        else:
+            coeffs[(qf, tag)] = coeff
 
+    lines = []
+    hecke_code = encode_hecke_orbit(label)
+    for (qf, tag) in coeffs.keys():
+        coeff = coeffs[(qf, tag)].list()
+        line = "{}:{}:{}:{}".format(hecke_code, qf, tag, coeff)
+        line = line.replace(", ",",")
+        line = line.replace("[","{")
+        line = line.replace("]","}")
+        lines.append(line)
+    return lines
 
 def load_smf_qexp_coeffs():
     table = db.smf_qexp_coeffs
@@ -205,6 +235,8 @@ def load_smf_qexp_coeffs():
     lines = []
     for f in listdir("../qexp_coeffs_data"):
         lines += smf_qexp_coeffs_process_file_poor_yuen(f)
+    for f in listdir("../Eigenforms_Weight4"):
+        lines += smf_qexp_coeffs_process_file_williams(f)
     with open(aux_fname, "w") as f:
         f.write(header)
         for line in lines:
