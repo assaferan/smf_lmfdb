@@ -31,7 +31,7 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N, B = 100):
     """
     Return traces of the Hecke eigenvalues on each of the spaces of paramodular forms              
     """
-    forms = parse_omf5(k,j,N,False)
+    forms = parse_omf5(k,j,N)
     hecke_types = ['lambda_' + suff for suff in ['p', 'p_square']]
     num_ps = { 'lambda_p' : len(prime_range(B)), 'lambda_p_square' : len(prime_range(floor(sqrt(B))))}
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
