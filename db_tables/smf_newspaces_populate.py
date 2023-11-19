@@ -101,7 +101,7 @@ def create_entries(triple_list):
                 entry = smf_level2_space(k,j)
                 entries.append(entry)
             # for level prime p, k>=5 and j>=0 even  we have dim M_{k,j}(\Gamma_0(p)) and dim S_{k,j}(\Gamma_0(p))     
-            if is_prime(N) == true:
+            if is_prime(N) == True:
                entry = {}
                entry.update(common_entry_values(k,j,N,'S'))
                entry['total_dim'] = vector_valued_form_gamma_0_p_mod_dim(N,k,j)
