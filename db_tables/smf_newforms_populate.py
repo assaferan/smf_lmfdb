@@ -74,9 +74,12 @@ def create_entries(triple_list, folder, table):
         # right now we only have implemented forms for full level
         # for paramodular we stop at 1000 at the moment
         if (not is_square(N)) and (N < 1000):
-            if (k == 3) and (j == 0):
+            if ((k == 3) and (j == 0)) or
+            ((k == 3) and (j == 2) and (N == 19)) or
+            ((k == 4) and (j == 0) and (N == 31)):
                 entry = common_entry_values(k,j,N, 'K')
                 forms = Hecke_Eigenforms_paramodular(k,j,N)
+                forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
                 for f in forms:
                     entry_sub = entry.copy()
                     entry_sub.update(f)
@@ -85,6 +88,7 @@ def create_entries(triple_list, folder, table):
                     space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
                     idx += write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
             continue
+                
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1, 'P')
             sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
