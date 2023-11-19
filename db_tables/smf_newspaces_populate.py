@@ -5,6 +5,7 @@ from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_di
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_Traces_paramodular, num_forms_paramodular, parse_omf5
+from smf_lmfdb.Dimension_formulas.Congruence_Subgroup_Gamma_0_p.DimensionFormulasGamma_0_p import vector_valued_form_gamma_0_p_cusp_dim, vector_valued_form_gamma_0_p_mod_dim
 from lmfdb import db
 
 def entry_add_columns(e, ext_data):
@@ -99,6 +100,13 @@ def create_entries(triple_list):
             if (N == 2) and (j % 2 == 0) and (k >= 3):
                 entry = smf_level2_space(k,j)
                 entries.append(entry)
+            # for level prime p, k>=5 and j>=0 even  we have dim M_{k,j}(\Gamma_0(p)) and dim S_{k,j}(\Gamma_0(p))     
+            if is_prime(N) == true:
+               entry = {}
+               entry.update(common_entry_values(k,j,N,'S'))
+               entry['total_dim'] = vector_valued_form_gamma_0_p_mod_dim(N,k,j)
+               entry['cusp_dim'] = vector_valued_form_gamma_0_p_cusp_dim(N,k,j)
+               entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
             if (k == 3) and (j == 0) and (not is_square(N)) and (N < 1000):
