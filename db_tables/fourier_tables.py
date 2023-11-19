@@ -1,6 +1,6 @@
 import sys
 from os import listdir
-from sage.all import PolynomialRing, QQ, floor, ceil, BinaryQF
+from sage.all import PolynomialRing, QQ, ZZ, floor, ceil, BinaryQF, MatrixSpace, pari, Matrix, sqrt, LaurentPolynomialRing, PowerSeriesRing
 sys.path.append("/home/jean/code/lmfdb")
 from lmfdb import db
 from lmfdb.siegel_modular_forms.web_newform import encode_hecke_orbit
@@ -15,7 +15,8 @@ def smf_qexp_reduction_col_type():
     cols['qf_tag'] = 'integer[]'
     cols['qf_orbit_rep'] = 'integer[]'
     cols['is_minimal'] = 'boolean'
-    cols['index'] = 'bigint'
+    cols['index_det'] = 'bigint'
+    cols['index_fj'] = 'bigint'
     return cols
 
 def smf_qexp_reduction_col_desc():
@@ -26,7 +27,8 @@ def smf_qexp_reduction_col_desc():
     desc['qf_tag'] = 'Tag attached to Legendre-reduced quadratic form'
     desc['qf_orbit_rep'] = 'Orbit representative'
     desc['is_minimal'] = 'True iff the orbit representative is minimal'
-    desc['index'] = 'Index of this quadratic form in the display ordering'
+    desc['index_det'] = 'Index of this quadratic form in the determinant ordering'
+    desc['index_fj'] = 'Index of this quadratic form in the Fourier-Jacobi ordering'
     return desc
 
 def smf_qexp_short_col_type():
@@ -72,7 +74,7 @@ def smf_qexp_coeffs_header():
     return header
 
 def smf_qexp_reduction_header():
-    header = "level:family:qf_legendre:qf_tag:qf_orbit_rep:is_minimal:index\ninteger:text:integer[]:integer[]:integer[]:boolean:bigint\n\n"
+    header = "level:family:qf_legendre:qf_tag:qf_orbit_rep:is_minimal:index_det:index_fj\ninteger:text:integer[]:integer[]:integer[]:boolean:bigint:bigint\n\n"
     return header
 
 #generate_table('smf_qexp_short', "Short, fully expanded q-expansions of Siegel modular forms", smf_qexp_short_col_type, smf_qexp_short_col_desc, label_col=None)
@@ -91,7 +93,23 @@ def load_smf_qexp_short():
     table.reload(aux_fname, sep=":")
     return
 
-def smf_qexp_reduction_process_file(fname):
+def smf_qexp_reduction_qforms_from_file(fname):
+    with open("../qexp_reduction_data/" + fname, "r") as f:
+        data = f.readlines()
+    nb = len(data)
+    res = []
+    for i in range(2, nb):
+        s = data[i]
+        s = s.replace(")","")
+        s = s.replace("(","")
+        entries = s.split(",")
+        if len(entries) < 8:
+            break
+        qf = (int(entries[5]), int(entries[6]), int(entries[7]))
+        res.append(qf)
+    return res
+
+def smf_qexp_reduction_process_file_old(fname):
     with open("../qexp_reduction_data/" + fname, "r") as f:
         data = f.readlines()
     nb = len(data)
@@ -118,6 +136,46 @@ def smf_qexp_reduction_process_file(fname):
         line = line.replace("]","}")
         lines.append(line)
     return lines
+
+#def smf_qexp_reduction_process_file(fname, maxprec):
+    # qf_list = smf_qexp_reduction_qforms_from_file(fname)
+    # level = int(fname.split(".")[2])
+    # family = fname.split(".")[1]
+    # additional_qf = all_abc_up_to_prec_cusp_form(maxprec, level)
+    # #find out which quadratic forms in the list have a representative in fj expansion
+    # D = {}
+    # for i in range(len(qf_list)):
+    #     qf, tag, det = legendre_reduce(qf_list[i], level)
+    #     D[(qf, tag)] = [qf_list[i], i]
+    # for i in range(len(additional_qf)):
+    #     qf, tag, det = legendre_reduce(additional_qf[i], level)
+    #     try:
+    #         D[(qf,tag)][0] = additional_qf[i]
+    #     except KeyError:
+    #         D[(qf,tag)] = [additional_qf[i], None]
+    # lines = []
+    # for (qf,tag) in D.keys():
+    #     line = "{}:{}:{}:{}:{}".format(
+    #         level, family, qf, tag, D[(qf, tag)][0],
+
+def all_tags_from_file(fname, detbound):
+    with open("../qexp_reduction_data/" + fname, "r") as f:
+        data = f.readlines()
+    nb = len(data)
+    res = []
+    for i in range(2, nb):
+        s = data[i]
+        s = s.replace(")","")
+        s = s.replace("(","")
+        entries = s.split(",")
+        if len(entries) < 8:
+            break
+        qf = (int(entries[0]), int(entries[1]), int(entries[2]))
+        tag = (int(entries[3]), int(entries[4]))
+        a,b,c = qf
+        if 4*a*c - b*b <= detbound:
+            res.append((qf, tag))
+    return res
 
 def load_smf_qexp_reduction():
     table = db.smf_qexp_reduction
@@ -187,13 +245,42 @@ def all_abc_up_to_prec_cusp_form(prec, level):
                     res.append((a,b,c))
     return res
 
-def P1N_lex_minimize(vec, level):
+def P1N_lex_minimize_naive(vec, level):
     #surely there is a more clever way?
     L = [(i * vec) % level for i in ZZ(level).coprime_integers(level)]
     L.sort()
     return L[0]
 
+def P1N_lex_minimize(vec, level):
+    #surely there is a more clever way?
+    a = vec[0,0] % level
+    if a != 0:
+        d = a.gcd(level) % level
+        # need u such that a*u = d mod level, i.e. (a/d)*u = 1 mod (level/d)
+        u = (a // d).inverse_mod(level // d)
+        while not u.gcd(level) == 1:
+            u += (level // d)
+        res = (u * vec) % level
+        if d != 1:
+            # now can multiply b by any v such that dv = d mod level, ie v=1 mod
+            # level/d result satisfies b' = b mod level/d, but not an equivalence.
+            # Could do a more clever thing but it's complicated (multiplicative
+            # structure of (Z/2^kZ)^*, etc
+            mults = [(1 + (level // d) * i) for i in range(d)
+                     if ZZ(level).gcd(1 + (level // d) * i) == 1]
+            b = res[1, 0]
+            m = b
+            for u in mults:
+                m = min(m, (u * b) % level)
+            res[1,0] = m
+    else:
+        b = vec[1,0] % level
+        d = b.gcd(level)
+        res = Matrix([[0],[d]])
+    return res
+
 def orbit_on_P1N(auts, vec, level):
+    #TODO: need to keep track of determinant for odd weights
     L = [vec]
     done = False
     while not done:
@@ -213,7 +300,7 @@ def legendre_reduce(abc, level):
     S = MatrixSpace(ZZ, 2, 2)
 
     if qf.is_zero():
-        return (0,0,0), (0,1)
+        return (0,0,0), (0,1), 1
     elif qf.is_positive_definite():
         qf_legendre = qf.reduced_form()
         pol = qf_legendre.polynomial()
@@ -244,20 +331,32 @@ def legendre_reduce(abc, level):
         cp = m2[1,1]
         #can change sign of 2nd coordinate and add m1...
         #todo: check the math
+        #this is WAY too slow.
         auts = [S([1,0,0,-1]), S([1,1,0,1])]
 
     vec = S(u ** (-1)) * Matrix([[0],[1]])
     orb = orbit_on_P1N(auts, vec, level)
     orb.sort()
-    return (ap,bp,cp), (orb[0][0,0], orb[0][1,0])
+    return (ap,bp,cp), (orb[0][0,0], orb[0][1,0]), u.determinant()
+
+def all_tags_from_prec(prec, level):
+    res = {}
+    for abc in all_abc_up_to_prec_cusp_form(prec, level):
+        qf, tag, det = legendre_reduce(abc, level)
+        try:
+            res[(qf, tag)].append(abc)
+        except KeyError:
+            res[(qf, tag)] = [abc]
+    return res
 
 def smf_qexp_coeffs_process_file_williams(fname):
     with open("../Eigenforms_Weight4/" + fname, "r") as f:
         data = f.readlines()
     nb = len(data)
     fname_cut = fname.replace(".txt","")
-    _, level, _, _, _, hecke_orbit_label = fname_cut.split("_")
+    _, level, _, weight, _, hecke_orbit_label = fname_cut.split("_")
     level = int(level)
+    weight = int(weight)
     hecke_orbit_label = cremona_letter_code(int(hecke_orbit_label))
     label = "2.K.{}.4.0.a.{}".format(level, hecke_orbit_label)
     minpoly = data[0]
@@ -290,8 +389,9 @@ def smf_qexp_coeffs_process_file_williams(fname):
         except KeyError:
             coeff = Rb(0)
         # Legendre-reduce
-        qf, tag = legendre_reduce(abc, level)
-        print("Reduction: {}, {}".format(qf, tag))
+        qf, tag, det = legendre_reduce(abc, level)
+        print("Reduction: {}, {}, {}".format(qf, tag, det))
+        print("Coeff: {}".format(coeff))
         if (qf, tag) in coeffs.keys():
             # Check that coefficient is the same!
             print("Already there!")
