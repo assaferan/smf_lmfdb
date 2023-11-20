@@ -52,8 +52,8 @@ def write_temp_entry(entry, folder, ext_data, table):
     for family in families:
         entry['family'] = family
         e = entry.copy()
-        e['id'] = entry['id'] + num_entries
         e = entry_add_columns(e, ext_data)
+        e['id'] = entry['id'] + num_entries
         e = fill_nulls(e, table)
         fname = "smf_lmfdb/db_tables/data/" + folder + "/" + str(e['id'])
         f = open(fname, 'w')
