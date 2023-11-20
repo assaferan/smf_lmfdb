@@ -1,3 +1,4 @@
+from functools import reduce
 from sage.all import (nth_prime, is_square, prime_divisors)
 
 from smf_lmfdb.db_tables.common_create_table import FAMILY_DICT
