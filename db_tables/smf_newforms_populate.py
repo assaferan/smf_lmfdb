@@ -27,13 +27,13 @@ def entry_add_columns(e, ext_data):
     # sometimes we just have q-expansions and no hecke eigenvalues
     if ('trace_lambda_p_square' in e) and (e['trace_lambda_p_square'] != 'NULL'):
         max_p = min(MAX_P, nth_prime(len(e['trace_lambda_p'])))
-        bad_ps = prime_divisors(e['level'])
         # Do we want that, or do we prefer not to touch it?
         # These are needed to get the Dirichlet coefficients at bad primes?
         if 'atkin_lehner_eigenvals' not in e:
+            bad_ps = prime_divisors(e['level'])
             e['atkin_lehner_eigenvals'] = [[p,1] for p in bad_ps]
             e['atkin_lehner_string'] = ''.join(['+' for p in bad_ps])
-        eps = { bad_ps[i] : e['atkin_lehner_eigenvals'][i] for p in bad_ps } 
+        eps = { al[0] : al[1] for al in e['atkin_lehner_eigenvals'] } 
         e['trace_display'] = e['trace_lambda_p'][:4]
         e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'], e['level'], eps)
     
