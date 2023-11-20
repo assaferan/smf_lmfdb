@@ -21,6 +21,9 @@ def parse_omf5(k,j,N):
     for num in range(10):
       r = r.replace(str(num) + "L", str(num))
     forms = eval(r)
+    for f in forms:
+        f['dim'] = len(f['field_poly'])-1
+    forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
     return forms
 
 def al_str_to_num(al_str, N):
@@ -74,8 +77,6 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         # if we have not saved the eigenvalues
         orbit['is_cuspidal'] = True
         orbit['dim'] = len(orbit['field_poly']) - 1
-        # orbit['trace_lambda_p'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p']]
-        # orbit['trace_lambda_p_square'] = [x.trace() if type(x) != str else 'NULL' for x in orbit['lambda_p_square']]
         orbit['is_polredabs'] = False
         # For now, all our fields are absolute. Change that in the future
         orbit['relative_dim'] = orbit['dim']

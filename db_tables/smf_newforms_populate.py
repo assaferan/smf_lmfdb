@@ -77,7 +77,8 @@ def create_entries(triple_list, folder, table):
                 ((k == 4) and (j == 0) and (N == 31))):
                 entry = common_entry_values(k,j,N, 'K')
                 forms = Hecke_Eigenforms_paramodular(k,j,N)
-                forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
+                # we now sort when we read the files
+                # forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
                 for f in forms:
                     entry_sub = entry.copy()
                     entry_sub.update(f)
