@@ -31,13 +31,14 @@ def entry_add_columns(e, ext_data):
         eps = { p : 1 for p in bad_ps }
         if len(bad_ps) > 0: 
             eps[max(bad_ps)] = -1
-            assert e['atkin_lehner_eigenvals'][-1][0] == max(bad_ps)
-            e['atkin_lehner_eigenvals'][-1][1] *= (-1)
-            if (e['atkin_lehner_string'][-1] == '+'):
-                e['atkin_lehner_string'][-1] = '-'
-            else:
-                e['atkin_lehner_string'][-1] = '+'
-            e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
+            if 'atkin_lehner_eigenvals' in e:
+                assert e['atkin_lehner_eigenvals'][-1][0] == max(bad_ps)
+                e['atkin_lehner_eigenvals'][-1][1] *= (-1)
+                if (e['atkin_lehner_string'][-1] == '+'):
+                    e['atkin_lehner_string'][-1] = '-'
+                else:
+                    e['atkin_lehner_string'][-1] = '+'
+                    e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
         e['trace_display'] = e['trace_lambda_p'][:4]
         # e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
         e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'], e['level'], eps)
