@@ -57,6 +57,9 @@ def num_level_raise(M,N):
     return ret
 
 def count_old_G_forms(k,j,N):
+    # Temporary fix for the sample got from Gustavo
+    if (is_prime(N)):
+        return 0
     c = 0
     divs = [d for d in divisors(N) if d != N]
     for M in divs:
