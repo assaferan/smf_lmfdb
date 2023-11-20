@@ -104,11 +104,12 @@ def create_entries(triple_list):
                 entry = smf_level2_space(k,j)
                 entries.append(entry)
             # for level prime p, k>=5 and j>=0 even  we have dim M_{k,j}(\Gamma_0(p)) and dim S_{k,j}(\Gamma_0(p))     
-            if is_prime(N) == True:
+            if is_prime(N) and is_even(j):
                entry = {}
                entry.update(common_entry_values(k,j,N,'S'))
                entry['total_dim'] = vector_valued_form_gamma_0_p_mod_dim(N,k,j)
                entry['cusp_dim'] = vector_valued_form_gamma_0_p_cusp_dim(N,k,j)
+               assert entry['cusp_dim'].is_integer()
                entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
             # we temporarily go only up to a 1000 in paramodular
