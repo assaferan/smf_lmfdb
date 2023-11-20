@@ -1,4 +1,4 @@
-from sage.all import (nth_prime, is_square)
+from sage.all import (nth_prime, is_square, prime_divisors)
 
 from smf_lmfdb.db_tables.common_create_table import FAMILY_DICT
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, MAX_P, write_data_from_files, fill_nulls
