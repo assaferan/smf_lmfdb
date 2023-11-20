@@ -28,20 +28,16 @@ def entry_add_columns(e, ext_data):
     if ('trace_lambda_p_square' in e) and (e['trace_lambda_p_square'] != 'NULL'):
         max_p = min(MAX_P, nth_prime(len(e['trace_lambda_p'])))
         bad_ps = prime_divisors(e['level'])
-        eps = { p : 1 for p in bad_ps }
-        if len(bad_ps) > 0: 
-            eps[max(bad_ps)] = -1
-            if 'atkin_lehner_eigenvals' in e:
-                assert e['atkin_lehner_eigenvals'][-1][0] == max(bad_ps)
-                e['atkin_lehner_eigenvals'][-1][1] *= (-1)
-                if (e['atkin_lehner_string'][-1] == '+'):
-                    e['atkin_lehner_string'][-1] = '-'
-                else:
-                    e['atkin_lehner_string'][-1] = '+'
-                    e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
+        # Do we want that, or do we prefer not to touch it?
+        # These are needed to get the Dirichlet coefficients at bad primes?
+        if 'atkin_lehner_eigenvals' not in e:
+            e['atkin_lehner_eigenvals'] = [[p,1] for p in bad_ps]
+            e['atkin_lehner_string'] = ''.join(['+' for p in bad_ps])
+        eps = { bad_ps[i] : e['atkin_lehner_eigenvals'][i] for p in bad_ps } 
         e['trace_display'] = e['trace_lambda_p'][:4]
-        # e['traces'] = Get_All_Hecke_Eigenvalues_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'])
         e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], e['trace_lambda_p_square'], e['weight'], e['level'], eps)
+    
+        e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
     return e
 
 def write_temp_entry(entry, folder, ext_data, table):
