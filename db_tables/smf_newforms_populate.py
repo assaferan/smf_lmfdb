@@ -25,7 +25,7 @@ def entry_add_columns(e, ext_data):
         e['qexp_display'] = 'NULL'
     e['embedded_related_objects'] = []
     # sometimes we just have q-expansions and no hecke eigenvalues
-    if ('trace_lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL'):
+    if ('trace_lambda_p_square' in e) and (e['trace_lambda_p_square'] != 'NULL'):
         max_p = min(MAX_P, nth_prime(len(e['trace_lambda_p'])))
         bad_ps = prime_divisors(e['level'])
         eps = { p : 1 for p in bad_ps }
