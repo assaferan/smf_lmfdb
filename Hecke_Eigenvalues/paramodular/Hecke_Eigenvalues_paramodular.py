@@ -85,7 +85,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         # !! TODO - check if that actually happens to be true
         orbit['field_poly_is_real_cyclotomic'] = False
         orbit['field_poly_root_of_unity'] = pol.is_cyclotomic(certificate=True)
-        if 'hecke_ring_index' in orbit:
+        if ('hecke_ring_index' in orbit) and (orbit['dim'] <= 20):
             pol = Qx(pari(pol).polredbest().polredabs())
             F = NumberField(pol, name = "a")
             coeffs = [int(c) for c in pol.coefficients(sparse=False)]
