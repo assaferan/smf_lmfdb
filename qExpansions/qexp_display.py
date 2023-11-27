@@ -1,13 +1,12 @@
-from sage.all import *
-# from sage.all import (LaurentPolynomialRing, PolynomialRing, Rationals)
-cwd = os.getcwd()
-os.chdir('smf_lmfdb/qExpansions')
+from sage.rings.polynomial.laurent_polynomial_ring import LaurentPolynomialRing
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.rings.rational_field import QQ
+
 # This loads the form F20G
-load('FE_FG_20_0.sage')
-load('FE_E4_E6_Chi10_Chi12_Precision_51.sage')
+from smf_lmfdb.qExpansions.FE_FG_20_0 import F20G
+from smf_lmfdb.qExpansions.FE_E4_E6_Chi10_Chi12_Precision_51 import E4, E6, Chi10, Chi12
 # This one is vector valued, so I postpone handling it - it is called FEKLEis
-# load('Example_1_Klingen_Eisenstein_6_6_0.sage')
-os.chdir(cwd)
+from smf_lmfdb.qExpansions.Example_1_Klingen_Eisenstein_6_6_0 import FEKLEis
 
 def make_qexp_display(f, nterms=5):
     '''
@@ -22,7 +21,7 @@ def make_qexp_display(f, nterms=5):
     while (s < nterms):
         s += len(key_by_deg[i])
         i += 1
-    Lq = LaurentPolynomialRing(Rationals(), names=['q12'])
+    Lq = LaurentPolynomialRing(QQ, names=['q12'])
     q12 = Lq.gens()[0]
     PLq = PolynomialRing(Lq, 2, names=['q1','q2'])
     q1, q2 = PLq.gens() 
