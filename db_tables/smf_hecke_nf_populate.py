@@ -77,7 +77,7 @@ def create_entries(triple_list):
             entry['hecke_ring_power_basis'] = True
             entry['hecke_ring_cyclotomic_generator'] = 0
             entry['field_poly'] = [0,1]
-            entry['qexp'] = get_qexp_F20G()
+            # entry['qexp'] = get_qexp_F20G()
             entry['maxp'] = 19
             entry['lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
             entries.append(entry)

@@ -121,7 +121,7 @@ def create_entries(triple_list, folder, table):
             entry = common_entry_values(k,j,N, 'P')
             entry['is_cuspidal'] = True
             entry['aut_rep_type'] = 'G'
-            entry['qexp_display'] = get_qexp_display_F20G()
+            # entry['qexp_display'] = get_qexp_display_F20G()
             entry['dim'] = 1
             entry['nf_label'] = '1.1.1.1'
             entry['hecke_ring_index'] = 1
