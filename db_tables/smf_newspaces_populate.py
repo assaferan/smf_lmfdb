@@ -109,6 +109,9 @@ def create_entries(triple_list):
                entry.update(common_entry_values(k,j,N,'S'))
                entry['total_dim'] = vector_valued_form_gamma_0_p_mod_dim(N,k,j)
                entry['cusp_dim'] = vector_valued_form_gamma_0_p_cusp_dim(N,k,j)
+               entry['new_cusp_dim'] = entry['cusp_dim']
+               # This could be wrong!! there might be forms from level 1
+               entry['old_cusp_dim'] = 0
                assert entry['cusp_dim'].is_integer()
                entries.append(entry)
             entry = smf_dims_paramodular(k,j,N)
