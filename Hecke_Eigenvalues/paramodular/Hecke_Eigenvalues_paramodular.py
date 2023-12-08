@@ -3,10 +3,11 @@ from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prim
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim
+from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms
 
 from lmfdb import db
 
-from Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms
+
 
 def parse_omf5(k,j,N):
     if (k == 3) and (j == 0):
