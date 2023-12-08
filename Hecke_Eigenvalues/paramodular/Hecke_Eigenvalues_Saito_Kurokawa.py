@@ -1,6 +1,7 @@
 from sage.arith.misc import previous_prime
 from sage.functions.other import floor
 from sage.rings.fast_arith import prime_range
+from sage.modules.free_module_element import vector
 
 from lmfdb import db
 from smf_lmfdb.db_tables.common_populate import MAX_P
