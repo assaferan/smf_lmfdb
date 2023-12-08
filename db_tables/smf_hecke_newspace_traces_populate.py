@@ -11,8 +11,12 @@ def entry_add_columns(e, ext_data):
 def get_space_entries(g, F, N, k, j):
     entries = []
     e = {'hecke_orbit_code' : make_orbit_code(g, F, N, k, j, 1, 1)}
-    M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p'])
-    aps = M['cusp_G_lambda_p']
+    M = db.smf_newspaces.lucky(e, ['cusp_Y_lambda_p'])
+    aps = M['cusp_Y_lambda_p']
+    # manually adding (3,0,N)
+    if (k == 3) and (j == 0) and (not is_square(N)):
+         M = db.smf_newspaces.lucky(e, ['cusp_G_lambda_p'])
+         aps = M['cusp_G_lambda_p']
     if (len(aps) == 0):
         max_p = 0
     else:
