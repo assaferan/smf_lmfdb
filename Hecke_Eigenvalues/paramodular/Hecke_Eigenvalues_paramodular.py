@@ -7,8 +7,6 @@ from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa im
 
 from lmfdb import db
 
-
-
 def parse_omf5(k,j,N):
     if (k == 3) and (j == 0):
         folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
@@ -59,6 +57,13 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
                 else:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
+
+    traces_P = Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N)
+
+    for k in traces.keys():
+        for i in range(len(traces[k])):
+            traces[k][i] += traces_P[k][i]
+    
     return traces, new_cusp_G_dim, al_dims_G
 
 def num_forms_paramodular(k,j,N):

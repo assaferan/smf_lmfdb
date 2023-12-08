@@ -7,7 +7,7 @@ from smf_lmfdb.db_tables.common_populate import MAX_P
 from smf_lmfdb.db_tables.nf_elt import apply_to_nf_elt
 
 def ms_label(k,N):
-    return '.'.join([str(N), str(k)])
+    return '.'.join([str(N), str(k), "a"])
 
 def SK_lambda_p(k,p,a_p):
     return p**(k-2)+ p**(k-1)+a_p
@@ -128,13 +128,16 @@ def Hecke_Eigenvalues_SK_All(k,j):
     elif j == 0: 
        return Hecke_Eigenvalues_SK(k)
 
-def Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,prime_bound=200):
+# Unfortunately mf_newspaces does not have the data of traces on +/- spaces,
+# so we resort to actually getting the forms
+def Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N,prime_bound=200):
     """
     Compute                     
     """
     w = 2*k-2
-    label = ms_label(w,1)
-    res = db.mf_newspaces.lookup(label, ['traces'])
+    query = {'level' : N, 'weight': str(w), 'fricke_eigenval' : -1}
+    res = db.mf_newforms.search(query, ['traces'])
+    res = {'traces' : sum([vector(f['traces']) for f in res])}
     SK_func = {ht : eval('SK_' + ht) for ht in hecke_types}
     exp = {ht : 1 for ht in hecke_types}
     bound = {ht : previous_prime(floor(prime_bound**(1/exp[ht])))+1 for ht in hecke_types}
