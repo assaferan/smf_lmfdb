@@ -138,6 +138,7 @@ def Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N,prime_bound=200):
     query = {'level' : N, 'weight': str(w), 'fricke_eigenval' : -1}
     res = db.mf_newforms.search(query, ['traces'])
     res = {'traces' : sum([vector(f['traces']) for f in res])}
+    hecke_types = ['lambda_p' + suffix for suffix in [''] + ['_square' + sfx for sfx in [''] + ['_' + str(i) for i in range(3)]]]
     SK_func = {ht : eval('SK_' + ht) for ht in hecke_types}
     exp = {ht : 1 for ht in hecke_types}
     bound = {ht : previous_prime(floor(prime_bound**(1/exp[ht])))+1 for ht in hecke_types}
