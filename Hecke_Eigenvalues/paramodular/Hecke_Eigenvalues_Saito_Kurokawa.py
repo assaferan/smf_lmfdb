@@ -144,7 +144,7 @@ def Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N,prime_bound=200):
     bound = {ht : previous_prime(floor(prime_bound**(1/exp[ht])))+1 for ht in hecke_types}
     ranges = {ht : prime_range(bound[ht]) for ht in hecke_types}  
     L = { ht : {p : 0 for p in ranges[ht]}  for ht in hecke_types }
-    if (res and (j == 0)):
+    if ((res['traces'] != 0) and (j == 0)):
         Tr = res['traces']
         for ht in hecke_types:
             for p in ranges[ht]:
