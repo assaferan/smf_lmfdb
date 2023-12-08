@@ -6,6 +6,8 @@ from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kur
 
 from lmfdb import db
 
+from Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms
+
 def parse_omf5(k,j,N):
     if (k == 3) and (j == 0):
         folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
@@ -60,8 +62,11 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
 
 def num_forms_paramodular(k,j,N):
     forms = parse_omf5(k,j,N)
-    # add SK to num_forms
-    return len([f for f in forms if f['aut_rep_type'] == 'G']), sum([len(f['field_poly'])-1 for f in forms if f['aut_rep_type'] == 'G'])
+    num_G_forms = len([f for f in forms if f['aut_rep_type'] == 'G'])
+    dim_G_forms = sum([len(f['field_poly'])-1 for f in forms
+                       if f['aut_rep_type'] == 'G'])
+    num_P_forms = Hecke_Eigenvalues_PM_SK_new_num_forms(k,j,N)
+    return num_P_forms + num_G_forms, dim_G_forms
 
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
@@ -72,7 +77,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
     Qx = PolynomialRing(QQ, name="x")
     x = Qx.gens()[0]
 
-    forms = [f for f in forms if f['aut_rep_type'] not in ['O','F','Y']]
+    forms = [f for f in forms if f['aut_rep_type'] == 'G']
     for orbit in forms:
         # if we have not saved the eigenvalues
         orbit['is_cuspidal'] = True
@@ -104,7 +109,10 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         for field_name in ['lambda_p', 'lambda_p_square']:
             if field_name in orbit:
                 dummy = orbit.pop(field_name)
-        
+
+    P_forms = Hecke_Eigenvalues_PM_SK_all_forms(k,j,N)
+    forms += P_forms
+                
     return forms
 
 
@@ -119,7 +127,7 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     x = Qx.gens()[0]
 
     # we will only use those for which we have a representation of the hecke ring
-    evs = [ev for ev in evs if ev['aut_rep_type'] not in ['O','F','Y']]
+    evs = [ev for ev in evs if ev['aut_rep_type'] == 'G']
     
     for ev in evs:
         F = NumberField(Qx(ev['field_poly']), name = "nu")
@@ -141,4 +149,8 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
                            'hecke_ring_generator_nbound']:
             if field_name in ev:
                 dummy = ev.pop(field_name)
+
+    evs_P = Hecke_Eigenvalues_PM_SK_all_evs(k,j,N)
+    evs += evs_P
+    
     return evs

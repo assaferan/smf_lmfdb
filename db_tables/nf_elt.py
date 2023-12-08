@@ -76,3 +76,13 @@ def nf_elts_to_lists(elts, inv_basis):
 #            return elt
 #        return list(elt)
 #    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]
+
+def apply_to_nf_elt(func):
+    def wrapper(*args):
+        ev = args[-1]
+        elt = args[-2]
+        basis, inv_basis = get_nf_basis(ev)
+        nf_elt = nf_lists_to_elements([elt], basis)[0]
+        ret = func(*(list(args[:-2]) + [nf_elt]))
+        return nf_elts_to_lists([nf_elt], inv_basis)[0]
+    return wrapper
