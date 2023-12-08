@@ -59,10 +59,10 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
 
     traces_P = Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N)
-    ps = prime_range(prime_bound)
     
     for ht in hecke_types:
         k = aut_types['P'] + '_' + ht
+        ps = prime_range(nth_prime(num_ps[ht]+1))
         for i in range(len(traces[k])):
             traces[k][i] += traces_P[ht][ps[i]]
     
