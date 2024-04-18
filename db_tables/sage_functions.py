@@ -178,7 +178,7 @@ def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):
                     R = PowerSeriesRing(F, 't')
                     t = R.gen()
                     if (level % p != 0):
-                        Q = 1 - ap[i] * t + (ap2[i] + p**2 + 1)* p**(mu-2)*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
+                        Q = 1 - ap[i] * t + (ap[i]^2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
                     else:
                         Q = (1 - (ap[i]+eps[p]*p) * t + p**3 * t**2)*(1+eps[p]*p*t)
                     an = (1/Q).dict().get(r,F(0))

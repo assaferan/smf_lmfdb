@@ -55,27 +55,12 @@ def nf_lists_to_elements(coeffs, basis):
 def nf_elts_to_lists(elts, inv_basis):
     d = len(inv_basis)
     def to_list(elt):
-        if type(elt) == int:
+        if (type(elt) == int) or (type(elt) == Integer):
             return [elt] + [0 for i in range(d-1)]
         elif type(elt) == str:
             return elt
         return list(elt)
     return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]
-
-
-#def nf_lists_to_elements(coeffs, basis):
-#    d = len(basis)
-#    return [sum([coeff[i]*basis[i] for i in range(d)]) for coeff in coeffs]
-
-#def nf_elts_to_lists(elts, inv_basis):
-#    d = len(inv_basis)
-#    def to_list(elt):
-#        if type(elt) == int:
-#            return [elt] + [0 for i in range(d-1)]
-#        elif type(elt) == str:
-#            return elt
-#        return list(elt)
-#    return [ list(sum([to_list(elt)[i]*inv_basis[i] for i in range(d)])) if type(elt) != str else elt for elt in elts]
 
 def apply_to_nf_elt(func):
     def wrapper(*args):
@@ -84,5 +69,5 @@ def apply_to_nf_elt(func):
         basis, inv_basis = get_nf_basis(ev)
         nf_elt = nf_lists_to_elements([elt], basis)[0]
         ret = func(*(list(args[:-2]) + [nf_elt]))
-        return nf_elts_to_lists([nf_elt], inv_basis)[0]
+        return nf_elts_to_lists([ret], inv_basis)[0]
     return wrapper

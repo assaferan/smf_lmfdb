@@ -148,7 +148,29 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
             ev['maxp_square'] = nth_prime(len(ev['trace_lambda_p_square']))
             # ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
             # ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
-
+            # transofrming the T_{p^2} eigenvalues to SMF T_{p^2} ev
+            if 'lambda_p' in ev:
+                basis, inv_basis = get_nf_basis(ev)
+                ap_nf_elts = nf_lists_to_elements(ev['lambda_p'], basis)
+                bp2_nf_elts = nf_lists_to_elements(ev['lambda_p_square'], basis)
+                ap2_nf_elts = []
+                for idx in range(len(ev['lambda_p'])):
+                    p = nth_prime(idx)
+                    mu = j + 2*k - 3
+                    ap = ap_nf_elt[idx]
+                    bp2 = bp2_nf_elt[idx]
+                    ap2 = ap**2 - p**(mu-1)-(bp2+p**2+1)*p**(mu-2)
+                    ap2_nf_elts.append(ap2)
+                ev['lambda_p_square'] = nf_elts_to_lists(ap2_nf_elts, inv_basis)
+            # !! The following only does the right thing over Q !!
+            for idx in range(len(ev['trace_lambda_p'])):
+                p = nth_prime(idx)
+                mu = j + 2*k - 3
+                ap = ev['trace_lambda_p'][idx]
+                bp2 = ev['trace_lambda_p_square'][idx]
+                ap2 = ap**2 - p**(mu-1)-(bp2+p**2+1)*p**(mu-2)
+                ev['trace_lambda_p_square'][idx] = ap2
+                    
         for field_name in ['atkin_lehner_eigenvals',
                            'atkin_lehner_string',
                            'aut_rep_type',
