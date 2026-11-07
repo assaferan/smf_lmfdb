@@ -24,12 +24,21 @@ def parse_omf5(k,j,N):
     forms = eval(r)
     for f in forms:
         f['dim'] = len(f['field_poly'])-1
+        # atkin_lehner_string holds the paramodular Atkin-Lehner signs. Older
+        # omf5_data files filled atkin_lehner_eigenvals from the spinor-character
+        # conductor instead, so always rebuild the eigenvalues from the string.
+        f['atkin_lehner_eigenvals'] = al_str_to_eigenvals(f['atkin_lehner_string'], N)
     forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
     return forms
 
 def al_str_to_num(al_str, N):
     ps = prime_divisors(N)
-    return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])   
+    return prod([ps[i] for i in range(len(al_str)) if al_str[i] == '-'])
+
+def al_str_to_eigenvals(al_str, N):
+    ps = prime_divisors(N)
+    assert len(al_str) == len(ps)
+    return [[int(p), -1 if s == '-' else 1] for p, s in zip(ps, al_str)]
 
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     """
