@@ -11,6 +11,8 @@ otherwise), now with aps[i], and updates the rows that differ.
 It refuses to run if the set of (space, n) rows in the table differs from the
 set the populate script would produce: it only corrects values.
 
+Run it after fix_degree2_traces.py, which changes cusp_G_lambda_p.
+
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.fix_newspace_traces [--datafile FILE]          # dry run
     sage -python -m smf_lmfdb.db_tables.fix_newspace_traces [--datafile FILE] --apply
@@ -23,16 +25,20 @@ from smf_lmfdb.db_tables.common_populate import MAX_P
 
 
 def as_int(x):
-    return None if x is None or x == 'NULL' else int(x)
+    if x is None or x == 'NULL':
+        return None
+    assert x == int(x), "non-integer trace %s" % x
+    return int(x)
 
 
 def expected_rows(space):
     """{n: trace_an} as get_space_entries should have produced it."""
     k, j = space['weight']
+    # search results leave out NULL fields, hence .get
     if (k == 3) and (j == 0) and (not is_square(space['level'])):
-        aps = space['cusp_G_lambda_p']
+        aps = space.get('cusp_G_lambda_p')
     else:
-        aps = space['cusp_Y_lambda_p']
+        aps = space.get('cusp_Y_lambda_p')
     aps = aps or []
     max_p = min(MAX_P, nth_prime(len(aps))) if aps else 0
     return {int(p): as_int(aps[i]) for i, p in enumerate(prime_range(1, max_p + 1))}
@@ -81,9 +87,11 @@ def main(apply=False, datafile=None):
     if not apply:
         print("dry run; pass --apply to write")
         return
-    # update_from_file builds a replacement table (undo with reload_revert()), but it
-    # merges with COALESCE(new, current), so it cannot set a value to NULL; those
-    # rows are cleared with a single update() instead.
+    # update_from_file builds a replacement table, but it merges with
+    # COALESCE(new, current), so it cannot set a value to NULL; those rows are
+    # cleared with a single update() instead.  To undo both, call
+    # table.reload_revert(): it restores the table from before update_from_file,
+    # which also predates the update().
     if values:
         table.update_from_file(fname, label_col='id')
     if nulls:
