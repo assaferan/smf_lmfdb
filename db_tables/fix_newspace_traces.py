@@ -67,7 +67,8 @@ def main(apply=False, datafile=None):
     with open(fname, 'w') as F:
         F.write("id|trace_an\n" + table.col_type['id'] + "|" + table.col_type['trace_an'] + "\n\n")
         for c in changes:
-            F.write("%s|%s\n" % (c['id'], "NULL" if c['trace_an'] is None else c['trace_an']))
+            # COPY reads \N as NULL (the literal NULL only works inside array values)
+            F.write("%s|%s\n" % (c['id'], "\\N" if c['trace_an'] is None else c['trace_an']))
     print("wrote", fname)
     if not apply:
         print("dry run; pass --apply to write")
