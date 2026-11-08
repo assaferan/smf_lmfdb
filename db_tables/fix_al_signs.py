@@ -31,7 +31,7 @@ def corrected(rec):
             'fricke_eigenval': fricke}
 
 
-def main(apply=False):
+def main(apply=False, datafile=None):
     cols = ['label', 'level', 'atkin_lehner_string', 'atkin_lehner_eigenvals',
             'fricke_eigenval']
     changes = {}
@@ -44,14 +44,26 @@ def main(apply=False):
     print("%d newforms need correcting" % len(changes))
     for label in list(changes)[:5]:
         print("  ", label, changes[label])
+    if not changes:
+        return
+    # One bulk update: a per-row update() pays lmfdb's lock check (including a
+    # fresh devmirror connection) each time, about 4s per row.
+    # update_from_file builds a replacement table, so it can be undone with
+    # db.smf_newforms.reload_revert().
+    fname = datafile or "smf_newforms_al_fix.txt"
+    cols = ['label', 'atkin_lehner_string', 'atkin_lehner_eigenvals', 'fricke_eigenval']
+    types = [db.smf_newforms.col_type[c] for c in cols]
+    with open(fname, 'w') as F:
+        F.write("|".join(cols) + "\n" + "|".join(types) + "\n\n")
+        for label, new in changes.items():
+            evs = "{" + ",".join("{%d,%d}" % (p, e) for p, e in new['atkin_lehner_eigenvals']) + "}"
+            F.write("|".join([label, new['atkin_lehner_string'], evs,
+                              str(new['fricke_eigenval'])]) + "\n")
+    print("wrote", fname)
     if not apply:
         print("dry run; pass --apply to write")
         return
-    for i, (label, new) in enumerate(changes.items()):
-        db.smf_newforms.update({'label': label}, new, restat=False)
-        if i % 500 == 0:
-            print("updated", i)
-    db.smf_newforms.stats.refresh_stats()
+    db.smf_newforms.update_from_file(fname, label_col='label')
 
 
 if __name__ == '__main__':
