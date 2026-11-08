@@ -17,8 +17,8 @@ recomputes the traces from smf_hecke_nf and rewrites:
 Before writing anything it checks that the formula for `traces` reproduces
 every stored row, that only forms of degree 2 change, that the current labels
 follow the order of the stored traces, that smf_newforms and smf_hecke_nf agree
-on labels and orbit codes, and that the sums of the unaffected newspaces equal
-the sums over their forms.
+on each orbit's field polynomial and degree, and that the stored sums of the
+affected newspaces equal the sums over their forms.
 
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.fix_degree2_traces [--datafile PREFIX]          # dry run
@@ -32,7 +32,7 @@ from lmfdb import db
 from smf_lmfdb.db_tables.common_populate import MAX_P, base_26
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 
-NF_COLS = ['id', 'label', 'space_label', 'level', 'weight', 'dim', 'hecke_orbit',
+NF_COLS = ['id', 'label', 'space_label', 'level', 'weight', 'dim', 'field_poly', 'hecke_orbit',
            'hecke_orbit_code', 'char_orbit_index', 'trace_lambda_p',
            'trace_lambda_p_square', 'trace_display', 'traces']
 HNF_COLS = ['id', 'label', 'field_poly', 'hecke_ring_power_basis', 'hecke_ring_numerators',
@@ -133,15 +133,20 @@ def write_update_file(fname, table, key, rows, cols):
 def main(apply=False, datafile=None):
     query = {'family': 'K', 'weight': [3, 0], 'aut_rep_type': 'G'}
     forms = list(db.smf_newforms.search(query, NF_COLS))
-    hnf_list = list(db.smf_hecke_nf.search({'label': {'$in': [f['label'] for f in forms]}}, HNF_COLS + ['hecke_orbit_code']))
+    hnf_list = list(db.smf_hecke_nf.search({'label': {'$in': [f['label'] for f in forms]}}, HNF_COLS))
     hnf = {h['label']: h for h in hnf_list}
     print("%d G newforms of weight (3,0), %d with smf_hecke_nf rows" % (len(forms), len(hnf)))
     # The two tables are joined by label.  After a partial apply (smf_newforms
     # relabelled, smf_hecke_nf not) a label would point at another orbit's
-    # coordinates, so refuse to run unless labels and orbit codes agree.
-    codes = {f['label']: f['hecke_orbit_code'] for f in forms}
-    bad = [h['label'] for h in hnf_list if codes[h['label']] != h['hecke_orbit_code']]
-    assert not bad, "smf_newforms and smf_hecke_nf disagree on label/hecke_orbit_code: %s" % bad[:5]
+    # coordinates.  hecke_orbit_code is computed from the label, so it cannot
+    # detect that; compare the content instead: each orbit's field polynomial and
+    # degree must agree in both tables.  (Two orbits with the same field in one
+    # space would still slip through; after a partial apply, reload_revert() the
+    # tables that were updated rather than rerunning.)
+    nf_poly = {f['label']: ([int(c) for c in f['field_poly']], f['dim']) for f in forms}
+    bad = [h['label'] for h in hnf_list
+           if nf_poly[h['label']] != ([int(c) for c in h['field_poly']], len(h['field_poly']) - 1)]
+    assert not bad, "smf_newforms and smf_hecke_nf disagree on the orbit with label %s" % bad[:5]
 
     # 1. new traces from the coordinates; check that the `traces` formula
     #    reproduces every stored row from its stored trace_lambda_p / _square
@@ -215,25 +220,22 @@ def main(apply=False, datafile=None):
     for old, new in list(relabelled.items())[:6]:
         print("   ", old, "->", new)
 
-    # 3. newspace sums: compare every space with the (corrected) traces of its G
-    #    forms, not only the spaces of changed forms, so that a rerun also repairs
-    #    a space left behind by a partial apply
-    def sums(fs, i, fcol, length):
-        vals = [changed[f['label']][i] if f['label'] in changed else [as_int(x) for x in f[fcol]] for f in fs]
+    # 3. newspace sums of the affected spaces: check that the stored sums equal the
+    #    sums over the stored traces of their G forms, then replace them by the
+    #    sums over the corrected traces
+    def sums(fs, i, fcol, length, corrected):
+        vals = [changed[f['label']][i] if (corrected and f['label'] in changed) else [as_int(x) for x in f[fcol]]
+                for f in fs]
         return [None if all(v[n] is None for v in vals) else sum(v[n] or 0 for v in vals) for n in range(length)]
     sp_rows = []
-    for s in db.smf_newspaces.search({'label': {'$in': list(by_space)}}, SP_COLS):
-        fs = by_space[s['label']]
-        new = {}
+    for sp in sorted({r['space_label'] for r in nf_rows}):
+        s = db.smf_newspaces.lucky({'label': sp}, SP_COLS)
+        fs = by_space[sp]
         for col, fcol, i in [('cusp_G_lambda_p', 'trace_lambda_p', 0), ('cusp_G_lambda_p_square', 'trace_lambda_p_square', 1)]:
             stored = [as_int(x) for x in s[col]]
-            if not any(f['label'] in changed for f in fs):
-                assert sums(fs, i, fcol, len(stored)) == stored, "%s: %s is not the sum over its G forms" % (s['label'], col)
-            new[col] = sums(fs, i, fcol, len(stored))
-            if new[col] != stored:
-                s[col] = new[col]
-                if s not in sp_rows:
-                    sp_rows.append(s)
+            assert sums(fs, i, fcol, len(stored), False) == stored, "%s: %s is not the sum over its G forms" % (sp, col)
+            s[col] = sums(fs, i, fcol, len(stored), True)
+        sp_rows.append(s)
     print("%d newspaces to update" % len(sp_rows))
 
     if not (nf_rows or hnf_rows or sp_rows):
@@ -257,8 +259,9 @@ def main(apply=False, datafile=None):
         print("dry run; pass --apply to write")
         return
     # Each update_from_file builds a replacement table; undo with <table>.reload_revert().
-    # The updates are not atomic: if one fails, rerun the script (the checks above
-    # refuse an inconsistent label state; revert smf_newforms first in that case).
+    # The updates are not atomic: if one fails, reload_revert() the tables already
+    # updated and rerun.  Run fix_newspace_traces.py afterwards: it derives
+    # smf_hecke_newspace_traces from the cusp_G sums written here.
     for table, fname, key in todo:
         table.update_from_file(fname, label_col=key)
 
