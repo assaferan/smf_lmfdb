@@ -17,7 +17,7 @@ def SK_lambda_p_square(k,p,a_p):
     return a_p**2+(p+1)*p**(k-2)*a_p+p**(2*k-2)
 
 def SK_lambda_p_square_0(k,p,a_p):
-    return a_p**2+p**(k-3)*(p^2-1)*(a_p+p**(k-1))
+    return a_p**2+p**(k-3)*(p**2-1)*(a_p+p**(k-1))
 
 def SK_lambda_p_square_1(k,p,a_p):
     return p**(k-3)*(p+1)*a_p+p**(2*k-6)*(p**2-1)
