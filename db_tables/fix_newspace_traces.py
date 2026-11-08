@@ -38,8 +38,7 @@ def expected_rows(space):
     return {int(p): as_int(aps[i]) for i, p in enumerate(prime_range(1, max_p + 1))}
 
 
-def main(apply=False, datafile=None):
-    table = db.smf_hecke_newspace_traces
+def find_changes(table):
     rows = list(table.search({}, ['id', 'hecke_orbit_code', 'n', 'trace_an']))
     codes = {r['hecke_orbit_code'] for r in rows}
     spaces = {s['hecke_orbit_code']: s for s in db.smf_newspaces.search(
@@ -53,28 +52,46 @@ def main(apply=False, datafile=None):
     want = {(c, n) for c, e in expected.items() for n in e}
     assert have == want, "row sets differ: %d missing, %d extra" % (len(want - have), len(have - want))
 
-    changes = [{'id': r['id'], 'trace_an': expected[r['hecke_orbit_code']][int(r['n'])]}
-               for r in rows if as_int(r.get('trace_an')) != expected[r['hecke_orbit_code']][int(r['n'])]]
-    bad_spaces = {spaces[r['hecke_orbit_code']]['label'] for r in rows
-                  if as_int(r.get('trace_an')) != expected[r['hecke_orbit_code']][int(r['n'])]}
-    print("%d rows to correct, in %d spaces" % (len(changes), len(bad_spaces)))
-    for lab in sorted(bad_spaces)[:5]:
+    # search results leave out NULL fields, hence .get
+    wrong = [r for r in rows if as_int(r.get('trace_an')) != expected[r['hecke_orbit_code']][int(r['n'])]]
+    changes = [{'id': r['id'], 'trace_an': expected[r['hecke_orbit_code']][int(r['n'])]} for r in wrong]
+    bad_spaces = sorted({spaces[r['hecke_orbit_code']]['label'] for r in wrong})
+    print("%d rows to correct (%d of them to NULL), in %d spaces"
+          % (len(changes), sum(c['trace_an'] is None for c in changes), len(bad_spaces)))
+    for lab in bad_spaces[:5]:
         print("   ", lab)
+    return changes
+
+
+def main(apply=False, datafile=None):
+    table = db.smf_hecke_newspace_traces
+    changes = find_changes(table)
     if not changes:
         print("nothing to correct")
         return
+    values = [c for c in changes if c['trace_an'] is not None]
+    nulls = [c['id'] for c in changes if c['trace_an'] is None]
     fname = datafile or "smf_newspace_traces_fix.txt"
-    with open(fname, 'w') as F:
-        F.write("id|trace_an\n" + table.col_type['id'] + "|" + table.col_type['trace_an'] + "\n\n")
-        for c in changes:
-            # COPY reads \N as NULL (the literal NULL only works inside array values)
-            F.write("%s|%s\n" % (c['id'], "\\N" if c['trace_an'] is None else c['trace_an']))
-    print("wrote", fname)
+    if values:
+        with open(fname, 'w') as F:
+            F.write("id|trace_an\n" + table.col_type['id'] + "|" + table.col_type['trace_an'] + "\n\n")
+            for c in values:
+                F.write("%s|%s\n" % (c['id'], c['trace_an']))
+        print("wrote", fname)
     if not apply:
         print("dry run; pass --apply to write")
         return
-    # builds a replacement table; undo with db.smf_hecke_newspace_traces.reload_revert()
-    table.update_from_file(fname, label_col='id')
+    # update_from_file builds a replacement table (undo with reload_revert()), but it
+    # merges with COALESCE(new, current), so it cannot set a value to NULL; those
+    # rows are cleared with a single update() instead.
+    if values:
+        table.update_from_file(fname, label_col='id')
+    if nulls:
+        table.update({'id': {'$in': nulls}}, {'trace_an': None})
+    print("checking the table after the update:")
+    left = find_changes(table)
+    assert not left, "%d rows are still wrong after the update" % len(left)
+    print("all rows correct")
 
 
 if __name__ == '__main__':
