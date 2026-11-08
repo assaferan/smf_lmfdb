@@ -1,21 +1,30 @@
-from sage.all import (PolynomialRing, NumberField, ZZ, QQ, gcd, lcm, vector)
+from sage.all import (Integer, Matrix, PolynomialRing, NumberField, ZZ, QQ, gcd, lcm, vector)
 from lmfdb.utils import integer_squarefree_part
 
-def get_nf_basis(ev, two=True):
+def get_nf_basis(ev, two=False):
+    """
+    Return (basis, inv_basis) for the Hecke ring of ev: basis[i] is the i-th
+    generator (hecke_ring_numerators[i] / hecke_ring_denominators[i], or the
+    power basis), and inv_basis[i] is the i-th row of the inverse change of
+    basis, as nf_elts_to_lists expects.
+
+    Coordinates stored in the database are with respect to this stored basis,
+    so that is the default.  With two=True a quadratic field instead gets the
+    basis 1, beta with beta = (a + b sqrt(d))/den, b > 0; this is only allowed
+    when it is the stored basis (B_0 = 1 and beta = B_1), since otherwise stored
+    coordinates would be misread (the cause of the wrong degree-2 traces in
+    omf5_data, see assaferan/omf5_data#2).
+    """
     R = PolynomialRing(QQ, 'x')
     K = NumberField(R(ev['field_poly']), 'nu')
     nu = K.gen(0)
     dim = K.degree()
 
-    if ev['field_poly'] == [1,0,1]:
+    # The cyclotomic polynomials of degree 2, in the power basis
+    if ev['hecke_ring_power_basis'] and ev['field_poly'] in [[1,0,1],[1,-1,1],[1,1,1]]:
         basis = inv_basis = [1, nu]
         return basis, inv_basis
 
-    # Checking for the two other cyclotomic polynomials of degree 2
-    if ev['hecke_ring_power_basis'] and ev['field_poly'] in [[1,-1,1],[1,1,1]]:
-        basis = inv_basis = [1, nu]
-        return basis, inv_basis
-    
     if (dim == 2) and (two):
         c, b, a = map(ZZ, ev['field_poly'])
         D = b**2 - 4*a*c
@@ -33,7 +42,16 @@ def get_nf_basis(ev, two=True):
         sqrt = K(d).sqrt()
         num = beta[0] + beta[1]*sqrt
         frac = num / den
-        basis = inv_basis = [1, frac]
+        basis = [K(1), frac]
+        if not ev['hecke_ring_power_basis']:
+            stored, _ = get_nf_basis(ev, False)
+            if basis != stored:
+                raise ValueError("two=True: the basis 1, %s is not the stored Hecke ring basis %s" % (frac, stored))
+        elif basis != [K(1), nu]:
+            raise ValueError("two=True: the basis 1, %s is not the stored power basis" % frac)
+        # rows of the inverse of the matrix whose rows are the basis in the power basis
+        Minv = Matrix(QQ, [list(b) for b in basis]).inverse()
+        inv_basis = [K(list(row)) for row in Minv]
         return basis, inv_basis
     
     if ev['hecke_ring_power_basis']:
