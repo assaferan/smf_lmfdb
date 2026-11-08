@@ -23,7 +23,8 @@ def get_space_entries(g, F, N, k, j):
         max_p = min(MAX_P, nth_prime(len(aps)))
     for n,p in enumerate(prime_range(1,max_p+1)):
         e['n'] = p
-        e['trace_an'] = aps[n-1]
+        # aps[n] is the trace at the n-th prime p (aps[n-1] shifted every value by one prime)
+        e['trace_an'] = aps[n]
         entries.append(e.copy())
     return entries
     
