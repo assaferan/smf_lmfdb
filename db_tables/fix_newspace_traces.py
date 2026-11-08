@@ -54,9 +54,9 @@ def main(apply=False, datafile=None):
     assert have == want, "row sets differ: %d missing, %d extra" % (len(want - have), len(have - want))
 
     changes = [{'id': r['id'], 'trace_an': expected[r['hecke_orbit_code']][int(r['n'])]}
-               for r in rows if as_int(r['trace_an']) != expected[r['hecke_orbit_code']][int(r['n'])]]
+               for r in rows if as_int(r.get('trace_an')) != expected[r['hecke_orbit_code']][int(r['n'])]]
     bad_spaces = {spaces[r['hecke_orbit_code']]['label'] for r in rows
-                  if as_int(r['trace_an']) != expected[r['hecke_orbit_code']][int(r['n'])]}
+                  if as_int(r.get('trace_an')) != expected[r['hecke_orbit_code']][int(r['n'])]}
     print("%d rows to correct, in %d spaces" % (len(changes), len(bad_spaces)))
     for lab in sorted(bad_spaces)[:5]:
         print("   ", lab)
