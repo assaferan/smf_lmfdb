@@ -141,7 +141,25 @@ def Get_All_Hecke_Eigenvalues_Up_To(prec, ap, ap2, wt):
     return a
 
 
+def T_p_square_from_T_p_2(ap, bp2, wt):
+    """
+    Convert eigenvalues (or traces) of T(p,2), indexed by the primes in order,
+    to eigenvalues of T(p^2), the ap2 that Get_All_Dirichlet_Coeffs_Up_To expects:
+        T(p^2) = T(p)^2 - p^(mu-1) - (T(p,2) + p^2 + 1) p^(mu-2),  mu = j + 2k - 3.
+    'NULL' entries stay 'NULL'.
+    """
+    k, j = wt
+    mu = j + 2*k - 3
+    return ['NULL' if (bp2[i] == 'NULL' or ap[i] == 'NULL') else
+            ap[i]**2 - nth_prime(i+1)**(mu-1) - (bp2[i] + nth_prime(i+1)**2 + 1)*nth_prime(i+1)**(mu-2)
+            for i in range(len(bp2))]
+
 def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):
+    """
+    ap[i], ap2[i] are the eigenvalues (or traces) of T(p) and T(p^2) for the i-th prime p.
+    (Since 1295f51 the Euler factor expects T(p^2); data giving T(p,2) must be
+    converted with T_p_square_from_T_p_2 first.)
+    """
     k,j = wt
     if (k == 0) and (j == 0):
         return [0 for n in range(prec)]
@@ -178,7 +196,7 @@ def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):
                     R = PowerSeriesRing(F, 't')
                     t = R.gen()
                     if (level % p != 0):
-                        Q = 1 - ap[i] * t + (ap[i]^2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
+                        Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
                     else:
                         Q = (1 - (ap[i]+eps[p]*p) * t + p**3 * t**2)*(1+eps[p]*p*t)
                     an = (1/Q).dict().get(r,F(0))
