@@ -24,10 +24,13 @@ def parse_omf5(k,j,N):
     forms = eval(r)
     for f in forms:
         f['dim'] = len(f['field_poly'])-1
-        # atkin_lehner_string holds the paramodular Atkin-Lehner signs. Older
+        # Both fields must give the paramodular Atkin-Lehner signs. Older
         # omf5_data files filled atkin_lehner_eigenvals from the spinor-character
-        # conductor instead, so always rebuild the eigenvalues from the string.
-        f['atkin_lehner_eigenvals'] = al_str_to_eigenvals(f['atkin_lehner_string'], N)
+        # conductor instead, so refuse data where the two disagree.
+        expected = al_str_to_eigenvals(f['atkin_lehner_string'], N)
+        if sorted(f['atkin_lehner_eigenvals']) != expected:
+            raise ValueError("%s: atkin_lehner_eigenvals %s disagree with atkin_lehner_string %r"
+                             % (fname, f['atkin_lehner_eigenvals'], f['atkin_lehner_string']))
     forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
     return forms
 
@@ -37,7 +40,9 @@ def al_str_to_num(al_str, N):
 
 def al_str_to_eigenvals(al_str, N):
     ps = prime_divisors(N)
-    assert len(al_str) == len(ps)
+    if len(al_str) != len(ps):
+        raise ValueError("Atkin-Lehner string %r does not match the primes %s of N = %s"
+                         % (al_str, ps, N))
     return [[int(p), -1 if s == '-' else 1] for p, s in zip(ps, al_str)]
 
 def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
@@ -180,8 +185,9 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
                 ap2 = ap**2 - p**(mu-1)-(bp2+p**2+1)*p**(mu-2)
                 ev['trace_lambda_p_square'][idx] = ap2
                     
-        for field_name in ['atkin_lehner_eigenvals',
-                           'atkin_lehner_string',
+        # keep atkin_lehner_eigenvals: smf_hecke_nf_populate needs the signs for
+        # the bad Euler factors, and drops the field before writing the row
+        for field_name in ['atkin_lehner_string',
                            'aut_rep_type',
                            # 'hecke_ring',
                            'hecke_ring_index',

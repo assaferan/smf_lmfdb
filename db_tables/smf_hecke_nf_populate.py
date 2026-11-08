@@ -16,14 +16,20 @@ def entry_add_columns(e, ext_data):
     hecke_orbit = ext_data['num_forms']
     e['label'] = space_label + '.' + base_26(hecke_orbit)
     e['hecke_orbit_code'] = make_orbit_code(e['degree'], e['family'], e['level'], e['weight'][0], e['weight'][1], e['char_orbit_index'], hecke_orbit)
+    # smf_hecke_nf has no Atkin-Lehner column; we only need the signs for the bad Euler factors
+    al_eigenvals = e.pop('atkin_lehner_eigenvals', None)
     # sometimes we don't have the Hecke eigenvalues
     if ('lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL'):
         basis, inv_basis = get_nf_basis(e, False)
         #e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
         bad_ps = prime_divisors(e['level'])
-        eps = { p : 1 for p in bad_ps }
-        if len(bad_ps) > 0:
-            eps[max(bad_ps)] = -1
+        if al_eigenvals is not None:
+            eps = { p : ev for p, ev in al_eigenvals }
+        else:
+            # !! No Atkin-Lehner data: this is a guess, not the actual signs !!
+            eps = { p : 1 for p in bad_ps }
+            if len(bad_ps) > 0:
+                eps[max(bad_ps)] = -1
         e['an'] = nf_elts_to_lists(Get_All_Dirichlet_Coeffs_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
                                                                    nf_lists_to_elements(e['lambda_p_square'], basis), e['weight'], e['level'], eps),
                                    inv_basis)
