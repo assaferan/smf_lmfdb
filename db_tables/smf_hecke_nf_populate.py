@@ -19,7 +19,8 @@ def entry_add_columns(e, ext_data):
     # smf_hecke_nf has no Atkin-Lehner column; we only need the signs for the bad Euler factors
     al_eigenvals = e.pop('atkin_lehner_eigenvals', None)
     # sometimes we don't have the Hecke eigenvalues
-    if ('lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL'):
+    # the Saito-Kurokawa lifts come with their Dirichlet coefficients
+    if ('lambda_p_square' in e) and (e['lambda_p_square'] != 'NULL') and ('an' not in e):
         basis, inv_basis = get_nf_basis(e, False)
         #e['an'] = nf_elts_to_lists(Get_All_Hecke_Eigenvalues_Up_To(e['maxp']+1, nf_lists_to_elements(e['lambda_p'], basis),
         bad_ps = prime_divisors(e['level'])

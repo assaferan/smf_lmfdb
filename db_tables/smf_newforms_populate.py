@@ -40,7 +40,10 @@ def entry_add_columns(e, ext_data):
         if (e['family'] == 'K') and (e.get('aut_rep_type') == 'G'):
             # forms from omf5_data store traces of T(p,2), not of T(p^2)
             ap2 = T_p_square_from_T_p_2(e['trace_lambda_p'], ap2, e['weight'])
-        e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], ap2, e['weight'], e['level'], eps)
+        # The Saito-Kurokawa lifts come with their traces (Get_All_Dirichlet_Coeffs_Up_To
+        # multiplies traces, which is right only for orbits of dimension 1)
+        if 'traces' not in e:
+            e['traces'] = Get_All_Dirichlet_Coeffs_Up_To(max_p+1, e['trace_lambda_p'], ap2, e['weight'], e['level'], eps)
     
         e['fricke_eigenval'] = reduce(lambda x,y:x*y, [x[1] for x in e['atkin_lehner_eigenvals']], 1)
     return e
