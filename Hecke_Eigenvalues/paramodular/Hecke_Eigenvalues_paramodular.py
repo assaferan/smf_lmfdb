@@ -1,7 +1,8 @@
 # import pickle
-from sage.all import (Matrix, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
+from sage.all import (Matrix, ZZ, gcd, is_prime, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
-from smf_lmfdb.db_tables.nf_elt import nf_elts_to_lists
+from smf_lmfdb.db_tables.common_populate import MAX_P
+from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_elts_to_lists, nf_lists_to_elements
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms, Hecke_Traces_Eigenvalues_Saito_Kurokawa
 
@@ -90,6 +91,32 @@ def num_forms_paramodular(k,j,N):
     num_P_forms = Hecke_Eigenvalues_PM_SK_new_num_forms(k,j,N)
     return num_P_forms + num_G_forms, dim_G_forms
 
+def orbit_dirichlet_traces(orbit, k, j, N):
+    """
+    The `traces` of an omf5 orbit: traces over the orbit of the Dirichlet
+    coefficients a_n of the spinor L-function, 'NULL' at n not prime to N.
+
+    For an orbit of dimension > 1 these are not determined by the traces of the
+    Hecke eigenvalues (a_{mn} = a_m a_n and the Euler factor hold at each
+    embedding, not for traces), so they are computed at each embedding from the
+    eigenvalue coordinates.  Without coordinates only a_1 = dim and a_p are known.
+    """
+    # imported here: sage_functions loads the .sage modules at import time
+    from smf_lmfdb.db_tables.sage_functions import Get_All_Dirichlet_Coeffs_Up_To, T_p_square_from_T_p_2
+    prec = min(MAX_P, nth_prime(len(orbit['trace_lambda_p']))) + 1
+    if orbit.get('lambda_p') and orbit.get('lambda_p_square'):
+        basis, _ = get_nf_basis(orbit, False)
+        ap = nf_lists_to_elements(orbit['lambda_p'], basis)
+        bp2 = nf_lists_to_elements(orbit['lambda_p_square'], basis)  # omf5_data stores T(p,2)
+        eps = { p : e for p, e in orbit['atkin_lehner_eigenvals'] }
+        an = Get_All_Dirichlet_Coeffs_Up_To(prec, ap, T_p_square_from_T_p_2(ap, bp2, (k,j)), (k,j), N, eps)
+        traces = ['NULL' if a == 'NULL' else ZZ(a.trace()) for a in an]
+    else:
+        primes = prime_range(prec + 1)
+        traces = [orbit['dim'] if n == 1 else (orbit['trace_lambda_p'][primes.index(n)] if is_prime(n) else 'NULL')
+                  for n in range(1, prec + 1)]
+    return ['NULL' if gcd(n, N) != 1 else t for n, t in enumerate(traces, 1)]
+
 def Hecke_Eigenforms_paramodular(k,j,N):
     '''
     Returns a list of dictionaries.
@@ -127,6 +154,9 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         if 'related_objects' not in orbit:
             orbit['related_objects'] = []
             
+        if orbit['dim'] > 1:
+            orbit['traces'] = orbit_dirichlet_traces(orbit, k, j, N)
+
         # for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
         for field_name in ['lambda_p', 'lambda_p_square']:
             if field_name in orbit:
