@@ -44,7 +44,7 @@ from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_elts_to_lists, nf_lists_to_elements
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import parse_omf5
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.omf5_squares import (
-    PRIMES, SQUARE_PRIMES, has_coordinates, mu, sums_of_squares_from_coordinates,
+    PRIMES, SQUARE_PRIMES, OrbitNotPlaced, has_coordinates, mu, sums_of_squares_from_coordinates,
     sums_of_squares_from_matrices, T_p_square, T_p_square_traces)
 
 
@@ -73,7 +73,7 @@ def level_data(args):
                 sq_small = {p: v for p, v in sq.items() if p in SQUARE_PRIMES}
                 try:
                     from_matrices = sums_of_squares_from_matrices(f, N)
-                except ValueError:
+                except OrbitNotPlaced:
                     # too few good primes below 10 to tell this orbit's block apart
                     how = 'coordinates (matrices cannot tell the orbit apart)'
                 else:
@@ -83,7 +83,7 @@ def level_data(args):
         elif any(t not in ('NULL', None) for t in f['trace_lambda_p_square']):
             try:
                 sq, how = sums_of_squares_from_matrices(f, N), 'matrices'
-            except ValueError:
+            except OrbitNotPlaced:
                 # a single good prime below 10: T(p^2) stays unknown
                 how = 'none (one good prime below 10), NULL'
         key = orbit_key(f['atkin_lehner_string'], f['dim'], f['trace_lambda_p'], f['trace_lambda_p_square'])

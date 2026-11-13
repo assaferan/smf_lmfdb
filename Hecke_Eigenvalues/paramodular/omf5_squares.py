@@ -28,6 +28,10 @@ SQUARE_PRIMES = [2, 3, 5, 7]   # the primes with T(p,2) in omf5_data, and with H
 PRIMES = prime_range(100)
 
 
+class OrbitNotPlaced(ValueError):
+    """The Hecke matrices do not single out the orbit's block (too few good primes)."""
+
+
 def mu(k, j):
     return j + 2*k - 3
 
@@ -73,7 +77,7 @@ def sums_of_squares_from_coordinates(orbit, N):
     return {PRIMES[i]: ZZ((ap[i]**2).trace()) for i in range(n) if N % PRIMES[i] and ap[i] is not None}
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=8)
 def hecke_matrix_blocks(N, folder=OMF5_DIR, seed=1):
     """
     The blocks of the spaces of weight (3,0) and level N under the T(p,1), p < 10
@@ -94,11 +98,24 @@ def hecke_matrix_blocks(N, folder=OMF5_DIR, seed=1):
             for q in Ms:
                 if p < q and Ms[p]*Ms[q] != Ms[q]*Ms[p]:
                     raise ValueError("hecke_mat_%d: T(%d,1) and T(%d,1) do not commute on d = %s" % (N, p, q, d))
-        T = sum(rnd.randint(1, 50)*Ms[p] for p in Ms)
-        for V, irreducible in T.decomposition():
-            R = {p: Ms[p].restrict(V) for p in Ms}
-            out.append((d, V.dimension(), {p: ZZ(R[p].trace()) for p in Ms}, {p: ZZ((R[p]**2).trace()) for p in Ms},
-                        bool(irreducible)))
+        # Sage's decomposition has, once in a full run, returned a subspace that is not
+        # invariant (restrict then raises): retry with another random combination.
+        for attempt in range(5):
+            T = sum(rnd.randint(1, 50)*Ms[p] for p in Ms)
+            try:
+                blocks = []
+                for V, irreducible in T.decomposition():
+                    R = {p: Ms[p].restrict(V) for p in Ms}
+                    blocks.append((d, V.dimension(), {p: ZZ(R[p].trace()) for p in Ms},
+                                   {p: ZZ((R[p]**2).trace()) for p in Ms}, bool(irreducible)))
+            except (ValueError, ArithmeticError):
+                continue
+            if sum(b[1] for b in blocks) != T.nrows():
+                continue
+            break
+        else:
+            raise RuntimeError("hecke_mat_%d: no decomposition of the space d = %s into invariant blocks" % (N, d))
+        out.extend(blocks)
     return tuple(out)
 
 
@@ -106,7 +123,7 @@ def sums_of_squares_from_matrices(orbit, N, folder=OMF5_DIR):
     """
     The sum over the orbit of lambda_p^2 for p < 10 not dividing N, from the Hecke
     matrices: the orbit must be the only block with its dimension and traces, and
-    that block a single Galois orbit.  Otherwise (few good primes) ValueError.
+    that block a single Galois orbit.  Otherwise (few good primes) OrbitNotPlaced.
 
     It also needs two good primes below 10.  Against the orbits with coordinates
     (5612 that it places) it is right at every one with two or more, but with a
@@ -118,12 +135,15 @@ def sums_of_squares_from_matrices(orbit, N, folder=OMF5_DIR):
     if not tr:
         return {}
     if len(tr) < 2:
-        raise ValueError("level %d: one good prime below 10 cannot place an orbit" % N)
-    found = [b for b in hecke_matrix_blocks(N, folder) if b[1] == dim and b[2] == tr]
-    if len(found) != 1 or not found[0][4]:
-        raise ValueError("level %d: %d blocks of dimension %d with the traces %s of the orbit%s"
+        raise OrbitNotPlaced("level %d: one good prime below 10 cannot place an orbit" % N)
+    # a placement does not depend on the random combination of the T(p,1) that splits
+    # the spaces, but whether one is found can: try a few
+    for seed in range(1, 5):
+        found = [b for b in hecke_matrix_blocks(N, folder, seed) if b[1] == dim and b[2] == tr]
+        if len(found) == 1 and found[0][4]:
+            return dict(found[0][3])
+    raise OrbitNotPlaced("level %d: %d blocks of dimension %d with the traces %s of the orbit%s"
                          % (N, len(found), dim, tr, "" if len(found) != 1 else ", not a single Galois orbit"))
-    return dict(found[0][3])
 
 
 def sums_of_squares(orbit, N, k, j, folder=OMF5_DIR):
@@ -131,7 +151,7 @@ def sums_of_squares(orbit, N, k, j, folder=OMF5_DIR):
     if has_coordinates(orbit):
         return sums_of_squares_from_coordinates(orbit, N)
     if (k, j) != (3, 0):
-        raise ValueError("no eigenvalue coordinates and no Hecke matrices for weight %s" % ((k, j),))
+        raise OrbitNotPlaced("no eigenvalue coordinates and no Hecke matrices for weight %s" % ((k, j),))
     return sums_of_squares_from_matrices(orbit, N, folder)
 
 
@@ -161,6 +181,6 @@ def orbit_T_p_square_traces(orbit, N, k, j, folder=OMF5_DIR):
     """
     try:
         sq = sums_of_squares(orbit, N, k, j, folder)
-    except ValueError:
+    except OrbitNotPlaced:
         sq = {}
     return T_p_square_traces(orbit, N, k, j, sq), sq
