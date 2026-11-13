@@ -1,5 +1,6 @@
 """
-Correct ALdims_P (and ALdims = ALdims_G + ALdims_P) of the paramodular newspaces.
+Correct ALdims_P of the paramodular newspaces, and store ALdims_G, ALdims_P and
+ALdims = ALdims_G + ALdims_P in the order the space pages read.
 
 ALdims_P[i] is the dimension of the Saito-Kurokawa lifts (new and old) whose
 Atkin-Lehner signs are -1 exactly at the primes of the i-th squarefree divisor
@@ -12,10 +13,19 @@ vectors ++, -+, +-, --, at indices 0, 2, 1, 3.  DimensionFormulas now uses
 cmf_ALdims_index.  The populate script also filled ALdims_P for j > 0, where
 there are no lifts (2.K.19.3.2.a); those are set to 0.
 
+All three columns were stored in the order of the squarefree divisors, but the
+Atkin-Lehner table of the space page (web_space.ALdim_table) reads them in the
+sign-vector order of mf_newspaces.ALdims, so with two or more primes it shows
+dimensions under the wrong signs (2.K.161.3.0.a: the form with w_7 = -1 and
+the three with w_23 = -1 are swapped).  They are rewritten in sign-vector order,
+which is what the populate script now produces.
+
 Before writing anything it checks that every stored ALdims_P is what the old
-indexing gives and that the stored ALdims is ALdims_G + ALdims_P, and that in the spaces
-without old lifts the new ALdims_P is, class by class, the dimension of the
-classical newforms of that class with root number -1 (from mf_newforms, not
+indexing gives, that the stored ALdims is ALdims_G + ALdims_P, that the stored
+ALdims_G is, in divisor order, the dimension of the stored G newforms of each
+Atkin-Lehner string (and after reordering, in sign order), and that in the
+spaces without old lifts the new ALdims_P is, class by class, the dimension of
+the classical newforms of that class with root number -1 (from mf_newforms, not
 from the dimension formulas).
 
 Usage (from the lmfdb root, with write access to the db):
@@ -28,7 +38,7 @@ from collections import Counter
 from sage.all import divisors, gcd, is_odd, is_squarefree, prime_divisors, prod
 from lmfdb import db
 from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
-from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import CMF_SPACES, Saito_Kurokawa_lift_dim
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import CMF_SPACES, Saito_Kurokawa_lift_dim, cmf_ALdims_index
 
 
 def old_lift_dim(k, N, al):
@@ -49,6 +59,19 @@ def old_lift_dim(k, N, al):
     return total
 
 
+def al_string(d, N):
+    return ''.join('-' if d % p == 0 else '+' for p in prime_divisors(N))
+
+
+def sign_order(v, N):
+    """v indexed by the squarefree divisors of N in increasing order, reindexed by sign vectors."""
+    divs = [d for d in divisors(N) if is_squarefree(d)]
+    out = [None] * len(divs)
+    for d, x in zip(divs, v):
+        out[cmf_ALdims_index(d, N)] = x
+    return out
+
+
 def main(apply=False, datafile=None):
     spaces = list(db.smf_newspaces.search({'family': 'K', 'ALdims_P': {'$exists': True}},
                                           ['label', 'level', 'weight', 'ALdims_G', 'ALdims_P', 'ALdims', 'old_cusp_P_dim']))
@@ -61,6 +84,11 @@ def main(apply=False, datafile=None):
     for f in db.mf_newforms.search({'weight': {'$in': ws}, 'char_order': 1, 'level': {'$in': sorted(set(s['level'] for s in spaces))}},
                                    ['weight', 'level', 'dim', 'fricke_eigenval', 'atkin_lehner_eigenvals']):
         classical.setdefault((f['weight'], f['level']), []).append(f)
+    G = {}
+    for f in db.smf_newforms.search({'family': 'K', 'aut_rep_type': 'G', 'space_label': {'$in': [s['label'] for s in spaces]}},
+                                    ['space_label', 'atkin_lehner_string', 'dim']):
+        c = G.setdefault(f['space_label'], Counter())
+        c[f['atkin_lehner_string']] += f['dim']
     missing = [(w, M) for w in ws for M in levels if (w, M) not in CMF_SPACES]
     assert not missing, "no mf_newspaces row for %s" % missing[:5]
     print("%d paramodular newspaces with ALdims_P" % len(spaces))
@@ -71,6 +99,9 @@ def main(apply=False, datafile=None):
         stored = [int(x) for x in s['ALdims_P']]
         assert len(stored) == len(divs), s['label']
         assert [int(x) for x in s['ALdims']] == [int(g) + p for g, p in zip(s['ALdims_G'], stored)], s['label']
+        stored_G = [int(x) for x in s['ALdims_G']]
+        assert stored_G == [G.get(s['label'], {}).get(al_string(d, N), 0) for d in divs], \
+            "%s: stored ALdims_G is not the G newforms in divisor order" % s['label']
         # the populate script computed ALdims_P without looking at j
         assert stored == [old_lift_dim(k, N, d) for d in divs], "%s: stored ALdims_P is not the old formula" % s['label']
         if j != 0:
@@ -87,9 +118,17 @@ def main(apply=False, datafile=None):
                     cls[prod(int(p) for p, e in f['atkin_lehner_eigenvals'] if e == -1)] += f['dim']
             assert new == [cls[d] for d in divs], "%s: %s, classical newforms give %s" % (s['label'], new, [cls[d] for d in divs])
             stats['checked against the classical newforms'] += 1
+        new_G, new_P = sign_order(stored_G, N), sign_order(new, N)
+        signs = sign_order([al_string(d, N) for d in divs], N)
+        assert signs == sorted(signs, key=lambda x: x.replace('+', '0').replace('-', '1')), s['label']
+        assert new_G == [G.get(s['label'], {}).get(x, 0) for x in signs], s['label']
+        new_all = [g + p for g, p in zip(new_G, new_P)]
+        if new_G != stored_G:
+            stats['reordered'] += 1
         if new != stored:
-            rows.append({'label': s['label'], 'ALdims_P': new,
-                         'ALdims': [int(g) + p for g, p in zip(s['ALdims_G'], new)]})
+            stats['ALdims_P corrected'] += 1
+        if (new_G, new_P, new_all) != (stored_G, stored, [int(x) for x in s['ALdims']]):
+            rows.append({'label': s['label'], 'ALdims_G': new_G, 'ALdims_P': new_P, 'ALdims': new_all})
             stats['change'] += 1
         else:
             stats['unchanged'] += 1
@@ -100,7 +139,7 @@ def main(apply=False, datafile=None):
         print("nothing to correct")
         return
     fname = (datafile or "smf_aldims_p_fix") + "_newspaces.txt"
-    write_update_file(fname, db.smf_newspaces, 'label', rows, ['ALdims_P', 'ALdims'])
+    write_update_file(fname, db.smf_newspaces, 'label', rows, ['ALdims_G', 'ALdims_P', 'ALdims'])
     if not apply:
         print("dry run; pass --apply to write")
         return

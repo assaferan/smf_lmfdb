@@ -3,7 +3,7 @@ from sage.all import (Matrix, ZZ, gcd, is_prime, NumberField, nth_prime, pari, P
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.common_populate import MAX_P
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_elts_to_lists, nf_lists_to_elements
-from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim, cmf_ALdims_index
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms, Hecke_Traces_Eigenvalues_Saito_Kurokawa
 
 from lmfdb import db
@@ -56,16 +56,15 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
     aut_types = {'F' : 'eis_F', 'Q' : 'eis_Q', 'P' : 'cusp_P', 'Y' : 'cusp_Y', 'G' : 'cusp_G'}
     traces = { aut_types[aut] + '_' + ht : [0 for t in range(num_ps[ht])]
                for aut in aut_types for ht in hecke_types}
-    divs = [d for d in divisors(N) if is_squarefree(d)]
+    # indexed like mf_newspaces.ALdims, by sign vectors (cmf_ALdims_index), which the space pages read
     new_cusp_G_dim = 0
-    al_dims_G = [0 for d in divs]
+    al_dims_G = [0 for d in divisors(N) if is_squarefree(d)]
     for f in forms:
         if f['aut_rep_type'] != 'G':
             continue
         f_dim = len(f['field_poly'])-1
         new_cusp_G_dim += f_dim
-        div_idx = divs.index(al_str_to_num(f['atkin_lehner_string'], N))
-        al_dims_G[div_idx] += f_dim
+        al_dims_G[cmf_ALdims_index(al_str_to_num(f['atkin_lehner_string'], N), N)] += f_dim
         for ht in hecke_types:
             for i in range(len(f['trace_' + ht])):
                 if type(f['trace_' + ht][i]) == str:

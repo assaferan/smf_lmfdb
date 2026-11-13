@@ -332,7 +332,9 @@ def cmf_ALdims_index(al,N):
     The index in mf_newspaces.ALdims of the Atkin-Lehner signs that are -1 exactly at
     the primes dividing al.  ALdims is ordered by sign vectors (+ before -, the primes
     of N increasing, the first prime the most significant), which is not the order of
-    the squarefree divisors of N once N has two or more prime factors.
+    the squarefree divisors of N once N has two or more prime factors.  The
+    smf_newspaces columns ALdims, ALdims_G and ALdims_P use the same order, which
+    is the one the space pages read.
 
     >>> [cmf_ALdims_index(d, 22) for d in [1, 2, 11, 22]]
     [0, 2, 1, 3]
