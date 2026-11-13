@@ -121,10 +121,8 @@ def create_entries(triple_list):
                 or ((k == 4) and (j == 0) and (N == 31))):
                 traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
+                # the G orbits and the Saito-Kurokawa lifts (Hecke_Eigenvalues_PM_SK_new_num_forms)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
-                if j == 0:
-                    # the Saito-Kurokawa lifts (there are none for j > 0)
-                    entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
                 entry['ALdims_G'] = al_dims_G
                 entry['ALdims_P'] = [0 for al in al_dims_G]
                 entry['ALdims'] = [0 for al in al_dims_G]
