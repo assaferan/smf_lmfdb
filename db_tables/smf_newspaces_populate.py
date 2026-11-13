@@ -122,13 +122,16 @@ def create_entries(triple_list):
                 traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
-                entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
+                if j == 0:
+                    # the Saito-Kurokawa lifts (there are none for j > 0)
+                    entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
                 entry['ALdims_G'] = al_dims_G
                 entry['ALdims_P'] = [0 for al in al_dims_G]
                 entry['ALdims'] = [0 for al in al_dims_G]
                 divs = [d for d in divisors(N) if is_squarefree(d)]
                 for i in range(len(divs)):
-                    entry['ALdims_P'][i] = Saito_Kurokawa_lift_dim(k,N,al=divs[i])
+                    if j == 0:
+                        entry['ALdims_P'][i] = Saito_Kurokawa_lift_dim(k,N,al=divs[i])
                     entry['ALdims'][i] = entry['ALdims_G'][i] + entry['ALdims_P'][i]
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new

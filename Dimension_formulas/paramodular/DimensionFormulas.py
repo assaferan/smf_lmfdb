@@ -319,6 +319,28 @@ def paramodular_cusp_dim(k,j,N):
 def cmf_label(k,N):
     return str(N)+'.'+str(k) + '.a'
 
+# mf_newspaces rows by (weight, level); fill it with a single search when many are needed
+CMF_SPACES = {}
+
+def cmf_space(k,N):
+    if (k,N) not in CMF_SPACES:
+        CMF_SPACES[(k,N)] = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
+    return CMF_SPACES[(k,N)]
+
+def cmf_ALdims_index(al,N):
+    """
+    The index in mf_newspaces.ALdims of the Atkin-Lehner signs that are -1 exactly at
+    the primes dividing al.  ALdims is ordered by sign vectors (+ before -, the primes
+    of N increasing, the first prime the most significant), which is not the order of
+    the squarefree divisors of N once N has two or more prime factors.
+
+    >>> [cmf_ALdims_index(d, 22) for d in [1, 2, 11, 22]]
+    [0, 2, 1, 3]
+    """
+    ps = prime_divisors(N)
+    r = len(ps)
+    return sum(2**(r-1-i) for i, p in enumerate(ps) if al % p == 0)
+
 # Too tired to implement the trace formula here as well
 # for now we cheat
 def classical_minus_cusp_dim(k,N,al=0):
@@ -335,14 +357,12 @@ def classical_minus_cusp_dim(k,N,al=0):
      [0, 0, 0, 0, 0, 1, 0, 0, 1],
      [0, 0, 0, 0, 0, 0, 0, 1, 0]]
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
+    f = cmf_space(k,N)
     if f['dim'] == 0:
         return 0
     if (al != 0):
-        divs = [d for d in divisors(N) if is_squarefree(d)]
-        Q_idx = divs.index(al)
         sgn = len(prime_divisors(al))
-        return f['ALdims'][Q_idx] if is_odd(k//2 - sgn) else 0
+        return f['ALdims'][cmf_ALdims_index(al,N)] if is_odd(k//2 - sgn) else 0
     return f['plus_dim'] if is_odd(k//2) else f['dim']-f['plus_dim']
 
 # we could return them together, but we never call them with the same level
@@ -361,14 +381,12 @@ def classical_plus_cusp_dim(k,N,al=0):
      [0, 0, 0, 0, 1, 0, 1, 0, 1]]
     
     '''
-    f = db.mf_newspaces.lookup(cmf_label(k,N), ['dim', 'plus_dim', 'ALdims'])
+    f = cmf_space(k,N)
     if f['dim'] == 0:
         return 0
     if (al != 0):
-        divs = [d for d in divisors(N) if is_squarefree(d)]
-        Q_idx = divs.index(al)
         sgn = len(prime_divisors(al))
-        return f['ALdims'][Q_idx] if is_even(k//2 - sgn) else 0
+        return f['ALdims'][cmf_ALdims_index(al,N)] if is_even(k//2 - sgn) else 0
     return f['plus_dim'] if is_even(k//2) else f['dim']-f['plus_dim']
 
 def paramodular_new_cusp_dim(k,j,N):
