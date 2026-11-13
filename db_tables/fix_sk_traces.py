@@ -159,11 +159,14 @@ def as_int(x):
 
 
 def pg(x, typ=None):
+    # A NULL field is \N in the COPY file; the literal NULL is only valid inside an array.
+    if x is None:
+        return "\\N"
     if typ == 'jsonb':
         return json.dumps(x)
     if isinstance(x, (list, tuple)):
-        return "{" + ",".join(pg(y) for y in x) + "}"
-    return "NULL" if x is None else str(x)
+        return "{" + ",".join("NULL" if y is None else pg(y) for y in x) + "}"
+    return str(x)
 
 
 def write_update_file(fname, table, key, rows, cols):
