@@ -62,8 +62,7 @@ def Hecke_Eigenvalues_Saito_Kurokawa_all_forms(k,j,e,prime_bound=200):
     '''
     if (j > 0):
         return []
-    # !! is_cuspidal = False as these rows have always had; the lifts are cusp forms
-    return SK_all_forms(k, SK_level_query(k, e), False, prime_bound)
+    return SK_all_forms(k, SK_level_query(k, e), True, prime_bound)
 
 def Hecke_Eigenvalues_Saito_Kurokawa_all_evs(k,j,e,prime_bound=100):
     '''
