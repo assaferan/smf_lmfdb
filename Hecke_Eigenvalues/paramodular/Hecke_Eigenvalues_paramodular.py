@@ -4,6 +4,7 @@ from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.common_populate import MAX_P
 from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_elts_to_lists, nf_lists_to_elements
 from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import Saito_Kurokawa_lift_dim, cmf_ALdims_index
+from smf_lmfdb.Hecke_Eigenvalues.paramodular.omf5_squares import orbit_T_p_square_traces, T_p_square_elements, mu
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import Hecke_Eigenvalues_PM_SK_all_evs, Hecke_Eigenvalues_PM_SK_all_forms, Hecke_Eigenvalues_PM_SK_new_num_forms, Hecke_Traces_Eigenvalues_Saito_Kurokawa
 
 from lmfdb import db
@@ -65,12 +66,15 @@ def Hecke_Eigenvalues_Traces_paramodular(k,j,N):
         f_dim = len(f['field_poly'])-1
         new_cusp_G_dim += f_dim
         al_dims_G[cmf_ALdims_index(al_str_to_num(f['atkin_lehner_string'], N), N)] += f_dim
+        # omf5_data has T(p,2) where the database has T(p^2)
+        f_traces = {'lambda_p': f['trace_lambda_p'],
+                    'lambda_p_square': orbit_T_p_square_traces(f, N, k, j)[0]}
         for ht in hecke_types:
-            for i in range(len(f['trace_' + ht])):
-                if type(f['trace_' + ht][i]) == str:
+            for i in range(len(f_traces[ht])):
+                if type(f_traces[ht][i]) == str:
                     traces[aut_types[f['aut_rep_type']] + '_' + ht][i] = 'NULL'
-                else:
-                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f['trace_' + ht][i]
+                elif type(traces[aut_types[f['aut_rep_type']] + '_' + ht][i]) != str:
+                    traces[aut_types[f['aut_rep_type']] + '_' + ht][i] += f_traces[ht][i]
 
     traces_P = Hecke_Traces_Eigenvalues_Saito_Kurokawa(k,j,N)
     
@@ -90,7 +94,7 @@ def num_forms_paramodular(k,j,N):
     num_P_forms = Hecke_Eigenvalues_PM_SK_new_num_forms(k,j,N)
     return num_P_forms + num_G_forms, dim_G_forms
 
-def orbit_dirichlet_traces(orbit, k, j, N):
+def orbit_dirichlet_traces(orbit, k, j, N, sum_sq=None, tp2=None):
     """
     The `traces` of an omf5 orbit: traces over the orbit of the Dirichlet
     coefficients a_n of the spinor L-function, 'NULL' at n not prime to N.
@@ -98,7 +102,9 @@ def orbit_dirichlet_traces(orbit, k, j, N):
     For an orbit of dimension > 1 these are not determined by the traces of the
     Hecke eigenvalues (a_{mn} = a_m a_n and the Euler factor hold at each
     embedding, not for traces), so they are computed at each embedding from the
-    eigenvalue coordinates.  Without coordinates only a_1 = dim and a_p are known.
+    eigenvalue coordinates.  Without coordinates only a_1 = dim, a_p and, given the
+    traces tp2 of T(p^2) (orbit_T_p_square_traces), a_{p^2} = T(p^2) + p^(mu-1)
+    are known.
     """
     # imported here: sage_functions loads the .sage modules at import time
     from smf_lmfdb.db_tables.sage_functions import Get_All_Dirichlet_Coeffs_Up_To, T_p_square_from_T_p_2
@@ -114,6 +120,10 @@ def orbit_dirichlet_traces(orbit, k, j, N):
         primes = prime_range(prec + 1)
         traces = [orbit['dim'] if n == 1 else (orbit['trace_lambda_p'][primes.index(n)] if is_prime(n) else 'NULL')
                   for n in range(1, prec + 1)]
+        for i, t in enumerate(tp2 or []):
+            p = primes[i]
+            if t != 'NULL' and p**2 <= prec:
+                traces[p**2 - 1] = t + orbit['dim']*p**(mu(k, j) - 1)
     return ['NULL' if gcd(n, N) != 1 else t for n, t in enumerate(traces, 1)]
 
 def Hecke_Eigenforms_paramodular(k,j,N):
@@ -153,8 +163,11 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         if 'related_objects' not in orbit:
             orbit['related_objects'] = []
             
+        # omf5_data has T(p,2) where the database has T(p^2)
+        tp2, sum_sq = orbit_T_p_square_traces(orbit, N, k, j)
         if orbit['dim'] > 1:
-            orbit['traces'] = orbit_dirichlet_traces(orbit, k, j, N)
+            orbit['traces'] = orbit_dirichlet_traces(orbit, k, j, N, sum_sq, tp2)
+        orbit['trace_lambda_p_square'] = tp2
 
         # for field_name in ['hecke_ring', 'lambda_p', 'lambda_p_square']:
         for field_name in ['lambda_p', 'lambda_p_square']:
@@ -189,31 +202,13 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
             ev['hecke_ring_rank'] = F.degree()
             ev['maxp'] = nth_prime(len(ev['trace_lambda_p']))
             ev['maxp_square'] = nth_prime(len(ev['trace_lambda_p_square']))
-            # ev['lambda_p'] = nf_elts_to_lists(ev['lambda_p'], inv_basis)
-            # ev['lambda_p_square'] = nf_elts_to_lists(ev['lambda_p_square'], inv_basis)
-            # transofrming the T_{p^2} eigenvalues to SMF T_{p^2} ev
-            if 'lambda_p' in ev:
+            # omf5_data has T(p,2) where the database has T(p^2), converted at each embedding
+            ev['trace_lambda_p_square'] = orbit_T_p_square_traces(ev, N, k, j)[0]
+            if ev.get('lambda_p') and ev.get('lambda_p_square'):
                 basis, inv_basis = get_nf_basis(ev)
-                ap_nf_elts = nf_lists_to_elements(ev['lambda_p'], basis)
-                bp2_nf_elts = nf_lists_to_elements(ev['lambda_p_square'], basis)
-                ap2_nf_elts = []
-                for idx in range(len(ev['lambda_p'])):
-                    p = nth_prime(idx)
-                    mu = j + 2*k - 3
-                    ap = ap_nf_elt[idx]
-                    bp2 = bp2_nf_elt[idx]
-                    ap2 = ap**2 - p**(mu-1)-(bp2+p**2+1)*p**(mu-2)
-                    ap2_nf_elts.append(ap2)
-                ev['lambda_p_square'] = nf_elts_to_lists(ap2_nf_elts, inv_basis)
-            # !! The following only does the right thing over Q !!
-            for idx in range(len(ev['trace_lambda_p'])):
-                p = nth_prime(idx)
-                mu = j + 2*k - 3
-                ap = ev['trace_lambda_p'][idx]
-                bp2 = ev['trace_lambda_p_square'][idx]
-                ap2 = ap**2 - p**(mu-1)-(bp2+p**2+1)*p**(mu-2)
-                ev['trace_lambda_p_square'][idx] = ap2
-                    
+                elts = T_p_square_elements(ev, k, j)
+                ev['lambda_p_square'] = nf_elts_to_lists(['NULL' if e is None else e for e in elts], inv_basis)
+
         # keep atkin_lehner_eigenvals: smf_hecke_nf_populate needs the signs for
         # the bad Euler factors, and drops the field before writing the row
         for field_name in ['atkin_lehner_string',
