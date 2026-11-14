@@ -31,6 +31,7 @@ from sage.all import NumberField, PolynomialRing, QQ, factor, prime_range
 from lmfdb import db
 from smf_lmfdb.db_tables.common_populate import MAX_P, base_26
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
+from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
 
 NF_COLS = ['id', 'label', 'space_label', 'level', 'weight', 'dim', 'field_poly', 'hecke_orbit',
            'hecke_orbit_code', 'char_orbit_index', 'trace_lambda_p',
@@ -113,21 +114,6 @@ def dirichlet_traces(rec, ap, ap2, length):
 
 def sort_key(dim, ap):
     return [dim] + [float('-inf') if x is None else x for x in ap]
-
-
-def pg(x):
-    if isinstance(x, (list, tuple)):
-        return "{" + ",".join(pg(y) for y in x) + "}"
-    return "NULL" if x is None else str(x)
-
-
-def write_update_file(fname, table, key, rows, cols):
-    types = [table.col_type[c] for c in [key] + cols]
-    with open(fname, 'w') as F:
-        F.write("|".join([key] + cols) + "\n" + "|".join(types) + "\n\n")
-        for r in rows:
-            F.write("|".join(pg(r[c]) for c in [key] + cols) + "\n")
-    print("wrote %s (%d rows)" % (fname, len(rows)))
 
 
 def main(apply=False, datafile=None):
