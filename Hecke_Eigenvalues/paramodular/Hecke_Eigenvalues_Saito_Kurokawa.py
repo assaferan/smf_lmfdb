@@ -134,11 +134,16 @@ def SK_all_forms(k, query, is_cuspidal, prime_bound=MAX_P+1):
     Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
     '''
     forms = []
-    for orbit in db.mf_newforms.search(query, CLASSICAL_FORM_COLS):
+    for orbit in db.mf_newforms.search(query, CLASSICAL_FORM_COLS + ['atkin_lehner_eigenvals']):
         orbit.update(SK_orbit_traces(k, orbit, prime_bound))
         orbit['related_objects'] = [ 'ModularForm/GL2/Q/holomorphic/' + '/'.join(orbit['label'].split('.'))]
         orbit['is_cuspidal'] = is_cuspidal
         orbit['aut_rep_type'] = 'P'
+        # The lift has the Atkin-Lehner eigenvalues of f at every p | N ([DPRT, Theorem
+        # 10.1(2)], [RS07, Proposition 5.5.8(i)]); the populate default (+ everywhere) is wrong.
+        evs = sorted([int(p), int(e)] for p, e in (orbit.get('atkin_lehner_eigenvals') or []))
+        orbit['atkin_lehner_eigenvals'] = evs
+        orbit['atkin_lehner_string'] = ''.join('+' if e == 1 else '-' for _, e in evs)
         # We don't want to accidentally use the label or the data of the classical form
         # for the lift ('traces' is now that of the lift)
         for field_name in ['label', 'level', 'weight', 'hecke_orbit_code']:

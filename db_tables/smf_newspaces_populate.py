@@ -2,7 +2,7 @@ from sage.all import (is_square, is_squarefree, prime_range, factor, divisors, W
 from smf_lmfdb.db_tables.common_populate import make_space_label, entry_add_common_columns, table_reload, get_hecke, common_entry_values, base_26, write_data_from_files
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.sage_functions import smf_dims_degree_2_level_1, smf_dims_degree_2_level_2, Hecke_Eigenvalues_Traces_Siegel_Eisenstein, Hecke_Eigenvalue_Traces_Klingen_Eisenstein, Hecke_Eigenvalue_Traces_Saito_Kurokawa, Hecke_Eigenvalue_Traces_Yoshida, num_forms_Siegel_Eisenstein, num_forms_Klingen_Eisenstein, num_forms_Saito_Kurokawa, num_forms_Yoshida
-from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth, Saito_Kurokawa_lift_dim
+from smf_lmfdb.Dimension_formulas.paramodular.DimensionFormulas import smf_dims_paramodular, Yoshida_lift_dim_orth, Yoshida_new_lift_dim_orth, Saito_Kurokawa_lift_dim, cmf_ALdims_index
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import Hecke_Eigenvalues_Traces_paramodular, num_forms_paramodular, parse_omf5
 from smf_lmfdb.Dimension_formulas.Congruence_Subgroup_Gamma_0_p.DimensionFormulasGamma_0_p import vector_valued_form_gamma_0_p_cusp_dim, vector_valued_form_gamma_0_p_mod_dim
@@ -121,14 +121,16 @@ def create_entries(triple_list):
                 or ((k == 4) and (j == 0) and (N == 31))):
                 traces, dim_G_new, al_dims_G = Hecke_Eigenvalues_Traces_paramodular(k,j,N)
                 entry.update(traces)
+                # the G orbits and the Saito-Kurokawa lifts (Hecke_Eigenvalues_PM_SK_new_num_forms)
                 entry['num_forms'], dim_G_new = num_forms_paramodular(k,j,N)
-                entry['num_forms'] += num_classical_minus_cusp_dim(2*k-2,N)
                 entry['ALdims_G'] = al_dims_G
                 entry['ALdims_P'] = [0 for al in al_dims_G]
                 entry['ALdims'] = [0 for al in al_dims_G]
-                divs = [d for d in divisors(N) if is_squarefree(d)]
-                for i in range(len(divs)):
-                    entry['ALdims_P'][i] = Saito_Kurokawa_lift_dim(k,N,al=divs[i])
+                # indexed by sign vectors, like mf_newspaces.ALdims (cmf_ALdims_index)
+                for d in divisors(N):
+                    if j == 0 and is_squarefree(d):
+                        entry['ALdims_P'][cmf_ALdims_index(d,N)] = Saito_Kurokawa_lift_dim(k,N,al=d)
+                for i in range(len(al_dims_G)):
                     entry['ALdims'][i] = entry['ALdims_G'][i] + entry['ALdims_P'][i]
                 if not is_squarefree(N):
                     entry['new_cusp_G_dim'] = dim_G_new
