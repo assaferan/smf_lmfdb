@@ -1,3 +1,5 @@
+# not in the global namespace of recent Sage versions
+from sage.modular.dims import dimension_new_cusp_forms
 """
 We implement the dimension formulas for modular forms on the 
 principal congruence subgroup of level N of Sp(4,Z)
@@ -934,6 +936,8 @@ def Pick_j(j,L):
     """
     if j % 2 == 1:
       return [0,0,0,0,0,0,0,0,0,0,0]
+    elif j == 0 or j > 50:
+      raise ValueError("the generating series cover j = 2, 4, ..., 50; for j = 0 use All_List_Mult_Irrep_SV")
     else:
       return L[j/2-1][1]
 

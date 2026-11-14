@@ -22,7 +22,9 @@ def smf_dims_degree_2_level_1(j,k,e):
 
 def smf_dims_degree_2_level_2(k,j):
     entry = {}
-    all_dims = All_List_Mult_Irrep_VV(k,j)
+    # The vector-valued generating series start at j = 2 (Pick_j(0) reads the last
+    # one, j = 50); scalar weights have their own formulas.
+    all_dims = All_List_Mult_Irrep_SV(k) if j == 0 else All_List_Mult_Irrep_VV(k,j)
     # entry['degree'] = 2
     # entry['family'] = 'P'
     # entry['level'] = 2

@@ -1,3 +1,5 @@
+# not in the global namespace of recent Sage versions
+from sage.modular.dims import dimension_new_cusp_forms
 """ 
 The following two precedures compute the dimension
 of the plus and minus subspaces of the space of new 
@@ -58,4 +60,3 @@ def dimension_new_cusp_forms_minus_level_2(k):
 
     elif (k % 8) == 4 or (k % 8)== 6:
         return (1/2)*dimension_new_cusp_forms(Gamma0(2),k)
-
