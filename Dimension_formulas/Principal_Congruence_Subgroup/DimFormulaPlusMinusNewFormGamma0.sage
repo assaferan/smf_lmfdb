@@ -17,6 +17,9 @@ WARNING: In Theorem 2 of [1] the plus/minus signs correspond to
          for f a new form on Gamma_0(2) so 
          w_f=(-1)^{k/2} \\lambda_{W_2} for f \\in S_{k}(Gamma_0(2))^{new}
 """
+# not in the global namespace of recent Sage versions
+from sage.modular.dims import dimension_new_cusp_forms
+
 
 
 
@@ -58,4 +61,3 @@ def dimension_new_cusp_forms_minus_level_2(k):
 
     elif (k % 8) == 4 or (k % 8)== 6:
         return (1/2)*dimension_new_cusp_forms(Gamma0(2),k)
-

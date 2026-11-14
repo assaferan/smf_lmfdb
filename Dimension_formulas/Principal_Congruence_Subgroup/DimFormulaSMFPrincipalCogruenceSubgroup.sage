@@ -4,6 +4,9 @@ principal congruence subgroup of level N of Sp(4,Z)
 For regular wieghts i.e. j=0 and k>=4 or j>=1 and k>=5, 
 we use the dimension formula due to Tsushima (see the note).
 """
+# not in the global namespace of recent Sage versions
+from sage.modular.dims import dimension_new_cusp_forms
+
 
 
 def dim_cusp_form_GammaN(k,j,N):
@@ -934,6 +937,8 @@ def Pick_j(j,L):
     """
     if j % 2 == 1:
       return [0,0,0,0,0,0,0,0,0,0,0]
+    elif not 2 <= j <= 50:
+      raise ValueError("the generating series cover j = 2, 4, ..., 50; for j = 0 use All_List_Mult_Irrep_SV")
     else:
       return L[j/2-1][1]
 
@@ -1291,7 +1296,9 @@ def All_List_Mult_Irrep_VV(k,j):
     Put everything together
     """
     k = ZZ(k)
-    
+    if j == 0:
+      # the generating series start at j = 2; the scalar weights have their own formulas
+      return All_List_Mult_Irrep_SV(k)
     if k % 2 == 1: 
       return List_Mult_Irrep_VV_odd(k,j)
     else:

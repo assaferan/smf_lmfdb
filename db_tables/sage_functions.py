@@ -22,7 +22,7 @@ def smf_dims_degree_2_level_1(j,k,e):
 
 def smf_dims_degree_2_level_2(k,j):
     entry = {}
-    all_dims = All_List_Mult_Irrep_VV(k,j)
+    all_dims = All_List_Mult_Irrep_VV(k,j)    # j = 0: the scalar-valued formulas
     # entry['degree'] = 2
     # entry['family'] = 'P'
     # entry['level'] = 2
