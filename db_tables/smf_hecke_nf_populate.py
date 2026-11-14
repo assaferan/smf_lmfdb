@@ -55,6 +55,9 @@ def create_entries(triple_list):
                     entries.append(entry_sub)
             continue
         # right now we only have implemented forms for full level in the principal series case
+        if N != 1:
+            # the level-1 and level-2 forms are made once, for the triple (k, j, 1)
+            continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1,'P')
             sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,

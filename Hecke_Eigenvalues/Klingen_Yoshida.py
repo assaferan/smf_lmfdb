@@ -169,6 +169,10 @@ class Lift:
 def KE_query(k, j):
     return {'level': 1, 'weight': j + k, 'char_order': 1}
 
+def KE_valid(k, j):
+    """Klingen-Eisenstein series of level 1 and weight (k, j) need k >= 4 and j even (M_{k,j} = 0 for j odd)."""
+    return k >= 4 and j % 2 == 0
+
 def KE_lifts(k, j, cols=CLASSICAL_COLS):
     for f in db.mf_newforms.search(KE_query(k, j), cols):
         c = Classical(f)
@@ -179,7 +183,7 @@ def KE_space_traces(k, j, e=0, prime_bound=MAX_P+1):
     (none with character, e = 1, as in KE_num_forms' callers)."""
     sq = square_bound(prime_bound)
     L = {ht: {p: 0 for p in prime_range(prime_bound if ht == 'lambda_p' else sq)} for ht in HECKE_TYPES}
-    if k < 4 or e == 1:
+    if not KE_valid(k, j) or e == 1:
         return L
     for _, lift in KE_lifts(k, j):
         tr = lift.traces(prime_bound, num_coeffs=0)
@@ -189,11 +193,11 @@ def KE_space_traces(k, j, e=0, prime_bound=MAX_P+1):
     return L
 
 def KE_num_forms(k, j):
-    return 0 if k < 4 else db.mf_newforms.count(KE_query(k, j))
+    return db.mf_newforms.count(KE_query(k, j)) if KE_valid(k, j) else 0
 
 def KE_all_forms(k, j, prime_bound=MAX_P+1):
     """The smf_newforms rows of the Klingen-Eisenstein series of weight (k, j) and level 1."""
-    if k < 4:
+    if not KE_valid(k, j):
         return []
     forms = []
     for c, lift in KE_lifts(k, j, CLASSICAL_COLS + FIELD_COLS):
@@ -207,7 +211,7 @@ def KE_all_forms(k, j, prime_bound=MAX_P+1):
 
 def KE_all_evs(k, j, prime_bound=100):
     """The smf_hecke_nf rows: the eigenvalues and a_n at one embedding, in the Hecke ring basis of f."""
-    if k < 4:
+    if not KE_valid(k, j):
         return []
     evs = []
     maxp, maxp_square = previous_prime(prime_bound), square_bound(prime_bound) - 1

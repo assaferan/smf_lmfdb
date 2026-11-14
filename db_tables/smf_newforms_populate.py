@@ -95,6 +95,9 @@ def create_entries(triple_list, folder, table):
                     idx += write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
             continue
                 
+        if N != 1:
+            # the level-1 and level-2 forms are made once, for the triple (k, j, 1)
+            continue
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1, 'P')
             sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
