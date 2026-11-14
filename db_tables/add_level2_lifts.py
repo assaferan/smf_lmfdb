@@ -41,6 +41,7 @@ from smf_lmfdb.db_tables.common_populate import (
 from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
 from smf_lmfdb.db_tables.fix_sk_invalid_lifts import jsonable
 from smf_lmfdb.Hecke_Eigenvalues.Gamma2_lifts import (
+    save_polredabs_cache,
     LEVEL, TYPE_ORDER, check_sum, eigensystems, lift_data, sources)
 
 DIM_COLS = {'F': 'new_eis_F_dim', 'Q': 'new_eis_Q_dim', 'P': 'new_cusp_P_dim', 'Y': 'new_cusp_Y_dim'}
@@ -203,6 +204,7 @@ def main(apply=False, datafile=None, spaces=None, refresh=()):
         upd_ev += ue
         diffs += d
         report['spaces planned'] += 1
+        save_polredabs_cache()
         for r in nr:
             report['new %s rows' % r['aut_rep_type']] += 1
         report['relabelled rows'] += sum(1 for x in u if x['label'] != next(r['label'] for r in stored[s['label']] if r['id'] == x['id']))

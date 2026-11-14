@@ -28,6 +28,9 @@ Conventions, those of the rows already stored at level 2: the eigenvalues at
 p = 2 are the formulas evaluated at the classical a_2 (Gamma[2] has no T(2); this
 is what the stored rows hold), and the Dirichlet coefficients are 'NULL' at even n.
 """
+import json
+import os
+
 from sage.all import Matrix, NumberField, PolynomialRing, QQ, ZZ, cyclotomic_polynomial, euler_phi, pari, prime_range
 from sage.arith.misc import previous_prime
 
@@ -42,6 +45,33 @@ from smf_lmfdb.db_tables.common_populate import MAX_P
 LEVEL = 2
 TYPE_ORDER = 'FQPYG'   # the order of the types in a space, as at level 1
 HOLO = 'ModularForm/GL2/Q/holomorphic/'
+
+# polredabs is slow on the larger absolute fields of the split Yoshida lifts with
+# older PARI (2.15): its results, which do not depend on the database, can be kept
+# in the JSON file named by SMF_POLREDABS_CACHE, made where PARI is faster.
+POLREDABS_CACHE = os.environ.get('SMF_POLREDABS_CACHE')
+_polredabs = {}
+if POLREDABS_CACHE and os.path.exists(POLREDABS_CACHE):
+    with open(POLREDABS_CACHE) as fp:
+        _polredabs = json.load(fp)
+
+
+def polredabs(poly):
+    """[P, a] for a rational polynomial poly: P is polredabs(poly), and a (coefficients,
+    as strings, constant first) gives a root of poly as a polynomial in a root of P."""
+    poly = PolynomialRing(QQ, 'x')(poly)
+    key = json.dumps([str(c) for c in poly.list()])
+    if key not in _polredabs:
+        P, a = pari(poly).polredabs(1)
+        _polredabs[key] = [[int(c) for c in P.Vec()[::-1]],
+                           [str(QQ(c)) for c in a.lift().Vec()[::-1]]]
+    return _polredabs[key]
+
+
+def save_polredabs_cache():
+    if POLREDABS_CACHE:
+        with open(POLREDABS_CACHE, 'w') as fp:
+            json.dump(_polredabs, fp)
 
 
 def classical_query(N, w, sign=None):
@@ -189,7 +219,7 @@ def field_columns(L):
     d = L.degree()
     disc = ZZ(L.disc())
     def same_field(h):
-        return [int(c) for c in pari(h).polredabs().Vec()[::-1]] == poly
+        return polredabs(h)[0] == poly
     def real_cyclotomic(n):
         z = NumberField(cyclotomic_polynomial(n), 'z').gen()
         return (z + 1/z).minpoly()
@@ -218,9 +248,9 @@ def yoshida_split(k, j, f, g):
         Lrel = K.extension(h, 'b')
         Labs = Lrel.absolute_field('c')
         from_abs, to_abs = Labs.structure()
-        red = [int(c) for c in pari(Labs.defining_polynomial()).polredabs().Vec()[::-1]]
+        red, a = polredabs(Labs.defining_polynomial())
         L = NumberField(PolynomialRing(QQ, 'x')(red), 'nu')
-        to_L = Labs.embeddings(L)[0]
+        to_L = Labs.hom([L(PolynomialRing(QQ, 'x')([QQ(c) for c in a]))])
         b = to_L(to_abs(Lrel.gen()))
         A = [to_L(to_abs(Lrel(x))) for x in cf.an]
         B = [Kg(x).polynomial()(b) for x in cg.an]
