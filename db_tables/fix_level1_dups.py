@@ -37,7 +37,8 @@ from collections import Counter
 from lmfdb import db
 from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
 from smf_lmfdb.db_tables.fix_sk_invalid_lifts import jsonable
-from smf_lmfdb.Hecke_Eigenvalues.Klingen_Yoshida import HECKE_TYPES, KE_lifts, KE_query
+from sage.all import nth_prime, prime_range
+from smf_lmfdb.Hecke_Eigenvalues.Klingen_Yoshida import HECKE_TYPES, KE, KE_lifts, KE_query
 
 E4_SPACES = ['2.%s.1.4.0.a' % F for F in 'KSP']
 DIFFERING = {'id', 'label', 'hecke_orbit', 'hecke_orbit_code'}
@@ -70,14 +71,22 @@ def e4_copies(cols):
 
 
 def old_ke_sums(k, j, lengths):
-    """What KE_space_traces stored before it asked j to be even: the sums over the newforms of weight j + k."""
+    """
+    What the Klingen-Eisenstein code stored before it asked j to be even: the sums
+    over the newforms of weight j + k, with the constant term of the (affine) KE
+    formulas counted once per orbit instead of dim times -- the generator bug fixed
+    in #13/#14, which fix_qy_traces did not touch here because these spaces have no
+    Q rows.
+    """
     sums = {c: [0] * n for c, n in lengths.items()}
-    for _, lift in KE_lifts(k, j):
+    for c_form, lift in KE_lifts(k, j):
         tr = lift.traces(num_coeffs=0)
         for c in sums:
-            v = tr['trace_' + c[len('eis_Q_'):]]
+            ht = c[len('eis_Q_'):]
+            v = tr['trace_' + ht]
             assert len(v) >= len(sums[c]), (k, j, c)
-            sums[c] = [a + b for a, b in zip(sums[c], v)]
+            const = [KE(k, j, p, 0, 0)[ht] for p in prime_range(nth_prime(len(sums[c])) + 1)]
+            sums[c] = [a + b - (c_form.dim - 1) * z for a, b, z in zip(sums[c], v, const)]
     return sums
 
 
