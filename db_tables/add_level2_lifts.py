@@ -108,8 +108,8 @@ def space_plan(s, stored, hnf, nf_cols, hnf_cols, refresh):
         assert sums.get(t, 0) == (s.get(c) or 0), "%s: %s = %s, the eigensystems give %s" % (s['label'], c, s.get(c), sums.get(t, 0))
     gen = []
     for typ, mult, data in E:
-        fields, ev = lift_data(k, j, data)
-        gen.append({'typ': typ, 'mult': mult, 'fields': fields, 'ev': ev, 'src': sources(data)})
+        for fields, ev in lift_data(k, j, data):
+            gen.append({'typ': typ, 'mult': mult, 'fields': fields, 'ev': ev, 'src': sources(data)})
     gen.sort(key=lambda g: [TYPE_ORDER.index(g['typ'])] + sort_key(g['fields']['dim'], g['fields']['trace_lambda_p']))
     keys = [[TYPE_ORDER.index(g['typ'])] + sort_key(g['fields']['dim'], g['fields']['trace_lambda_p']) for g in gen]
     assert all(a != b for a, b in zip(keys, keys[1:])), "%s: two eigensystems have the same sort key" % s['label']
@@ -125,6 +125,8 @@ def space_plan(s, stored, hnf, nf_cols, hnf_cols, refresh):
         row = full_row(k, j, g['fields'], i, g['mult'], nf_cols)
         key = (g['typ'], tuple(row['related_objects']))
         old = by_src.get(key)
+        # the orbits of a split Yoshida lift share their key; none of them is stored
+        assert old is None or sum(1 for x in gen if x['typ'] == g['typ'] and x['src'] == g['src']) == 1, key
         if old is None:
             new_rows.append(row)
             if g['ev'] is not None:

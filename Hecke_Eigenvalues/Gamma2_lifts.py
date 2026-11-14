@@ -28,7 +28,7 @@ Conventions, those of the rows already stored at level 2: the eigenvalues at
 p = 2 are the formulas evaluated at the classical a_2 (Gamma[2] has no T(2); this
 is what the stored rows hold), and the Dirichlet coefficients are 'NULL' at even n.
 """
-from sage.all import Matrix, ZZ, prime_range
+from sage.all import Matrix, NumberField, PolynomialRing, QQ, ZZ, cyclotomic_polynomial, euler_phi, pari, prime_range
 from sage.arith.misc import previous_prime
 
 from lmfdb import db
@@ -160,6 +160,13 @@ def saito_kurokawa(k, query):
 
 
 def yoshida(k, j, f, g):
+    """[(row, ev)]: one Galois orbit, or several when f and g both have dimension > 1."""
+    if f['dim'] > 1 and g['dim'] > 1:
+        return yoshida_split(k, j, f, g)
+    return [yoshida_one(k, j, f, g)]
+
+
+def yoshida_one(k, j, f, g):
     cf, cg, lift = Y_lift(k, j, f, g)
     row = {col: lift.fields[col] for col in FIELD_COLS if col in lift.fields}
     row['dim'] = lift.dim
@@ -169,16 +176,70 @@ def yoshida(k, j, f, g):
     row['aut_rep_type'] = 'Y'
     ev = None
     if cf.hnf is not None and cg.hnf is not None:
-        ev = yoshida_ev(k, j, cf, cg)
+        F0, F1 = ring_basis(cf.hnf)[0], ring_basis(cg.hnf)[0]
+        F, to_F1, to_F0, _ = F1.composite_fields(F0, both_maps=True)[0]
+        ev = yoshida_ev(k, j, cf, F, [to_F0(F0(x)) for x in cf.an], [to_F1(F1(x)) for x in cg.an])
     return row, ev
 
 
-def yoshida_ev(k, j, cf, cg, prime_bound=100):
-    """As in Y_all_evs: the composite of the fields of f and g, with its integral basis."""
-    F0, F1 = ring_basis(cf.hnf)[0], ring_basis(cg.hnf)[0]
-    F, to_F1, to_F0, _ = F1.composite_fields(F0, both_maps=True)[0]
-    A = [to_F0(F0(x)) for x in cf.an]
-    Bv = [to_F1(F1(x)) for x in cg.an]
+def field_columns(L):
+    """The smf_newforms field columns of an absolute field L given by a polredabs polynomial.
+    The Hecke ring of the lift is not computed: its index columns are NULL."""
+    poly = [int(c) for c in L.defining_polynomial().list()]
+    d = L.degree()
+    disc = ZZ(L.disc())
+    def same_field(h):
+        return [int(c) for c in pari(h).polredabs().Vec()[::-1]] == poly
+    def real_cyclotomic(n):
+        z = NumberField(cyclotomic_polynomial(n), 'z').gen()
+        return (z + 1/z).minpoly()
+    root = next((n for n in range(3, 4*d*d + 3) if euler_phi(n) == d and same_field(cyclotomic_polynomial(n))), 0)
+    real = root == 0 and any(same_field(real_cyclotomic(n)) for n in range(5, 8*d*d + 5) if euler_phi(n) == 2*d)
+    nf = db.nf_fields.lucky({'coeffs': poly}, 'label')
+    return {'dim': d, 'relative_dim': d, 'field_poly': poly, 'is_polredabs': True, 'nf_label': nf,
+            'field_disc': disc, 'field_disc_factorization': [[int(p), int(e)] for p, e in disc.factor()],
+            'field_poly_is_cyclotomic': root > 0, 'field_poly_root_of_unity': root,
+            'field_poly_is_real_cyclotomic': real,
+            'hecke_ring_index': None, 'hecke_ring_index_proved': None, 'hecke_ring_index_factorization': None,
+            'hecke_ring_generator_nbound': None}
+
+
+def yoshida_split(k, j, f, g):
+    """
+    The Galois orbits of the Yoshida lift of (f, g), both of dimension > 1: one for
+    each irreducible factor h of the polynomial of the field of g over the field K
+    of f, with field K[y]/h (given by its polredabs polynomial).
+    """
+    cf, cg = Classical(f), Classical(g)
+    K, Kg = cf.K, cg.K
+    out = []
+    for h, e in Kg.defining_polynomial().change_ring(K).factor():
+        assert e == 1, (cf.label, cg.label)
+        Lrel = K.extension(h, 'b')
+        Labs = Lrel.absolute_field('c')
+        from_abs, to_abs = Labs.structure()
+        red = [int(c) for c in pari(Labs.defining_polynomial()).polredabs().Vec()[::-1]]
+        L = NumberField(PolynomialRing(QQ, 'x')(red), 'nu')
+        to_L = Labs.embeddings(L)[0]
+        b = to_L(to_abs(Lrel.gen()))
+        A = [to_L(to_abs(Lrel(x))) for x in cf.an]
+        B = [Kg(x).polynomial()(b) for x in cg.an]
+        lift = Lift('Y', k, j, LEVEL, L, A, B, None)
+        row = field_columns(L)
+        row.update(lift.traces(MAX_P + 1))
+        row['related_objects'] = [related(c.label) for c in [cf, cg]]
+        row['is_cuspidal'] = True
+        row['aut_rep_type'] = 'Y'
+        ev = None
+        if cf.hnf is not None and cg.hnf is not None:
+            ev = yoshida_ev(k, j, cf, L, A, B)
+        out.append((row, ev))
+    assert sum(r['dim'] for r, _ in out) == cf.dim * cg.dim, (cf.label, cg.label)
+    return out
+
+
+def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
+    """As in Y_all_evs: the eigenvalues in the field F (containing the a_n A of f and Bv of g), with its integral basis."""
     basis = F.integral_basis()
     mat = Matrix([list(b) for b in basis])
     maxp = previous_prime(prime_bound)
@@ -202,14 +263,14 @@ def yoshida_ev(k, j, cf, cg, prime_bound=100):
 
 
 def lift_data(k, j, data):
-    """(smf_newforms fields, smf_hecke_nf fields or None) of one eigensystem."""
+    """[(smf_newforms fields, smf_hecke_nf fields or None)]: the Galois orbits of one eigensystem."""
     typ = data[0]
     if typ == 'F':
-        return siegel_eisenstein(k)
+        return [siegel_eisenstein(k)]
     if typ == 'Q':
-        return klingen_eisenstein(k, j, data[1])
+        return [klingen_eisenstein(k, j, data[1])]
     if typ == 'P':
-        return saito_kurokawa(k, data[1])
+        return [saito_kurokawa(k, data[1])]
     return yoshida(k, j, data[1], data[2])
 
 
