@@ -174,11 +174,12 @@ def KE_lifts(k, j, cols=CLASSICAL_COLS):
         c = Classical(f)
         yield c, Lift('Q', k, j, 1, c.K, c.an, c.an, f)
 
-def KE_space_traces(k, j, prime_bound=MAX_P+1):
-    """{ ht : { p : trace } } on the Klingen-Eisenstein series of weight (k, j) and level 1."""
+def KE_space_traces(k, j, e=0, prime_bound=MAX_P+1):
+    """{ ht : { p : trace } } on the Klingen-Eisenstein series of weight (k, j) and level 1
+    (none with character, e = 1, as in KE_num_forms' callers)."""
     sq = square_bound(prime_bound)
     L = {ht: {p: 0 for p in prime_range(prime_bound if ht == 'lambda_p' else sq)} for ht in HECKE_TYPES}
-    if k < 4:
+    if k < 4 or e == 1:
         return L
     for _, lift in KE_lifts(k, j):
         tr = lift.traces(prime_bound, num_coeffs=0)

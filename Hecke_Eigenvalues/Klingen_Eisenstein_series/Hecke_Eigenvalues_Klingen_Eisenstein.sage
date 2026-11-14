@@ -5,12 +5,12 @@ from smf_lmfdb.Hecke_Eigenvalues.Klingen_Yoshida import (
 # Hecke_Eigenvalues/Klingen_Yoshida.py, which documents the formulas and conventions.
 # Only level 1 (e = 0) has them here.
 
-def Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j, prime_bound=200):
+def Hecke_Traces_Eigenvalues_Klingen_Eisenstein_Series_Fast(k,j,e=0,prime_bound=200):
     """
     Traces of the Hecke eigenvalues on the Klingen-Eisenstein series of weight (k,j)
-    and level 1, { ht : { p : trace } }
+    and level 1, { ht : { p : trace } }; zero for e = 1 (with character)
     """
-    return KE_space_traces(k, j, prime_bound)
+    return KE_space_traces(k, j, e, prime_bound=prime_bound)
 
 def Hecke_Eigenvalues_Klingen_Eisenstein_num_forms(k,j,e,prime_bound=200):
     if (e == 1):
