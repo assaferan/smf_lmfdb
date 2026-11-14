@@ -54,6 +54,7 @@ def classical_query(N, w, sign=None):
 def classical(N, w, sign=None, cols=CLASSICAL_COLS + FIELD_COLS):
     if w < 2 or w % 2:
         return []
+    cols = list(dict.fromkeys(cols))     # without repeats ('dim' is in both lists)
     return list(db.mf_newforms.search(classical_query(N, w, sign), cols))
 
 
