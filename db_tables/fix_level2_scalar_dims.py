@@ -13,8 +13,8 @@ series, and that the new ones agree with what is known independently:
 - total_dim = dim M_k(Gamma[2]) from Igusa's ring of theta constants:
   C(n+4, 4) - C(n, 4) for k = 2n, and dim M_{k-5} for k odd (chi_5 M_{k-5});
 - for k even, total_dim - cusp_dim = 15 + 15 dim S_k(Gamma_0(4)) (Siegel and
-  Klingen Eisenstein series at the 15 + 15 boundary components), and for k odd
-  every form is a cusp form;
+  Klingen Eisenstein series at the 15 + 15 boundary components; for k odd the
+  formulas have no Eisenstein part, so only the other checks apply);
 - the old_* parts (the trivial representation s[6] of S_6, i.e. level 1) are the
   dimensions stored for 2.S.1.k.0.a;
 - the S_6 decomposition of the Saito-Kurokawa part is Conjecture 7.6 of
@@ -66,11 +66,12 @@ def igusa(k):
 
 
 def classical(w):
-    """{1: dim S_w(1), 4: dim S_w(4)^new, '+': , '-': dim S_w^{+/-}(2)^new}, from mf_newspaces."""
+    """{1: dim S_w(1), 4: dim S_w(4)^new, '+': , '-': dim S_w^{+/-}(2)^new}, from mf_newspaces (w even)."""
+    assert w % 2 == 0, w
     out = {}
     for N in (1, 2, 4):
         r = db.mf_newspaces.lucky({'level': N, 'weight': w, 'char_orbit_index': 1}, ['dim', 'ALdims'])
-        assert r is not None or w % 2, "no mf_newspaces row for level %d, weight %d" % (N, w)
+        assert r is not None, "no mf_newspaces row for level %d, weight %d" % (N, w)
         out[N] = r
     plus, minus = out[2]['ALdims'] if out[2]['dim'] else (0, 0)
     return {1: out[1]['dim'], 4: out[4]['dim'], '+': plus, '-': minus}
@@ -94,8 +95,8 @@ def sk_conjecture(k):
 def main(apply=False, datafile=None):
     spaces = {s['label']: s for s in db.smf_newspaces.search({'level': 2, 'family': 'P'}, ['label', 'weight'] + COLS)
               if s['weight'][1] == 0}
-    level1 = {s['weight'][0]: s for s in db.smf_newspaces.search({'level': 1, 'family': 'S'}, ['label', 'weight'] + ISOTYPES)
-              if s['weight'][1] == 0}
+    level1 = {int(s['label'].split('.')[3]): s for s in db.smf_newspaces.search(
+        {'label': {'$in': ['2.S.1.%d.0.a' % k for k in range(1, 100)]}}, ['label'] + ISOTYPES)}
     print("%d scalar-valued level-2 spaces" % len(spaces))
     rows = []
     for label, s in sorted(spaces.items(), key=lambda x: x[1]['weight']):
