@@ -38,6 +38,7 @@ def entry_add_columns(e, ext_data):
 
 def create_entries(triple_list):
     entries = []
+    level12_done = set()
     for triple in triple_list:
         k,j,N = triple
         if (j % 2 == 1) or (k == 1):
@@ -55,9 +56,10 @@ def create_entries(triple_list):
                     entries.append(entry_sub)
             continue
         # right now we only have implemented forms for full level in the principal series case
-        if N != 1:
-            # the level-1 and level-2 forms are made once, for the triple (k, j, 1)
+        # the level-1 and level-2 forms depend only on (k, j): make them once per weight
+        if (k, j) in level12_done:
             continue
+        level12_done.add((k, j))
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1,'P')
             sub_funcs = {'eis_F' : Hecke_Eigenvalues_Siegel_Eisenstein,
@@ -81,7 +83,7 @@ def create_entries(triple_list):
                     #    if (k == 12):
                     #        entry_sub['qexp'] = get_qexp_Chi12()
                     entries.append(entry_sub)
-        if (k == 20) and (j == 0) and (N == 1):
+        if (k == 20) and (j == 0):
             entry = common_entry_values(k,j,N,'P')
             entry['hecke_ring_rank'] = 1
             entry['hecke_ring_power_basis'] = True

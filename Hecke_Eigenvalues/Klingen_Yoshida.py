@@ -169,9 +169,10 @@ class Lift:
 def KE_query(k, j):
     return {'level': 1, 'weight': j + k, 'char_order': 1}
 
-def KE_valid(k, j):
-    """Klingen-Eisenstein series of level 1 and weight (k, j) need k >= 4 and j even (M_{k,j} = 0 for j odd)."""
-    return k >= 4 and j % 2 == 0
+def KE_valid(k, j, e=0):
+    """Klingen-Eisenstein series of level 1 and weight (k, j) need k >= 4 and j even (M_{k,j} = 0 for j odd),
+    and there are none with character (e = 1)."""
+    return e == 0 and k >= 4 and j % 2 == 0
 
 def KE_lifts(k, j, cols=CLASSICAL_COLS):
     for f in db.mf_newforms.search(KE_query(k, j), cols):
@@ -183,7 +184,7 @@ def KE_space_traces(k, j, e=0, prime_bound=MAX_P+1):
     (none with character, e = 1, as in KE_num_forms' callers)."""
     sq = square_bound(prime_bound)
     L = {ht: {p: 0 for p in prime_range(prime_bound if ht == 'lambda_p' else sq)} for ht in HECKE_TYPES}
-    if not KE_valid(k, j) or e == 1:
+    if not KE_valid(k, j, e):
         return L
     for _, lift in KE_lifts(k, j):
         tr = lift.traces(prime_bound, num_coeffs=0)
