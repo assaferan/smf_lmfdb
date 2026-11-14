@@ -29,6 +29,8 @@ Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_level2_lifts [--datafile PREFIX] --apply
 """
 import argparse
+import sys
+import time
 import json
 import traceback
 from collections import Counter, defaultdict
@@ -184,8 +186,11 @@ def main(apply=False, datafile=None, spaces=None, refresh=()):
         if k < 3:
             report['k = 2 (conjectural), left alone'] += 1
             continue
+        t0 = time.time()
         try:
             plan = space_plan(s, stored[s['label']], hnf, nf_cols, hnf_cols, set(refresh))
+            sys.stderr.write("%s planned in %.0fs\n" % (s['label'], time.time() - t0))
+            sys.stderr.flush()
         except (AssertionError, NotImplementedError, ValueError) as err:
             skipped.append((s['label'], repr(err)))
             if not isinstance(err, (AssertionError, NotImplementedError)):
