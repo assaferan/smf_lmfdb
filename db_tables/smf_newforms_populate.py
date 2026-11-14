@@ -71,6 +71,7 @@ def create_entries(triple_list, folder, table):
     space_num_forms = {}
     entries = []
     idx = 0
+    level12_done = set()
     for triple in triple_list:
         print("creating newform entry for triple", triple)
         k,j,N = triple
@@ -95,6 +96,10 @@ def create_entries(triple_list, folder, table):
                     idx += write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
             continue
                 
+        # the level-1 and level-2 forms depend only on (k, j): make them once per weight
+        if (k, j) in level12_done:
+            continue
+        level12_done.add((k, j))
         for e in [0,1]:
             entry = common_entry_values(k,j,e+1, 'P')
             sub_funcs = {'eis_F' : Hecke_Eigenforms_Siegel_Eisenstein,
@@ -124,7 +129,7 @@ def create_entries(triple_list, folder, table):
                     write_temp_entry(entry_sub, folder,  {'id' : idx, 'num_forms' : space_num_forms[space_label]}, table)
                     idx += 1
         # adding for demonstration a single function
-        if (k == 20) and (j == 0) and (N == 1):
+        if (k == 20) and (j == 0):
             entry = common_entry_values(k,j,N, 'P')
             entry['is_cuspidal'] = True
             entry['aut_rep_type'] = 'G'
