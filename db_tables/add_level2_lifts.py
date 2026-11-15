@@ -252,9 +252,9 @@ def main(apply=False, datafile=None, spaces=None, refresh=()):
         db.smf_hecke_nf.update_from_file(base + "_hecke_nf_update.txt", label_col='id')
     # The new rows: delete them by label to undo.
     if new_rows:
-        db.smf_newforms.insert_many([{c: v for c, v in r.items() if c != 'id'} for r in new_rows])
+        db.smf_newforms.insert_many(jsonable([{c: v for c, v in r.items() if c != 'id'} for r in new_rows]))
     if new_evs:
-        db.smf_hecke_nf.insert_many(new_evs)
+        db.smf_hecke_nf.insert_many(jsonable(new_evs))    # psycopg cannot adapt Sage numbers
 
 
 if __name__ == '__main__':
