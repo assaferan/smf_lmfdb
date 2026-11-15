@@ -24,9 +24,15 @@ level-2 newforms with w_2 = +1 / -1.
 
 In each space the sum of dim * multiplicity over each type is the stored new_*_dim.
 
-Conventions, those of the rows already stored at level 2: the eigenvalues at
-p = 2 are the formulas evaluated at the classical a_2 (Gamma[2] has no T(2); this
-is what the stored rows hold), and the Dirichlet coefficients are 'NULL' at even n.
+Conventions: the eigenvalues at p = 2 are the formulas evaluated at the classical
+a_2, as in the rows stored before (Gamma[2] has no T(2), and the site does not show
+them).  The Dirichlet series is the spin L-function of the automorphic
+representation, which is a product of classical L-functions, Euler factor at 2
+included:
+  F: zeta(s) zeta(s-k+1) zeta(s-k+2) zeta(s-2k+3)  (that of level 1),
+  Q: L(h, s) L(h, s-k+2),
+  P: zeta(s-k+1) zeta(s-k+2) L(f, s),
+  Y: L(f, s) L(g, s-k+2).
 """
 import json
 import os
@@ -92,11 +98,6 @@ def related(label):
     return HOLO + '/'.join(label.split('.'))
 
 
-def even_null(seq):
-    """'NULL' at the even n (seq[n-1] is the n-th coefficient)."""
-    return ['NULL' if n % 2 == 0 else x for n, x in enumerate(seq, 1)]
-
-
 # The eigensystems
 
 def eigensystems(k, j):
@@ -140,19 +141,18 @@ def siegel_eisenstein(k):
     assert f is not None, k
     h = db.smf_hecke_nf.lucky({'hecke_orbit_code': f['hecke_orbit_code']}, 2)
     row = {c: f[c] for c in FIELD_COLS + ['trace_' + ht for ht in HECKE_TYPES] + ['related_objects'] if c in f}
-    row['traces'] = even_null(f['traces'])
+    row['traces'] = f['traces']
     row['is_cuspidal'] = False
     row['aut_rep_type'] = 'F'
     ev = None
     if h is not None:
         ev = {c: v for c, v in h.items() if c not in ('id', 'label', 'hecke_orbit_code', 'level', 'weight', 'family')}
-        ev['an'] = even_null(h['an'])
     return row, ev
 
 
 def klingen_eisenstein(k, j, h):
     c = Classical(h)
-    lift = Lift('Q', k, j, LEVEL, c.K, c.an, c.an, h)
+    lift = Lift('Q', k, j, 1, c.K, c.an, c.an, h)    # N = 1: no 'NULL' Dirichlet coefficients
     row = {col: h[col] for col in FIELD_COLS if col in h}
     row.update(lift.traces(MAX_P + 1))
     row['related_objects'] = [related(c.label)]
@@ -169,21 +169,19 @@ def klingen_eisenstein(k, j, h):
         for ht in HECKE_TYPES:
             ps = prime_range((maxp if ht == 'lambda_p' else maxp_square) + 1)
             ev[ht] = [coords(lift.eigenvalues(p)[ht]) for p in ps]
-        ev['an'] = [x if x == 'NULL' else coords(x) for x in dirichlet(k, LEVEL, lift.A, lift.B, maxp + 1)]
+        ev['an'] = [coords(x) for x in dirichlet(k, 1, lift.A, lift.B, maxp + 1)]
         for name in ['id', 'label', 'hecke_orbit_code', 'ap', 'weight', 'level']:
             ev.pop(name, None)
     return row, ev
 
 
 def saito_kurokawa(k, query):
-    rows = SK_all_forms(k, query, True)
+    rows = SK_all_forms(k, query, True, full=True)
     assert len(rows) == 1, (k, query)
     row = rows[0]
-    row['traces'] = even_null(row['traces'])
-    evs = SK_all_evs(k, query)
+    evs = SK_all_evs(k, query, full=True)
     ev = evs[0] if evs else None
     if ev is not None:
-        ev['an'] = even_null(ev['an'])
         for name in ['id', 'level']:
             ev.pop(name, None)
     return row, ev
@@ -198,6 +196,7 @@ def yoshida(k, j, f, g):
 
 def yoshida_one(k, j, f, g):
     cf, cg, lift = Y_lift(k, j, f, g)
+    lift.N = 1    # no 'NULL' Dirichlet coefficients
     row = {col: lift.fields[col] for col in FIELD_COLS if col in lift.fields}
     row['dim'] = lift.dim
     row.update(lift.traces(MAX_P + 1))
@@ -254,7 +253,7 @@ def yoshida_split(k, j, f, g):
         b = to_L(to_abs(Lrel.gen()))
         A = [to_L(to_abs(Lrel(x))) for x in cf.an]
         B = [Kg(x).polynomial()(b) for x in cg.an]
-        lift = Lift('Y', k, j, LEVEL, L, A, B, None)
+        lift = Lift('Y', k, j, 1, L, A, B, None)    # N = 1: no 'NULL' Dirichlet coefficients
         row = field_columns(L)
         row.update(lift.traces(MAX_P + 1))
         row['related_objects'] = [related(c.label) for c in [cf, cg]]
@@ -286,7 +285,7 @@ def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
     coords = coordinates(F, basis)
     for ht in HECKE_TYPES:
         ev[ht] = [coords(YO(k, j, p, A[p-1], Bv[p-1])[ht]) for p in prime_range(maxp + 1)]
-    ev['an'] = [x if x == 'NULL' else coords(x) for x in dirichlet(k, LEVEL, A, Bv, maxp + 1)]
+    ev['an'] = [coords(x) for x in dirichlet(k, 1, A, Bv, maxp + 1)]
     for name in ['id', 'label', 'hecke_orbit_code', 'ap', 'weight', 'level']:
         ev.pop(name, None)
     return ev

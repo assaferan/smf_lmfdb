@@ -106,11 +106,12 @@ def trace_of_squares(f, primes):
             t2[x['p']] = ZZ(s)
     return t2
 
-def SK_orbit_traces(k, f, prime_bound=MAX_P+1, num_coeffs=MAX_P+1):
+def SK_orbit_traces(k, f, prime_bound=MAX_P+1, num_coeffs=MAX_P+1, full=False):
     """
     The smf_newforms trace columns of the lift of the classical orbit f: the
     traces of the SK eigenvalues for p < prime_bound, and `traces`, the first
-    num_coeffs Dirichlet coefficients.
+    num_coeffs Dirichlet coefficients ('NULL' at n not prime to the level of f,
+    unless full: then all of them, those of zeta(s-k+1) zeta(s-k+2) L(f, s)).
     """
     primes = prime_range(prime_bound)
     d, tr = f['dim'], f['traces']
@@ -125,17 +126,17 @@ def SK_orbit_traces(k, f, prime_bound=MAX_P+1, num_coeffs=MAX_P+1):
             else:
                 vals.append(d*c0 + c1*tr[p-1] + (c2*t2[p] if c2 else 0))
         out['trace_' + ht] = vals
-    out['traces'] = SK_dirichlet(k, f['level'], tr, num_coeffs)
+    out['traces'] = SK_dirichlet(k, 1 if full else f['level'], tr, num_coeffs)
     return out
 
-def SK_all_forms(k, query, is_cuspidal, prime_bound=MAX_P+1):
+def SK_all_forms(k, query, is_cuspidal, prime_bound=MAX_P+1, full=False):
     '''
     Returns a list of dictionaries.
     Each dictionary is a newform orbit, meant to be uploaded to smf_newforms
     '''
     forms = []
     for orbit in db.mf_newforms.search(query, CLASSICAL_FORM_COLS + ['atkin_lehner_eigenvals']):
-        orbit.update(SK_orbit_traces(k, orbit, prime_bound))
+        orbit.update(SK_orbit_traces(k, orbit, prime_bound, full=full))
         orbit['related_objects'] = [ 'ModularForm/GL2/Q/holomorphic/' + '/'.join(orbit['label'].split('.'))]
         orbit['is_cuspidal'] = is_cuspidal
         orbit['aut_rep_type'] = 'P'
@@ -165,7 +166,7 @@ def SK_space_traces(k, query, prime_bound=200):
                 L[ht][p] = 'NULL' if 'NULL' in (v, L[ht][p]) else L[ht][p] + v
     return L
 
-def SK_all_evs(k, query, prime_bound=100):
+def SK_all_evs(k, query, prime_bound=100, full=False):
     '''
     Returns a list of dictionaries.
     Each dictionary is an entry for the Hecke eigenvalues over a number field db,
@@ -193,7 +194,7 @@ def SK_all_evs(k, query, prime_bound=100):
         ev['maxp'] = ev['maxp_square'] = maxp
         for ht, F in SK_FUNCS.items():
             ev[ht] = [coords(F(k, p, ap[p])) for p in prime_range(maxp+1)]
-        ev['an'] = [x if x == 'NULL' else coords(x) for x in SK_dirichlet(k, orbit['level'], an, maxp+1)]
+        ev['an'] = [x if x == 'NULL' else coords(x) for x in SK_dirichlet(k, 1 if full else orbit['level'], an, maxp+1)]
         # We don't want to accidentally use the same fields for the Saito-Kurokawa lift
         for field_name in ['label', 'hecke_orbit_code', 'ap', 'weight']:
             dummy = ev.pop(field_name)
