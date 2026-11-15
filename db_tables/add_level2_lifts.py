@@ -79,7 +79,8 @@ def full_row(k, j, fields, hecke_orbit, mult, cols):
     e['trace_hash'] = e['analytic_rank'] = e['qexp_display'] = None
     e['analytic_rank_proved'] = False
     e['embedded_related_objects'] = []
-    if not e.get('atkin_lehner_eigenvals') and 'atkin_lehner_eigenvals' not in fields:
+    # w_2 = +1 for the lifts of forms of level 1 (SK_all_forms gives them []), as for F and Q
+    if not e.get('atkin_lehner_eigenvals'):
         e['atkin_lehner_eigenvals'] = [[2, 1]]
         e['atkin_lehner_string'] = '+'
     e['fricke_eigenval'] = 1
