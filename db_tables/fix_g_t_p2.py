@@ -14,8 +14,9 @@ bound at every good prime; read as T(p^2) they do not.)
 smf_newforms: trace_lambda_p_square of the G rows.  The trace of T(p^2) needs the
 sum of lambda_p^2 over the orbit; it comes from the eigenvalue coordinates when
 the orbit has them, and otherwise from the Hecke matrices of omf5_data (see
-omf5_squares), except for 53 orbits at levels with a single good prime below
-10, where it is set to NULL.  For those orbits without coordinates `traces` has only a_1 and
+omf5_squares), and for the 53 orbits at levels with a single good prime below
+10 from the runs of omf5 in omf5_squares_runs.json (fix_g_t_p2_omf5 fills them
+in on a database already fixed by this script).  For those orbits without coordinates `traces` has only a_1 and
 a_p; a_{p^2} = T(p^2) + p^(mu-1) is filled in for p <= 7.
 smf_hecke_nf: lambda_p_square, converted at each embedding.
 smf_newspaces: cusp_G_lambda_p_square, the sum over the G rows.
@@ -45,7 +46,7 @@ from smf_lmfdb.db_tables.nf_elt import get_nf_basis, nf_elts_to_lists, nf_lists_
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import parse_omf5
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.omf5_squares import (
     PRIMES, SQUARE_PRIMES, OrbitNotPlaced, has_coordinates, mu, sums_of_squares_from_coordinates,
-    sums_of_squares_from_matrices, T_p_square, T_p_square_traces)
+    sums_of_squares_from_matrices, sums_of_squares_from_omf5_runs, T_p_square, T_p_square_traces)
 
 
 def nullify(v):
@@ -84,8 +85,8 @@ def level_data(args):
             try:
                 sq, how = sums_of_squares_from_matrices(f, N), 'matrices'
             except OrbitNotPlaced:
-                # a single good prime below 10: T(p^2) stays unknown
-                how = 'none (one good prime below 10), NULL'
+                # a single good prime below 10: from a run of omf5
+                sq, how = sums_of_squares_from_omf5_runs(f, N), 'omf5 run'
         key = orbit_key(f['atkin_lehner_string'], f['dim'], f['trace_lambda_p'], f['trace_lambda_p_square'])
         assert key not in out, "level %d: two G orbits %s" % (N, key)
         out[key] = {'orbit': f, 'sq': sq, 'how': how}
