@@ -14,7 +14,12 @@ coordinates it is read off the Hecke matrices of omf5_data (hecke_mats, T(p,1) f
 p < 10 on each space of spinor conductor d, weight (3,0)): the spaces are split
 into blocks by a random combination of the T(p,1), and an orbit is the block with
 its dimension and traces of T(p,1).
+
+At a level with a single good prime below 10 the matrices cannot tell the orbits
+apart.  For the 53 such orbits the sum of squares comes instead from a run of omf5,
+which computes their eigenvalues (omf5_squares_runs.json).
 """
+import json
 import os
 import random
 import re
@@ -146,13 +151,50 @@ def sums_of_squares_from_matrices(orbit, N, folder=OMF5_DIR):
                          % (N, len(found), dim, tr, "" if len(found) != 1 else ", not a single Galois orbit"))
 
 
+OMF5_RUNS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "omf5_squares_runs.json")
+
+
+@lru_cache(maxsize=1)
+def _omf5_runs():
+    with open(OMF5_RUNS) as f:
+        return json.load(f)['orbits']
+
+
+def _traces(v):
+    return [None if x in ('NULL', None) else int(x) for x in v]
+
+
+def sums_of_squares_from_omf5_runs(orbit, N):
+    """
+    The sum over the orbit of lambda_p^2 at the single good prime p < 10 of N, from
+    omf5_squares_runs.json: the orbit of weight (3,0) with this level, Atkin-Lehner
+    signs, dimension and traces of T(q,1), q < 50.  It also checks the trace of
+    T(p,2) there against the orbit's.  OrbitNotPlaced if the orbit is not in it.
+    """
+    dim = len(orbit['field_poly']) - 1
+    tr = _traces(orbit['trace_lambda_p'])
+    found = [o for o in _omf5_runs() if o['level'] == N and o['dim'] == dim
+             and o['atkin_lehner_string'] == orbit['atkin_lehner_string']
+             and o['trace_lambda_p'] == tr[:len(o['trace_lambda_p'])]]
+    if len(found) != 1:
+        raise OrbitNotPlaced("level %d: %d orbits of omf5_squares_runs.json with the traces of the orbit" % (N, len(found)))
+    o = found[0]
+    p = o['p']
+    assert _traces(orbit['trace_lambda_p_square'])[PRIMES.index(p)] == o['trace_T_p_2'], \
+        "level %d: the trace of T(%d,2) of the orbit is not that of omf5_squares_runs.json" % (N, p)
+    return {p: ZZ(o['sum_lambda_p_squared'])}
+
+
 def sums_of_squares(orbit, N, k, j, folder=OMF5_DIR):
     """{p: sum of lambda_p^2 over the orbit}, p in SQUARE_PRIMES not dividing N."""
     if has_coordinates(orbit):
         return sums_of_squares_from_coordinates(orbit, N)
     if (k, j) != (3, 0):
         raise OrbitNotPlaced("no eigenvalue coordinates and no Hecke matrices for weight %s" % ((k, j),))
-    return sums_of_squares_from_matrices(orbit, N, folder)
+    try:
+        return sums_of_squares_from_matrices(orbit, N, folder)
+    except OrbitNotPlaced:
+        return sums_of_squares_from_omf5_runs(orbit, N)
 
 
 def T_p_square_traces(orbit, N, k, j, sum_sq):
@@ -177,7 +219,8 @@ def orbit_T_p_square_traces(orbit, N, k, j, folder=OMF5_DIR):
     """
     (traces of T(p^2), sums of squares) for an omf5_data orbit, in place of its
     traces of T(p,2).  Where the sum of squares cannot be found (an orbit without
-    coordinates at a level with a single good prime below 10), the trace is 'NULL'.
+    coordinates at a level with a single good prime below 10, and not in
+    omf5_squares_runs.json), the trace is 'NULL'.
     """
     try:
         sq = sums_of_squares(orbit, N, k, j, folder)
