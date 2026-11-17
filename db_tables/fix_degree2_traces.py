@@ -116,7 +116,14 @@ def sort_key(dim, ap):
     return [dim] + [float('-inf') if x is None else x for x in ap]
 
 
-def main(apply=False, datafile=None):
+def main(apply=False, datafile=None, new_traces=None):
+    """
+    new_traces: {label: (trace_lambda_p, trace_lambda_p_square, traces)} for the forms
+    whose traces change, given by the caller (update_hecke_rings.py, for the orbits
+    whose eigenvalues omf5_data corrected) instead of computed here from smf_hecke_nf;
+    then only steps 2 and 3 run (relabelling and newspace sums).  Returns the old ->
+    new labels of the relabelled orbits.
+    """
     query = {'family': 'K', 'weight': [3, 0], 'aut_rep_type': 'G'}
     forms = list(db.smf_newforms.search(query, NF_COLS))
     hnf_list = list(db.smf_hecke_nf.search({'label': {'$in': [f['label'] for f in forms]}}, HNF_COLS))
@@ -134,35 +141,45 @@ def main(apply=False, datafile=None):
            if nf_poly[h['label']] != ([int(c) for c in h['field_poly']], len(h['field_poly']) - 1)]
     assert not bad, "smf_newforms and smf_hecke_nf disagree on the orbit with label %s" % bad[:5]
 
-    # 1. new traces from the coordinates; check that the `traces` formula
-    #    reproduces every stored row from its stored trace_lambda_p / _square
-    changed = {}
-    reproduced = mismatched = 0
-    for f in forms:
-        old_ap = [as_int(x) for x in f['trace_lambda_p']]
-        old_ap2 = [as_int(x) for x in f['trace_lambda_p_square']]
-        if dirichlet_traces(f, old_ap, old_ap2, len(f['traces'])) == [as_int(x) for x in f['traces']]:
-            reproduced += 1
-        else:
-            mismatched += 1
-        new = traces_from_coordinates(hnf[f['label']]) if f['label'] in hnf else None
-        if new is None:
-            continue
-        ap, ap2 = new
-        assert len(ap) == len(old_ap) and len(ap2) >= len(old_ap2), \
-            "%s: smf_hecke_nf has %d/%d eigenvalues, smf_newforms %d/%d traces" % (
-                f['label'], len(ap), len(ap2), len(old_ap), len(old_ap2))
-        ap2 = ap2[:len(old_ap2)]
-        if (ap, ap2) != (old_ap, old_ap2):
-            changed[f['label']] = (ap, ap2)
-    print("%d newforms have wrong traces" % len(changed))
-    print("stored `traces` reproduced by the formula: %d, not reproduced: %d" % (reproduced, mismatched))
-    assert mismatched == 0, "the `traces` formula does not reproduce the stored values"
-    # The known bug affects only degree 2; anything else changing means the
-    # data or the basis convention has changed, and the script should not guess.
-    dims = {f['label']: f['dim'] for f in forms}
-    other = [l for l in changed if dims[l] != 2]
-    assert not other, "traces of forms of degree != 2 would change: %s" % other[:5]
+    if new_traces is not None:
+        changed = {}
+        by_label = {f['label']: f for f in forms}
+        for l, (ap, ap2, tr) in new_traces.items():
+            f = by_label[l]
+            if (ap, ap2, tr) != ([as_int(x) for x in f['trace_lambda_p']], [as_int(x) for x in f['trace_lambda_p_square']],
+                                 [as_int(x) for x in f['traces']]):
+                changed[l] = (ap, ap2)
+        print("%d newforms have new traces" % len(changed))
+    else:
+        # 1. new traces from the coordinates; check that the `traces` formula
+        #    reproduces every stored row from its stored trace_lambda_p / _square
+        changed = {}
+        reproduced = mismatched = 0
+        for f in forms:
+            old_ap = [as_int(x) for x in f['trace_lambda_p']]
+            old_ap2 = [as_int(x) for x in f['trace_lambda_p_square']]
+            if dirichlet_traces(f, old_ap, old_ap2, len(f['traces'])) == [as_int(x) for x in f['traces']]:
+                reproduced += 1
+            else:
+                mismatched += 1
+            new = traces_from_coordinates(hnf[f['label']]) if f['label'] in hnf else None
+            if new is None:
+                continue
+            ap, ap2 = new
+            assert len(ap) == len(old_ap) and len(ap2) >= len(old_ap2), \
+                "%s: smf_hecke_nf has %d/%d eigenvalues, smf_newforms %d/%d traces" % (
+                    f['label'], len(ap), len(ap2), len(old_ap), len(old_ap2))
+            ap2 = ap2[:len(old_ap2)]
+            if (ap, ap2) != (old_ap, old_ap2):
+                changed[f['label']] = (ap, ap2)
+        print("%d newforms have wrong traces" % len(changed))
+        print("stored `traces` reproduced by the formula: %d, not reproduced: %d" % (reproduced, mismatched))
+        assert mismatched == 0, "the `traces` formula does not reproduce the stored values"
+        # The known bug affects only degree 2; anything else changing means the
+        # data or the basis convention has changed, and the script should not guess.
+        dims = {f['label']: f['dim'] for f in forms}
+        other = [l for l in changed if dims[l] != 2]
+        assert not other, "traces of forms of degree != 2 would change: %s" % other[:5]
 
     # 2. new orbit order in each affected space
     by_space = defaultdict(list)
@@ -190,7 +207,8 @@ def main(apply=False, datafile=None):
             if f['label'] in changed:
                 ap, ap2 = changed[f['label']]
                 row.update(trace_lambda_p=ap, trace_lambda_p_square=ap2, trace_display=ap[:4],
-                           traces=dirichlet_traces(f, ap, ap2, len(f['traces'])))
+                           traces=(new_traces[f['label']][2] if new_traces is not None
+                                   else dirichlet_traces(f, ap, ap2, len(f['traces']))))
             if X != f['hecke_orbit']:
                 k, j = f['weight']
                 row.update(hecke_orbit=X, label=sp + '.' + base_26(X),
@@ -226,7 +244,7 @@ def main(apply=False, datafile=None):
 
     if not (nf_rows or hnf_rows or sp_rows):
         print("nothing to correct")
-        return
+        return relabelled
     base = datafile or "smf_degree2_fix"
     nf_file, hnf_file, sp_file = base + "_newforms.txt", base + "_hecke_nf.txt", base + "_newspaces.txt"
     todo = []
@@ -243,13 +261,14 @@ def main(apply=False, datafile=None):
         todo.append((db.smf_newspaces, sp_file, 'label'))
     if not apply:
         print("dry run; pass --apply to write")
-        return
+        return relabelled
     # Each update_from_file builds a replacement table; undo with <table>.reload_revert().
     # The updates are not atomic: if one fails, reload_revert() the tables already
     # updated and rerun.  Run fix_newspace_traces.py afterwards: it derives
     # smf_hecke_newspace_traces from the cusp_G sums written here.
     for table, fname, key in todo:
         table.update_from_file(fname, label_col=key)
+    return relabelled
 
 
 if __name__ == '__main__':
