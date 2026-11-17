@@ -1,4 +1,5 @@
 # import pickle
+import json
 from sage.all import (Matrix, ZZ, gcd, is_prime, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.common_populate import MAX_P
@@ -35,6 +36,21 @@ def parse_omf5(k,j,N):
                              % (fname, f['atkin_lehner_eigenvals'], f['atkin_lehner_string']))
     forms = sorted(forms, key=lambda f : [f['dim']] + f['trace_lambda_p'])
     return forms
+
+FIELDS = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/fields.json"
+_fields = None
+
+def field_record(N, field_poly):
+    '''
+    For the orbits of dimension 14-20, the record of omf5_data's hecke_evs_3_0/fields.json:
+    field_disc, field_disc_factorization, polredabs, and hecke_ring_disc_factorization (the
+    certificate they come from).
+    '''
+    global _fields
+    if _fields is None:
+        with open(FIELDS) as f:
+            _fields = {(r['level'], tuple(r['field_poly'])): r for r in json.load(f)}
+    return _fields[(N, tuple(int(c) for c in field_poly))]
 
 def al_str_to_num(al_str, N):
     ps = prime_divisors(N)
@@ -148,7 +164,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
         # !! TODO - check if that actually happens to be true
         orbit['field_poly_is_real_cyclotomic'] = False
         orbit['field_poly_root_of_unity'] = pol.is_cyclotomic(certificate=True)
-        if ('hecke_ring_index' in orbit) and (orbit['dim'] <= 20):
+        if ('hecke_ring_index' in orbit) and (orbit['dim'] <= 13):
             pol = Qx(pari(pol).polredbest().polredabs())
             F = NumberField(pol, name = "a")
             coeffs = [int(c) for c in pol.coefficients(sparse=False)]
@@ -157,6 +173,15 @@ def Hecke_Eigenforms_paramodular(k,j,N):
             orbit['field_disc_factorization'] = [list(fac) for fac in F.disc().factor()]
             if F.disc() < 0:
                 orbit['field_disc_factorization'] = [[-1,1]] + orbit['field_disc_factorization']
+        elif ('hecke_ring_index' in orbit) and (orbit['dim'] <= 20):
+            # the discriminant of the field_poly (hundreds of digits) is not factored; the
+            # field comes from omf5_data's hecke_evs_3_0/fields.json, which omf5_data's
+            # verify_fields.py checks from a factorization of the discriminant of the Hecke ring
+            r = field_record(N, orbit['field_poly'])
+            orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : r['polredabs']}, 'label')
+            orbit['field_disc'] = ZZ(r['field_disc'])
+            orbit['field_disc_factorization'] = [[ZZ(p), e] for p, e in r['field_disc_factorization']]
+        if ('hecke_ring_index' in orbit) and (orbit['dim'] <= 20):
             orbit['hecke_ring_index_factorization'] = [list(fac) for fac in
                                                        factor(orbit['hecke_ring_index'])]
         orbit['hecke_ring_index_proved'] = False
@@ -185,6 +210,18 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
     Returns a list of dictionaries.
     Each dictionary is an entry for the Hecke eigenvalues over a number field db,
     meant to be uploaded to smf_hecke_nf
+    '''
+    evs = Hecke_Eigenvalues_paramodular_G(k,j,N)
+    evs_P = Hecke_Eigenvalues_PM_SK_all_evs(k,j,N)
+    evs += evs_P
+
+    return evs
+
+
+def Hecke_Eigenvalues_paramodular_G(k,j,N):
+    '''
+    The entries of Hecke_Eigenvalues_paramodular for the non-lifts (type G), which
+    come from omf5_data alone (no database queries).
     '''
     evs = parse_omf5(k,j,N)
     Qx = PolynomialRing(QQ, name="x")
@@ -219,7 +256,4 @@ def Hecke_Eigenvalues_paramodular(k,j,N):
             if field_name in ev:
                 dummy = ev.pop(field_name)
 
-    evs_P = Hecke_Eigenvalues_PM_SK_all_evs(k,j,N)
-    evs += evs_P
-    
     return evs
