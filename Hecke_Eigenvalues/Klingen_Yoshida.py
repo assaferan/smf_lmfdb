@@ -89,6 +89,22 @@ def ring_basis(h):
                for num, den in zip(h['hecke_ring_numerators'], h['hecke_ring_denominators'])]
 
 
+def integral_basis_one_first(F, eigenvalues):
+    """A Z-basis of the maximal order of F starting with 1, as the pages expect (1, beta_1, ...),
+    chosen as for the classical forms (fix_hecke_ring_basis.reduced_basis): reduced against
+    the eigenvalues lambda_p, in the order of p.  (F.integral_basis() need not start
+    with 1.)"""
+    from smf_lmfdb.db_tables.fix_hecke_ring_basis import reduced_basis
+    B = Matrix(QQ, [list(b) for b in F.integral_basis()])
+    T = reduced_basis(B, [vector(QQ, list(F(x))) for x in eigenvalues])
+    return [F(list(r)) for r in T.rows()]
+
+
+def ordered_eigenvalues(k, j, A, Bv, maxp):
+    """The Yoshida eigenvalues lambda_p, p <= maxp, in the order of p: what the basis is reduced against."""
+    return [YO(k, j, p, A[p-1], Bv[p-1])['lambda_p'] for p in prime_range(maxp + 1)]
+
+
 def coordinates(K, B):
     """x -> its (integral) coordinates in the basis B of K."""
     Minv = Matrix(QQ, [K(b).list() for b in B]).inverse()
@@ -315,7 +331,7 @@ def Y_all_evs(k, j, e, prime_bound=100):
         A = [to_F0(F0(x)) for x in cf.an]
         Bv = [to_F1(F1(x)) for x in cg.an]
         nu = F.gen()
-        basis = F.integral_basis()
+        basis = integral_basis_one_first(F, ordered_eigenvalues(k, j, A, Bv, maxp))
         mat = Matrix([list(b) for b in basis])
         ev = dict(cf.hnf)
         ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
