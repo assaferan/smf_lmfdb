@@ -60,7 +60,7 @@ def reduced_basis(B, X):
     """A basis of the lattice spanned by the rows of B (a ring containing 1; coordinates in the
     power basis) starting with 1, chosen as the classical forms' (mf_hecke_nf): the other
     elements are LLL-reduced with respect to the coordinates of the eigenvalues X (power-basis
-    vectors, in the order of their index n), using the first ones that span the ring and d more,
+    vectors, in the order of p), using the first ones that span the field and d more,
     then ordered and signed so that each first appears, with a positive coefficient, in the
     earliest eigenvalue possible, and shifted by integers to make the constant coordinates
     small."""
@@ -99,22 +99,16 @@ def reduced_basis(B, X):
     shift = (A.transpose() * A).solve_right(A.transpose() * e0)
     C2 = identity_matrix(ZZ, d)
     for i in range(1, d):
-        C2[i, 0] = -shift[i - 1].round()
+        C2[i, 0] = -(shift[i - 1] + QQ(1) / 2).floor()     # explicit rounding: Sage's default is changing
     Tn = (C * C2).inverse() * T
     assert Tn.row(0) == vector(QQ, [1] + [0] * (d - 1))
     return Tn
 
 
 def eigenvalue_vectors(h, B):
-    """The eigenvalues of the row h (lambda_p, lambda_p_square), as power-basis vectors in the
-    order of their index n (p, p^2)."""
-    from sage.all import prime_range
-    out = []
-    for col, ex in (('lambda_p', 1), ('lambda_p_square', 2)):
-        for p, v in zip(prime_range(1000), h.get(col) or []):
-            if v is not None and v != 'NULL':
-                out.append((p**ex, vector(QQ, [QQ(c) for c in v]) * B))
-    return [x for _, x in sorted(out, key=lambda t: t[0])]
+    """The eigenvalues lambda_p of the row h, as power-basis vectors in the order of p.  (Only
+    lambda_p: omf5_data stores T(p,2) where smf_hecke_nf stores T(p^2), and both bases must agree.)"""
+    return [vector(QQ, [QQ(c) for c in v]) * B for v in (h.get('lambda_p') or []) if v is not None and v != 'NULL']
 
 
 def as_cols(M):

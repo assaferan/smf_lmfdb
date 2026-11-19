@@ -92,7 +92,7 @@ def ring_basis(h):
 def integral_basis_one_first(F, eigenvalues):
     """A Z-basis of the maximal order of F starting with 1, as the pages expect (1, beta_1, ...),
     chosen as for the classical forms (fix_hecke_ring_basis.reduced_basis): reduced against
-    the eigenvalues, given in the order of their index n.  (F.integral_basis() need not start
+    the eigenvalues lambda_p, in the order of p.  (F.integral_basis() need not start
     with 1.)"""
     from smf_lmfdb.db_tables.fix_hecke_ring_basis import reduced_basis
     B = Matrix(QQ, [list(b) for b in F.integral_basis()])
@@ -101,12 +101,8 @@ def integral_basis_one_first(F, eigenvalues):
 
 
 def ordered_eigenvalues(k, j, A, Bv, maxp):
-    """The Yoshida eigenvalues lambda_p and lambda_p_square, p <= maxp, in the order of p and p^2."""
-    out = []
-    for p in prime_range(maxp + 1):
-        ev = YO(k, j, p, A[p-1], Bv[p-1])
-        out += [(p, ev['lambda_p']), (p * p, ev['lambda_p_square'])]
-    return [x for _, x in sorted(out, key=lambda t: t[0])]
+    """The Yoshida eigenvalues lambda_p, p <= maxp, in the order of p: what the basis is reduced against."""
+    return [YO(k, j, p, A[p-1], Bv[p-1])['lambda_p'] for p in prime_range(maxp + 1)]
 
 
 def coordinates(K, B):
