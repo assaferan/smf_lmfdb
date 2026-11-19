@@ -10,17 +10,18 @@ So cusp_dim = cusp_Y_dim is the dimension of the lifts, proved for j < 12 and
 conjectural for j >= 12.  The level-1 part is 0 (S_{j,2}(Gamma_2) = 0 for j <= 52,
 Thm 1.3, and M_{j,2}(Gamma_2) = S_{j,2}(Gamma_2)), so every dimension is new.
 
-The non-cusp part:
-  j = 0: M_2(Gamma[2]) has dimension 5 (Igusa; the s[2^3] spanned by the theta
-         fourth powers) and S_2(Gamma[2]) = 0: eis_F_dim = 5, with no form stored;
-  j > 0: --eis-j sets its dimension (default 0, as M_{j,2} = S_{j,2} at level 1).
-
-dims_proved is False where a dimension is conjectural: j >= 12, and j > 0 unless
---eis-proved.
+The non-cusp part E_{j,2}(Gamma[2]) is known only for j <= 4; there is no dimension
+formula for M_{j,2}(Gamma[2]) in general (Bergstrom-Clery, arXiv:2309.04388, Sec. 5):
+  j = 0: the Siegel-Eisenstein series, s[2^3], of dimension 5 (S_2(Gamma[2]) = 0);
+  j = 2: M_{2,2}(Gamma[2]) = 0 (Clery-van der Geer-Grushevsky, arXiv:1306.6018, Thm 22.1);
+  j = 4: M_{4,2}(Gamma[2]) = s[2,1^4], of dimension 5, and S_{4,2} = 0 (ibid., Thm 23.1,
+         Prop. 23.2): Klingen-Eisenstein series;
+  j >= 6: unknown: the eis and total dimensions are NULL.
+No Eisenstein form is stored.  dims_proved is True for j <= 4 and False for j >= 6.
 
 For j > 0 the lifts go through add_level2_lifts.space_plan: new rows for the lifts
 not stored, and the stored ones relabelled and refreshed (--refresh) as there.
-num_forms is set where the forms fill the space (eis 0), else NULL.
+num_forms is set where the stored forms fill the space (j = 2), else NULL.
 
 The new space rows are written to PREFIX_newspaces.json, the forms as in
 add_level2_lifts.
@@ -44,9 +45,11 @@ K = 2
 LEVEL = 2
 JMAX = 20
 TYPES = ['eis_F', 'eis_Q', 'cusp_P', 'cusp_Y', 'cusp_G']
+# the Eisenstein dimensions, where known
+EIS = {0: {'eis_F': 5, 'eis_Q': 0}, 2: {'eis_F': 0, 'eis_Q': 0}, 4: {'eis_F': 0, 'eis_Q': 5}}
 
 
-def space_row(j, eis_j, eis_proved, cols):
+def space_row(j, cols):
     E = eigensystems(K, j)
     sums = check_sum(E)
     assert set(sums) <= {'Y'}, (j, sums)
@@ -54,10 +57,7 @@ def space_row(j, eis_j, eis_proved, cols):
     d['cusp_Y'] = int(sums.get('Y', 0))
     if j < 12:
         assert d['cusp_Y'] == 0, "j = %d: lifts of dimension %d, but S_{j,2}(Gamma[2]) = 0 (Prop. 1.5)" % (j, d['cusp_Y'])
-    if j == 0:
-        d['eis_F'] = 5
-    else:
-        d['eis_Q'] = eis_j
+    d.update(EIS.get(j, {'eis_F': None, 'eis_Q': None}))
     e = common_entry_values(K, j, LEVEL, 'P')
     e = entry_add_common_columns(e, {'id': None})
     e['label'] = make_space_label(e)
@@ -66,14 +66,15 @@ def space_row(j, eis_j, eis_proved, cols):
         e[t + '_dim'] = e['new_' + t + '_dim'] = v
         e['old_' + t + '_dim'] = 0
     for part, ts in (('eis', TYPES[:2]), ('cusp', TYPES[2:]), ('total', TYPES)):
-        e[part + '_dim'] = e['new_' + part + '_dim'] = sum(d[t] for t in ts)
+        known = all(d[t] is not None for t in ts)
+        e[part + '_dim'] = e['new_' + part + '_dim'] = sum(d[t] for t in ts) if known else None
         e['old_' + part + '_dim'] = 0
-    e['dims_proved'] = j == 0 or (j < 12 and eis_proved)
+    e['dims_proved'] = j in EIS
     e['num_forms'] = None
     return E, {c: nulls(e.get(c)) for c in cols}
 
 
-def main(apply=False, datafile=None, refresh=(), eis_j=0, eis_proved=False, jmax=JMAX):
+def main(apply=False, datafile=None, refresh=(), jmax=JMAX):
     base = datafile or "smf_level2_weight2"
     ns_cols = [c for c in db.smf_newspaces.search_cols if c != 'id']
     has_proved = 'dims_proved' in ns_cols
@@ -90,11 +91,13 @@ def main(apply=False, datafile=None, refresh=(), eis_j=0, eis_proved=False, jmax
         {'hecke_orbit_code': {'$in': [r['hecke_orbit_code'] for r in stored]}}, ['id'] + hnf_cols)}
     spaces, new_rows, new_evs, upd, upd_ev, diffs = [], [], [], [], [], Counter()
     for j in range(0, jmax + 1, 2):
-        E, s = space_row(j, eis_j, eis_proved, ns_cols)
+        E, s = space_row(j, ns_cols)
         mine = [r for r in stored if r['space_label'] == s['label']]
         rows = []
-        if j > 0:
-            nr, ne, u, ue, d = space_plan(s, mine, hnf, nf_cols, hnf_cols, set(refresh))
+        if E or mine:
+            # space_plan checks the dimensions of the lifts; no Eisenstein form is stored
+            cusp = dict(s, new_eis_F_dim=0, new_eis_Q_dim=0)
+            nr, ne, u, ue, d = space_plan(cusp, mine, hnf, nf_cols, hnf_cols, set(refresh))
             save_polredabs_cache()
             new_rows += nr
             new_evs += ne
@@ -102,12 +105,10 @@ def main(apply=False, datafile=None, refresh=(), eis_j=0, eis_proved=False, jmax
             upd_ev += ue
             diffs += d
             rows = nr + u
-            if s['new_eis_dim'] == 0:
-                s['num_forms'] = len(rows)
-        else:
-            assert not mine, s['label']
+        if s['total_dim'] is not None and s['new_eis_dim'] == 0:
+            s['num_forms'] = len(rows)
         spaces.append(s)
-        print("%s: total %d (eis %d, cusp %d = Y %d), dims_proved %s, num_forms %s; %d new forms, %d stored; %s"
+        print("%s: total %s (eis %s, cusp %d = Y %d), dims_proved %s, num_forms %s; %d new forms, %d stored; %s"
               % (s['label'], s['total_dim'], s['eis_dim'], s['cusp_dim'], s['cusp_Y_dim'], s['dims_proved'], s['num_forms'],
                  len(rows) - len(mine), len(mine),
                  ', '.join("mult %d x %s" % (m, '+'.join(x['label'].split('.')[-1] if isinstance(x, dict) and 'label' in x else '?'
@@ -155,9 +156,7 @@ if __name__ == '__main__':
     parser.add_argument("--apply", action="store_true", help="write to the database")
     parser.add_argument("--datafile", help="prefix for the output files (default: ./smf_level2_weight2)")
     parser.add_argument("--refresh", help="as in add_level2_lifts")
-    parser.add_argument("--eis-j", type=int, default=0, help="dimension of the non-cusp part for j > 0 (default 0)")
-    parser.add_argument("--eis-proved", action="store_true", help="that dimension is proved")
     parser.add_argument("--jmax", type=int, default=JMAX)
     args = parser.parse_args()
     main(apply=args.apply, datafile=args.datafile, refresh=args.refresh.split(',') if args.refresh else (),
-         eis_j=args.eis_j, eis_proved=args.eis_proved, jmax=args.jmax)
+         jmax=args.jmax)
