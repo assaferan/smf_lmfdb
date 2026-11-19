@@ -46,7 +46,6 @@ import time
 
 from sage.all import (Matrix, NumberField, PolynomialRing, PowerSeriesRing, QQ, ZZ, factor, lcm, pari,
                       prime_range, vector)
-from sage.rings.number_field.order import absolute_order_from_module_generators
 
 from lmfdb import db
 from smf_lmfdb.db_tables.common_populate import base_26, common_entry_values, entry_add_common_columns, make_space_label
@@ -218,9 +217,8 @@ def ring_data(F, gens):
         used.append(x)
         M = ring_closure(F, used, M)
         nbound = jj
-    O = absolute_order_from_module_generators([F(list(r)) for r in H], check_integral=False, check_rank=False,
-                                              check_is_ring=False)
-    mat = Matrix([list(b) for b in O.basis()])
+    # a basis starting with 1, as the pages expect (1, beta_1, ..., beta_{d-1})
+    mat = Matrix(QQ, triangular(H))
     inv = mat**(-1)
     ring = {'hecke_ring_power_basis': False, 'hecke_ring_cyclotomic_generator': 0, 'hecke_ring_rank': d,
             'field_poly': [int(c) for c in F.defining_polynomial().list()],
@@ -309,6 +307,7 @@ def g_orbit(k, j, F, vals):
     for t in HECKE_TYPES:
         hnf[t] = [c(x) for x in ev[t]]
     hnf['an'] = [c(x) if x is not None else 'NULL' for x in an]
+    assert hnf['an'][0] == [1] + [0] * (F.degree() - 1), "the ring basis does not start with 1"
     hnf['ap'] = None
     hnf['maxp'] = ps[-1]
     hnf['maxp_square'] = sq[-1] if sq else None
