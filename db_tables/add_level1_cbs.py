@@ -160,7 +160,7 @@ def dirichlet(k, j, ap, ap2, ps, length=NUM_COEFFS):
             R = PowerSeriesRing(one.parent(), 't', default_prec=r + 1)
             t = R.gen()
             Q = 1 - lam[p] * t + (lam[p]**2 - lam2[p] - p**(mu - 1)) * t**2 - p**mu * lam[p] * t**3 + p**(2*mu) * t**4
-            a.append((1 / Q).list()[r])
+            a.append((1 / Q)[r])     # .list() drops trailing zeros
     return a[1:]
 
 
