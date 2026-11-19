@@ -43,7 +43,7 @@ from sage.arith.misc import previous_prime
 from lmfdb import db
 from smf_lmfdb.Hecke_Eigenvalues.Klingen_Yoshida import (
     CLASSICAL_COLS, FIELD_COLS, HECKE_TYPES, YO, Classical, Lift, KE_valid, Y_lift,
-    coordinates, dirichlet, integral_basis_one_first, ring_basis, square_bound)
+    coordinates, dirichlet, integral_basis_one_first, ordered_eigenvalues, ring_basis, square_bound)
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import (
     SK_all_forms, SK_all_evs)
 from smf_lmfdb.db_tables.common_populate import MAX_P
@@ -268,10 +268,11 @@ def yoshida_split(k, j, f, g):
 
 
 def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
-    """As in Y_all_evs: the eigenvalues in the field F (containing the a_n A of f and Bv of g), with its integral basis."""
-    basis = integral_basis_one_first(F)
-    mat = Matrix([list(b) for b in basis])
+    """As in Y_all_evs: the eigenvalues in the field F (containing the a_n A of f and Bv of g), in a basis
+    of its maximal order starting with 1 (integral_basis_one_first)."""
     maxp = previous_prime(prime_bound)
+    basis = integral_basis_one_first(F, ordered_eigenvalues(k, j, A, Bv, maxp))
+    mat = Matrix([list(b) for b in basis])
     ev = dict(cf.hnf)
     ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
     ev['hecke_ring_numerators'] = [list(row.denominator() * row) for row in mat]

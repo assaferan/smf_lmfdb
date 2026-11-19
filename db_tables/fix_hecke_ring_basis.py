@@ -10,9 +10,10 @@ is printed as the constant term.  Some stored bases do not start with 1:
 For these the pages are wrong: for example, a_1 of 2.K.181.3.0.a.a shows as a ten-term
 expression.
 
-For each such row this replaces the basis by the triangular basis of the same lattice
-(the Hermite form with respect to 1, nu, ..., nu^(d-1); its first element is 1, and the
-i-th element is (nu^i + lower terms) / den_i), and rewrites every coordinate column
+For each such row this replaces the basis by another basis of the same lattice that starts
+with 1, chosen as for the classical forms (reduced_basis: 1, then the other elements
+LLL-reduced against the coordinates of the eigenvalues, shifted to make the constant terms
+small), and rewrites every coordinate column
 (lambda_p, lambda_p_square[_0,_1,_2], an) in it.  Before writing anything it checks that:
   - the stored basis and its stored inverse are inverse to each other;
   - the new basis spans the same lattice (the change of basis is in GL_d(Z));
@@ -29,7 +30,7 @@ Usage (from the lmfdb root, with write access to the db):
 import argparse
 from collections import Counter
 
-from sage.all import Matrix, QQ, ZZ, lcm, vector
+from sage.all import Matrix, QQ, ZZ, block_diagonal_matrix, identity_matrix, lcm, vector
 from lmfdb import db
 from smf_lmfdb.db_tables.fix_sk_traces import write_update_file
 
@@ -55,6 +56,53 @@ def triangular(B):
     return T
 
 
+def reduced_basis(B, X):
+    """A basis of the lattice spanned by the rows of B (a ring containing 1; coordinates in the
+    power basis) starting with 1, chosen as the classical forms' (mf_hecke_nf): the other
+    elements are LLL-reduced with respect to the coordinates of the eigenvalues X (power-basis
+    vectors, in the order of their index n), using the first ones that span the ring and d more,
+    then shifted by integers to make the constant coordinates small, and given a positive
+    leading coefficient."""
+    d = B.nrows()
+    T = triangular(B)
+    if d == 1:
+        return T
+    Tinv = T.inverse()
+    E = Matrix(QQ, [vector(QQ, x) * Tinv for x in X])
+    assert all(c in ZZ for c in E.list()), "an eigenvalue is not in the ring"
+    E1 = E.matrix_from_columns(range(1, d))
+    m = next(i for i in range(1, E1.nrows() + 1) if E1.matrix_from_rows(range(i)).rank() == d - 1)
+    m = min(E1.nrows(), m + d)
+    P = E1.matrix_from_rows(range(m)).transpose().change_ring(ZZ)
+    R, U = P.LLL(transformation=True)      # R = U P: the profiles of the new basis elements
+    C = block_diagonal_matrix(identity_matrix(ZZ, 1), U.transpose())
+    E2 = (E * C).matrix_from_rows(range(m))
+    A, e0 = E2.matrix_from_columns(range(1, d)), E2.column(0)
+    shift = (A.transpose() * A).solve_right(A.transpose() * e0)
+    C2 = identity_matrix(ZZ, d)
+    for i in range(1, d):
+        C2[i, 0] = -shift[i - 1].round()
+    Tn = (C * C2).inverse() * T
+    for i in range(1, d):
+        lead = [c for c in Tn.row(i) if c][-1]
+        if lead < 0:
+            Tn.rescale_row(i, -1)
+    assert Tn.row(0) == vector(QQ, [1] + [0] * (d - 1))
+    return Tn
+
+
+def eigenvalue_vectors(h, B):
+    """The eigenvalues of the row h (lambda_p, lambda_p_square), as power-basis vectors in the
+    order of their index n (p, p^2)."""
+    from sage.all import prime_range
+    out = []
+    for col, ex in (('lambda_p', 1), ('lambda_p_square', 2)):
+        for p, v in zip(prime_range(1000), h.get(col) or []):
+            if v is not None and v != 'NULL':
+                out.append((p**ex, vector(QQ, [QQ(c) for c in v]) * B))
+    return [x for _, x in sorted(out, key=lambda t: t[0])]
+
+
 def as_cols(M):
     """numerators and denominators of the rows of M, as stored."""
     dens = [int(r.denominator()) for r in M.rows()]
@@ -73,7 +121,7 @@ def rebasis(h):
     B = rows_of(h['hecke_ring_numerators'], h['hecke_ring_denominators'])
     Binv = rows_of(h['hecke_ring_inverse_numerators'], h['hecke_ring_inverse_denominators'])
     assert B * Binv == 1, "%s: the stored inverse basis is not the inverse" % h['label']
-    T = triangular(B)
+    T = reduced_basis(B, eigenvalue_vectors(h, B))
     Tinv = T.inverse()
     # x = c B = c' T, so c' = c (B T^-1); C must be in GL_d(Z)
     C = B * Tinv

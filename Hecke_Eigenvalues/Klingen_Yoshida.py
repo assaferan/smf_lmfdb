@@ -89,13 +89,24 @@ def ring_basis(h):
                for num, den in zip(h['hecke_ring_numerators'], h['hecke_ring_denominators'])]
 
 
-def integral_basis_one_first(F):
-    """A Z-basis of the maximal order of F starting with 1, as the pages expect (1, beta_1, ...):
-    the triangular basis, the i-th element (nu^i + lower terms) / den_i.  (F.integral_basis()
-    need not start with 1.)"""
-    from smf_lmfdb.db_tables.fix_hecke_ring_basis import triangular
-    T = triangular(Matrix(QQ, [list(b) for b in F.integral_basis()]))
+def integral_basis_one_first(F, eigenvalues):
+    """A Z-basis of the maximal order of F starting with 1, as the pages expect (1, beta_1, ...),
+    chosen as for the classical forms (fix_hecke_ring_basis.reduced_basis): reduced against
+    the eigenvalues, given in the order of their index n.  (F.integral_basis() need not start
+    with 1.)"""
+    from smf_lmfdb.db_tables.fix_hecke_ring_basis import reduced_basis
+    B = Matrix(QQ, [list(b) for b in F.integral_basis()])
+    T = reduced_basis(B, [vector(QQ, list(F(x))) for x in eigenvalues])
     return [F(list(r)) for r in T.rows()]
+
+
+def ordered_eigenvalues(k, j, A, Bv, maxp):
+    """The Yoshida eigenvalues lambda_p and lambda_p_square, p <= maxp, in the order of p and p^2."""
+    out = []
+    for p in prime_range(maxp + 1):
+        ev = YO(k, j, p, A[p-1], Bv[p-1])
+        out += [(p, ev['lambda_p']), (p * p, ev['lambda_p_square'])]
+    return [x for _, x in sorted(out, key=lambda t: t[0])]
 
 
 def coordinates(K, B):
@@ -324,7 +335,7 @@ def Y_all_evs(k, j, e, prime_bound=100):
         A = [to_F0(F0(x)) for x in cf.an]
         Bv = [to_F1(F1(x)) for x in cg.an]
         nu = F.gen()
-        basis = integral_basis_one_first(F)
+        basis = integral_basis_one_first(F, ordered_eigenvalues(k, j, A, Bv, maxp))
         mat = Matrix([list(b) for b in basis])
         ev = dict(cf.hnf)
         ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
