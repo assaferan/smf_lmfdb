@@ -61,8 +61,9 @@ def reduced_basis(B, X):
     power basis) starting with 1, chosen as the classical forms' (mf_hecke_nf): the other
     elements are LLL-reduced with respect to the coordinates of the eigenvalues X (power-basis
     vectors, in the order of their index n), using the first ones that span the ring and d more,
-    then shifted by integers to make the constant coordinates small, and given a positive
-    leading coefficient."""
+    then ordered and signed so that each first appears, with a positive coefficient, in the
+    earliest eigenvalue possible, and shifted by integers to make the constant coordinates
+    small."""
     d = B.nrows()
     T = triangular(B)
     if d == 1:
@@ -76,6 +77,19 @@ def reduced_basis(B, X):
     P = E1.matrix_from_rows(range(m)).transpose().change_ring(ZZ)
     R, U = P.LLL(transformation=True)      # R = U P: the profiles of the new basis elements
     C = block_diagonal_matrix(identity_matrix(ZZ, 1), U.transpose())
+    # order beta_1, ..., beta_{d-1} by the first eigenvalue with a nonzero coordinate on them
+    # (then by size), each with a positive first coordinate: a_2 = beta_1 + c, as for the
+    # classical forms
+    E2 = (E * C).matrix_from_rows(range(m))
+    def first(i):
+        col = E2.column(i)
+        return min(r for r in range(m) if col[r])
+    order = sorted(range(1, d), key=lambda i: (first(i), E2.column(i).norm()))
+    S = Matrix(ZZ, d, d)
+    S[0, 0] = 1
+    for new_i, old_i in enumerate(order, 1):
+        S[old_i, new_i] = 1 if E2[first(old_i), old_i] > 0 else -1
+    C = C * S
     E2 = (E * C).matrix_from_rows(range(m))
     A, e0 = E2.matrix_from_columns(range(1, d)), E2.column(0)
     shift = (A.transpose() * A).solve_right(A.transpose() * e0)
@@ -83,10 +97,6 @@ def reduced_basis(B, X):
     for i in range(1, d):
         C2[i, 0] = -shift[i - 1].round()
     Tn = (C * C2).inverse() * T
-    for i in range(1, d):
-        lead = [c for c in Tn.row(i) if c][-1]
-        if lead < 0:
-            Tn.rescale_row(i, -1)
     assert Tn.row(0) == vector(QQ, [1] + [0] * (d - 1))
     return Tn
 
