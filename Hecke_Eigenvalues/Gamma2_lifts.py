@@ -43,7 +43,7 @@ from sage.arith.misc import previous_prime
 from lmfdb import db
 from smf_lmfdb.Hecke_Eigenvalues.Klingen_Yoshida import (
     CLASSICAL_COLS, FIELD_COLS, HECKE_TYPES, YO, Classical, Lift, KE_valid, Y_lift,
-    coordinates, dirichlet, ring_basis, square_bound)
+    coordinates, dirichlet, integral_basis_one_first, ring_basis, square_bound)
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import (
     SK_all_forms, SK_all_evs)
 from smf_lmfdb.db_tables.common_populate import MAX_P
@@ -269,7 +269,7 @@ def yoshida_split(k, j, f, g):
 
 def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
     """As in Y_all_evs: the eigenvalues in the field F (containing the a_n A of f and Bv of g), with its integral basis."""
-    basis = F.integral_basis()
+    basis = integral_basis_one_first(F)
     mat = Matrix([list(b) for b in basis])
     maxp = previous_prime(prime_bound)
     ev = dict(cf.hnf)

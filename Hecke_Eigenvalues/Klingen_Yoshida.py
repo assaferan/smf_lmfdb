@@ -89,6 +89,15 @@ def ring_basis(h):
                for num, den in zip(h['hecke_ring_numerators'], h['hecke_ring_denominators'])]
 
 
+def integral_basis_one_first(F):
+    """A Z-basis of the maximal order of F starting with 1, as the pages expect (1, beta_1, ...):
+    the triangular basis, the i-th element (nu^i + lower terms) / den_i.  (F.integral_basis()
+    need not start with 1.)"""
+    from smf_lmfdb.db_tables.fix_hecke_ring_basis import triangular
+    T = triangular(Matrix(QQ, [list(b) for b in F.integral_basis()]))
+    return [F(list(r)) for r in T.rows()]
+
+
 def coordinates(K, B):
     """x -> its (integral) coordinates in the basis B of K."""
     Minv = Matrix(QQ, [K(b).list() for b in B]).inverse()
@@ -315,7 +324,7 @@ def Y_all_evs(k, j, e, prime_bound=100):
         A = [to_F0(F0(x)) for x in cf.an]
         Bv = [to_F1(F1(x)) for x in cg.an]
         nu = F.gen()
-        basis = F.integral_basis()
+        basis = integral_basis_one_first(F)
         mat = Matrix([list(b) for b in basis])
         ev = dict(cf.hnf)
         ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
