@@ -22,6 +22,16 @@ level-2 newforms with w_2 = +1 / -1.
   level-2 pairs of opposite signs in s[1^6] (1), of equal signs in s[2^3] (5),
   level-4 pairs in s[2,1^4] (5).
 
+For k = 2 (j > 0) the Yoshida part is Clery-van der Geer, Thm 1.1 (arXiv:1709.01748),
+with f, g of the same weight j + 2 and the pairs unordered:
+  level-2 pairs of opposite signs in s[1^6] (1);
+  pairs of distinct eigenforms of level 2 and equal signs in s[2^3] (5), of dimension
+  dim Lambda^2 S^+ + dim Lambda^2 S^-;
+  pairs of distinct eigenforms of level 4 in s[2,1^4] (5), of dimension dim Lambda^2 S^new.
+A pair of distinct eigenforms in one Galois orbit f (f and a conjugate) is a lift
+of rational eigenvalues when dim f = 2; larger orbits are not handled.  Conj. 1.2
+says that these lifts span S_{j,2}(Gamma[2]).
+
 In each space the sum of dim * multiplicity over each type is the stored new_*_dim.
 
 Conventions: the eigenvalues at p = 2 are the formulas evaluated at the classical
@@ -129,6 +139,18 @@ def eigensystems(k, j):
         for f in classical(4, w1):
             for g in classical(4, w2):
                 E.append(('Y', 5, ('Y', f, g)))
+    if j > 0 and k == 2:
+        w = j + 2
+        plus, minus = classical(2, w, 1), classical(2, w, -1)
+        for f in minus:     # as Klingen_Yoshida.Y_pairs
+            for g in plus:
+                E.append(('Y', 1, ('Y', f, g)))
+        for forms in (plus, minus, classical(4, w)):
+            for i, f in enumerate(forms):
+                if f['dim'] > 1:
+                    E.append(('Y', 5, ('Y', f, f)))     # f with a conjugate
+                for g in forms[i+1:]:
+                    E.append(('Y', 5, ('Y', f, g)))
     return E
 
 
@@ -189,6 +211,8 @@ def saito_kurokawa(k, query):
 
 def yoshida(k, j, f, g):
     """[(row, ev)]: one Galois orbit, or several when f and g both have dimension > 1."""
+    if f['label'] == g['label']:
+        return [yoshida_conjugates(k, j, f)]
     if f['dim'] > 1 and g['dim'] > 1:
         return yoshida_split(k, j, f, g)
     return [yoshida_one(k, j, f, g)]
@@ -208,6 +232,32 @@ def yoshida_one(k, j, f, g):
         F0, F1 = ring_basis(cf.hnf)[0], ring_basis(cg.hnf)[0]
         F, to_F1, to_F0, _ = F1.composite_fields(F0, both_maps=True)[0]
         ev = yoshida_ev(k, j, cf, F, [to_F0(F0(x)) for x in cf.an], [to_F1(F1(x)) for x in cg.an])
+    return row, ev
+
+
+def yoshida_conjugates(k, j, f):
+    """
+    The lift of (f, f^sigma) for f of dimension 2 and sigma the conjugation of its
+    field K (k = 2): its eigenvalues and a_n are symmetric in the two, so rational.
+    """
+    cf = Classical(f)
+    if cf.dim != 2:
+        raise NotImplementedError("the lifts of pairs of conjugates of %s, of dimension %d" % (cf.label, cf.dim))
+    K = cf.K
+    sigma = [s for s in K.automorphisms() if s(K.gen()) != K.gen()][0]
+    A = cf.an
+    B = [sigma(x) for x in A]
+    lift = Lift('Y', k, j, 1, QQ, A, B, None)    # trace(x, QQ) = ZZ(x): the values are rational elements of K
+    rational = db.mf_newforms.lucky({'dim': 1, 'char_order': 1}, FIELD_COLS)
+    row = {col: rational[col] for col in FIELD_COLS if col in rational}
+    row.update(lift.traces(MAX_P + 1))
+    row['related_objects'] = [related(cf.label)] * 2
+    row['is_cuspidal'] = True
+    row['aut_rep_type'] = 'Y'
+    ev = None
+    if cf.hnf is not None:
+        Q1 = NumberField(PolynomialRing(QQ, 'x')([0, 1]), 'nu')
+        ev = yoshida_ev(k, j, cf, Q1, A, B, to_F=lambda x: Q1(QQ(x)))
     return row, ev
 
 
@@ -267,11 +317,15 @@ def yoshida_split(k, j, f, g):
     return out
 
 
-def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
+def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100, to_F=None):
     """As in Y_all_evs: the eigenvalues in the field F (containing the a_n A of f and Bv of g), in a basis
-    of its maximal order starting with 1 (integral_basis_one_first)."""
+    of its maximal order starting with 1 (integral_basis_one_first).
+    With to_F, A and Bv lie elsewhere and the eigenvalues and a_n are mapped to F by to_F."""
     maxp = previous_prime(prime_bound)
-    basis = integral_basis_one_first(F, ordered_eigenvalues(k, j, A, Bv, maxp))
+    lams = ordered_eigenvalues(k, j, A, Bv, maxp)
+    if to_F is not None:
+        lams = [to_F(x) for x in lams]
+    basis = integral_basis_one_first(F, lams)
     mat = Matrix([list(b) for b in basis])
     ev = dict(cf.hnf)
     ev['hecke_ring_denominators'] = [row.denominator() for row in mat]
@@ -284,6 +338,8 @@ def yoshida_ev(k, j, cf, F, A, Bv, prime_bound=100):
     ev['hecke_ring_rank'] = F.degree()
     ev['maxp'] = ev['maxp_square'] = maxp
     coords = coordinates(F, basis)
+    if to_F is not None:
+        coords = (lambda c: lambda x: c(to_F(x)))(coords)
     for ht in HECKE_TYPES:
         ev[ht] = [coords(YO(k, j, p, A[p-1], Bv[p-1])[ht]) for p in prime_range(maxp + 1)]
     ev['an'] = [coords(x) for x in dirichlet(k, 1, A, Bv, maxp + 1)]
@@ -324,6 +380,8 @@ def check_sum(E):
             d = db.mf_newforms.lucky(data[1], 'dim')
         elif typ == 'Q':
             d = data[1]['dim']
+        elif data[1]['label'] == data[2]['label']:
+            d = data[1]['dim'] * (data[1]['dim'] - 1) // 2
         else:
             d = data[1]['dim'] * data[2]['dim']
         out[typ] = out.get(typ, 0) + ZZ(d) * mult
