@@ -72,6 +72,10 @@ def reduced_basis(B, X):
     E = Matrix(QQ, [vector(QQ, x) * Tinv for x in X])
     assert all(c in ZZ for c in E.list()), "an eigenvalue is not in the ring"
     E1 = E.matrix_from_columns(range(1, d))
+    if E1.rank() < d - 1:
+        # the eigenvalues generate the ring but do not span the field: add the ring's basis
+        E = E.stack(identity_matrix(QQ, d))
+        E1 = E.matrix_from_columns(range(1, d))
     m = next(i for i in range(1, E1.nrows() + 1) if E1.matrix_from_rows(range(i)).rank() == d - 1)
     m = min(E1.nrows(), m + d)
     P = E1.matrix_from_rows(range(m)).transpose().change_ring(ZZ)
