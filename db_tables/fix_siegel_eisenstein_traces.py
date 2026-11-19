@@ -12,7 +12,8 @@ stored T(p^2), so a_4 of E_4 is -10407 instead of 1565.  Their lambda_p and
 lambda_p_square are right; they have no smf_hecke_nf rows, and their spaces store no
 `traces` sums.
 
-Before writing anything it checks, for each row:
+Rows whose traces are already right are skipped.  Before writing anything it checks, for
+each other row:
   - dimension 1, j = 0;
   - trace_lambda_p and trace_lambda_p_square are those of E_k;
   - the stored traces are exactly what the old computation gives (so that nothing
@@ -85,6 +86,9 @@ def main(apply=False, datafile=None):
             "%s: lambda_p_square is not that of E_%d" % (r['label'], k)
         old = r['traces']
         n = len(old)
+        if [int(x) for x in old] == [int(spin(k, m)) for m in range(1, n + 1)]:
+            print("%s: already correct" % r['label'])
+            continue
         expect_old = [from_euler(k, lam, lam2, m, True) for m in range(1, n + 1)]
         assert all(a == b for a, b in zip(old, expect_old)), \
             "%s: the stored traces are not the old computation at n = %s" % (
