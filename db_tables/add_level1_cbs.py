@@ -45,7 +45,7 @@ import re
 import sys
 import time
 
-from sage.all import (Matrix, NumberField, PolynomialRing, PowerSeriesRing, QQ, ZZ, factor, lcm, pari,
+from sage.all import (Matrix, NumberField, PolynomialRing, PowerSeriesRing, QQ, ZZ, factor, is_prime, lcm, pari,
                       prime_range, vector)
 
 from lmfdb import db
@@ -221,7 +221,7 @@ def ring_data(F, gens):
         nbound = jj
     # a basis starting with 1, as the pages expect (1, beta_1, ..., beta_{d-1}), reduced as for
     # the classical forms
-    mat = reduced_basis(Matrix(QQ, H), [vector(QQ, list(x)) for _, x in gens])
+    mat = reduced_basis(Matrix(QQ, H), [vector(QQ, list(x)) for jj, x in gens if is_prime(jj)])     # lambda_p
     inv = mat**(-1)
     ring = {'hecke_ring_power_basis': False, 'hecke_ring_cyclotomic_generator': 0, 'hecke_ring_rank': d,
             'field_poly': [int(c) for c in F.defining_polynomial().list()],
