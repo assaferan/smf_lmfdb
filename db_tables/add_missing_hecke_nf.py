@@ -36,9 +36,9 @@ from sage.all import QQ, PolynomialRing, NumberField, prime_range
 from lmfdb import db
 from smf_lmfdb.db_tables.fix_sk_invalid_lifts import jsonable
 from smf_lmfdb.db_tables.add_level2_lifts import nulls
+from smf_lmfdb.db_tables.common_populate import MAX_RING_DEGREE
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa import SK_all_evs
 
-MAX_DEGREE = 20
 MAXP = 97
 HT = {'lambda_p': 'trace_lambda_p', 'lambda_p_square': 'trace_lambda_p_square',
       'lambda_p_square_0': 'trace_lambda_p_square_0', 'lambda_p_square_1': 'trace_lambda_p_square_1',
@@ -129,10 +129,10 @@ def main(apply=False, datafile=None):
     cols = [c for c in db.smf_hecke_nf.search_cols if c != 'id']
     have = set(db.smf_hecke_nf.distinct('hecke_orbit_code'))
     have_labels = set(db.smf_hecke_nf.distinct('label'))
-    forms = [f for f in db.smf_newforms.search({'dim': {'$lte': MAX_DEGREE}}, NF_COLS) if f['hecke_orbit_code'] not in have]
+    forms = [f for f in db.smf_newforms.search({'dim': {'$lte': MAX_RING_DEGREE}}, NF_COLS) if f['hecke_orbit_code'] not in have]
     ref = list(db.smf_hecke_nf.search({'family': 'K', 'level': {'$gt': 2}}, cols, limit=300))
     always = [c for c in cols if all(r.get(c) is not None for r in ref)]
-    print("%d orbits of dimension <= %d without an smf_hecke_nf row" % (len(forms), MAX_DEGREE))
+    print("%d orbits of dimension <= %d without an smf_hecke_nf row" % (len(forms), MAX_RING_DEGREE))
     rows, stats, problems = [], Counter(), []
     for f in forms:
         if (f['family'], f['aut_rep_type']) == ('K', 'P') and f['level'] > 1:
