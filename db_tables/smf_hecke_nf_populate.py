@@ -1,4 +1,4 @@
-from sage.all import (is_square, prime_divisors)
+from sage.all import (is_square, prime_divisors, nth_prime)
 from smf_lmfdb.db_tables.common_populate import make_space_label, table_reload, get_hecke, common_entry_values, base_26, MAX_P, MAX_P_SQUARE, write_data_from_files
 from smf_lmfdb.db_tables.smf_newforms_populate import make_orbit_code
 from smf_lmfdb.db_tables.sage_functions import Hecke_Eigenvalues_Siegel_Eisenstein, Hecke_Eigenvalues_Klingen_Eisenstein, Hecke_Eigenvalues_Saito_Kurokawa, Hecke_Eigenvalues_Yoshida, Get_All_Hecke_Eigenvalues_Up_To, Get_All_Dirichlet_Coeffs_Up_To
@@ -90,8 +90,10 @@ def create_entries(triple_list):
             entry['hecke_ring_cyclotomic_generator'] = 0
             entry['field_poly'] = [0,1]
             # entry['qexp'] = get_qexp_F20G()
-            entry['maxp'] = 19
-            entry['lambda_p'] = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
+            # lambda_p for the primes 2, ..., 29, as coordinate vectors in the basis 1
+            lambda_p = [-840960,346935960,-73262366720,-5232247240500,2617414076964400,-724277370534455340,1427823701421564744,-83773835478688698980,14156088476175218899620,146957560176221097673720]
+            entry['lambda_p'] = [[x] for x in lambda_p]
+            entry['maxp'] = nth_prime(len(lambda_p))
             entries.append(entry)
     return entries
 
