@@ -133,7 +133,17 @@ def write_data(table, entries, entry_postprocess, aux_fname, folder):
         space_label = make_space_label(e, False)
         space_num_forms[space_label] = space_num_forms.get(space_label,0) + 1
         if ('hecke_ring_numerators' in keys) and ('hecke_ring_numerators' not in e):
-            continue
+            # mf_hecke_nf leaves the numerators NULL for the power basis; skipping these
+            # entries left 1451 orbits without an smf_hecke_nf row (add_missing_hecke_nf).
+            # Give the basis explicitly, as the stored rows of family K do.
+            if e.get('hecke_ring_power_basis') or len(e.get('field_poly', [])) == 2:
+                d = len(e['field_poly']) - 1
+                ident = [[int(i == j) for j in range(d)] for i in range(d)]
+                e['hecke_ring_power_basis'] = False
+                e['hecke_ring_numerators'] = e['hecke_ring_inverse_numerators'] = ident
+                e['hecke_ring_denominators'] = e['hecke_ring_inverse_denominators'] = [1] * d
+            else:
+                raise ValueError("%s: an smf_hecke_nf entry without a Hecke ring basis" % space_label)
         e = entry_postprocess(e, {'id' : i,
                                   'num_forms' : space_num_forms[space_label]})
         e = fill_nulls(e, table)
