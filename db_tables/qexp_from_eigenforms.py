@@ -8,17 +8,22 @@ where a(n, r, m) is the coefficient at the index [[N n, r/2], [r/2, m]], i.e. at
 quadratic form m x^2 + r x y + N n y^2.  For each file this script
 
   1. computes T(p) for the good p in (2, 3, 5) on the expansion (the action of
-     Paramodular_Qexp/HeckeOperator), checks that the expansion is an eigenvector and reads off
-     lambda_p in Q(b);
+     Paramodular_Qexp/HeckeOperator), at every index where it is determined, checks that the
+     expansion is an eigenvector there and reads off lambda_p in Q(b).  Not every file is an
+     eigenform (some are a basis of an eigenspace of T(2), or a list of expansions spanning an
+     orbit): space_eigenforms takes the span of all the files of a space instead and
+     diagonalizes T(2), T(3), T(5) on it;
   2. finds the newform orbit of the db with the same dimension and an embedding of Q(b) into its
      Hecke field taking these lambda_p to the stored ones (exactly one orbit must match);
-  3. writes every coefficient in the integral basis of the Hecke ring H of that orbit, normalized
-     to unit content (the coefficients generate H; the convention of Poor-Yuen and
-     Poor-Shurman-Yuen): scaled by a rational number so that the coordinates are coprime
-     integers, and, if the ideal they generate is still proper, divided by a generator of it when
-     it is principal and the quotients stay in H.  The scaling is then unique up to a unit of H;
-     the first nonzero coordinate at the index of least discriminant is made positive.  The
-     index of the ideal the coefficients generate is reported (1: unit content);
+  3. writes every coefficient in the integral basis of the Hecke ring H of that orbit,
+     normalized: scaled by a rational number so that the coordinates are coprime integers, then
+     so that the coefficients generate c O', where O' = {x : x I in I} is the multiplier ring of
+     the H-module I they generate (an order containing H) and c the least positive integer with
+     c O' in H (normalize_order).  If O' = H, this is unit content (the coefficients generate H;
+     the convention of Poor-Yuen and Poor-Shurman-Yuen), which most orbits reach; in some O' is
+     larger than H at 2, and then unit content is impossible.  The scaling is unique up to a
+     unit of O'; the first nonzero coordinate at the index of least discriminant is made
+     positive.  [H : I], [O' : H] and c are reported;
   4. reduces the indices with fourier_tables.legendre_reduce to (qf_legendre, qf_tag, det), and
      checks that det^k a(T) is constant on each class (a(u^T T u) = det(u)^k a(T)).
 
@@ -34,7 +39,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-from sage.all import (QQ, ZZ, PolynomialRing, NumberField, LaurentPolynomialRing, Matrix, vector,
+from sage.all import (QQ, ZZ, prod, PolynomialRing, NumberField, LaurentPolynomialRing, Matrix, vector,
                       sage_eval, lcm, gcd, prime_range, MatrixSpace, BinaryQF, pari)
 from lmfdb import db
 
@@ -43,31 +48,39 @@ from fourier_tables import P1N_lex_minimize, legendre_reduce  # noqa: E402
 
 CHECK_TAGS = os.environ.get('CHECK_TAGS') == '1'
 
-INT_MAX = 2**31 - 1
+INT_MAX = 2**63 - 1      # smf_qexp_coeffs.coeff is bigint[]
 
 
 # ---------------------------------------------------------------- the eigenform files
 
 def parse(fname):
-    N, k = map(int, re.search(r'level_(\d+)_weight_(\d+)_label_\d+\.txt$', fname).groups())
+    N, k = map(int, re.search(r'level_(\d+)_weight_(\d+)_label_\d+(?:_wrong_label)?\.txt$', fname).groups())
     lines = open(fname).read().split("\n")
     head = lines[0].strip()
     if head == "Hecke field: QQ":
         K = QQ
     else:
         K = NumberField(PolynomialRing(QQ, 'x')(head.replace("Hecke field: b = root of ", "")), 'b')
-    ser = max(lines, key=len)
-    m = re.search(r'\s*\+\s*O\(q, s\)\^(\d+)\s*$', ser)
-    assert m, "no precision in %s" % fname
-    prec = int(m.group(1))
+    ser = max(lines, key=len).strip()
+    # one expansion "f + O(q, s)^prec", or a list "[f1 + O(q, s)^prec, f2 + ...]" of expansions
+    # spanning the orbit (with rational coefficients; the eigenform is a combination of them)
+    if ser.startswith('[') and ser.endswith(']'):
+        ser = ser[1:-1]
+    parts = re.split(r'\s*\+\s*O\(q, s\)\^(\d+)\s*(?:,\s*|$)', ser)
+    assert len(parts) >= 3 and parts[-1] == '', "no precision in %s" % fname
+    precs = {int(x) for x in parts[1::2]}
+    assert len(precs) == 1, "several precisions in %s" % fname
+    prec = precs.pop()
     R = LaurentPolynomialRing(K, 'q,r,s')
     loc = dict(zip(['q', 'r', 's'], R.gens()))
     if K is not QQ:
         loc['b'] = K.gen()
-    f = sage_eval(ser[:m.start()], locals=loc)
-    # (A, B, C) = (N n, r, m): the index [[A, B/2], [B/2, C]]
-    d = {(N * int(e[0]), int(e[1]), int(e[2])): K(c) for e, c in f.dict().items()}
-    return N, k, K, d, prec
+    ds = []
+    for src in parts[0::2][:-1]:
+        f = sage_eval(src, locals=loc)
+        # (A, B, C) = (N n, r, m): the index [[A, B/2], [B/2, C]]
+        ds.append({(N * int(e[0]), int(e[1]), int(e[2])): K(c) for e, c in f.dict().items()})
+    return N, k, K, ds, prec
 
 
 # ---------------------------------------------------------------- T(p) (Paramodular_Qexp, fast_hecke.py)
@@ -89,11 +102,22 @@ def _images(m, p, N):
     return out
 
 
+def box(N, prec):
+    """The indices (N n, r, m) of the expansion: n, m >= 1, n + m < prec, 4 N n m > r^2."""
+    out = []
+    for n in range(1, prec):
+        for mm in range(1, prec - n):
+            R = int((4 * N * n * mm) ** 0.5) + 1
+            out += [(N * n, r, mm) for r in range(-R, R + 1) if 4 * N * n * mm - r * r > 0]
+    return out
+
+
 def hecke(p, d, N, k, prec):
-    """{index: (T(p) f)(index)} for the indices where it is determined by the known coefficients."""
+    """{index: (T(p) f)(index)} at every index of the box where it is determined by the known
+    coefficients (those of the box; d holds the nonzero ones)."""
     fac = {'one': 1, 'p2k3': p**(2 * k - 3), 'pk2': p**(k - 2)}
     out = {}
-    for m in d:
+    for m in box(N, prec):
         A, B, C = m
         val, ok = 0, True
         for img, f in _images(m, p, N):
@@ -109,10 +133,119 @@ def hecke(p, d, N, k, prec):
 
 
 def eigenvalue(p, d, N, k, prec):
+    """lambda with T(p) f = lambda f at every index where T(p) f is determined, and the number of
+    those indices; None if f vanishes at all of them (and so does T(p) f: no information)."""
     Tp = hecke(p, d, N, k, prec)
-    lams = {Tp[m] / d[m] for m in Tp if d[m] != 0}
-    assert len(lams) == 1, "T(%d): not an eigenvector (%d ratios)" % (p, len(lams))
-    return lams.pop(), len(Tp)
+    nz = [m for m in Tp if d.get(m, 0) != 0]
+    if not nz:
+        assert all(v == 0 for v in Tp.values()), "T(%d): not an eigenvector (f = 0 where T(%d) f is known, T(%d) f != 0)" % (p, p, p)
+        return None, len(Tp)
+    lam = Tp[nz[0]] / d[nz[0]]
+    bad = sum(1 for m in Tp if Tp[m] != lam * d.get(m, 0))
+    assert not bad, "T(%d): not an eigenvector (%d of %d indices)" % (p, bad, len(Tp))
+    return lam, len(Tp)
+
+
+def eigen_from_span(ds, K, N, k, prec):
+    """The eigenform in the span of the expansions ds (with coefficients in a subfield of K):
+    T(p) on the span, for the first good p in (2, 3, 5) at which it has an eigenvalue in K of
+    multiplicity one, then the eigenvector, with coordinates in K."""
+    n = len(ds)
+    for p in (2, 3, 5):
+        if N % p == 0:
+            continue
+        Ts = [hecke(p, d, N, k, prec) for d in ds]
+        S = sorted(Ts[0])
+        A = Matrix(K, [[d.get(m, 0) for m in S] for d in ds])          # rows: the f_i on S
+        if A.rank() < n:
+            continue
+        B = Matrix(K, [[T[m] for m in S] for T in Ts])                   # rows: the T(p) f_i on S
+        M = A.solve_left(B)                                              # T(p) f_i = sum_j M_ij f_j
+        assert M * A == B, "T(%d) does not preserve the span" % p
+        cp = M.charpoly()
+        for th, e in cp.roots(K):
+            if e == 1:
+                v = (M - th).left_kernel().basis()[0]
+                return {m: c for m in set().union(*ds) for c in [sum(v[i] * ds[i].get(m, 0) for i in range(n))] if c != 0}
+    raise AssertionError("no good p in (2, 3, 5) separates an eigenform in the span of %d expansions" % n)
+
+
+def space_eigenforms(fnames):
+    """The eigenforms of the space spanned by all the files of one level and weight, without
+    trusting the files to be eigenforms: the rational span V of their expansions (each expansion
+    over Q(b) gives its d coordinates in the power basis), the matrix of T(p) on V for the good p
+    in (2, 3, 5) (with the rank of V on the indices where T(p) is determined: if it is dim V,
+    T(p) f is determined by f in V, and V is checked to be T(p)-stable there), then a combination
+    T of these with as many irreducible factors of multiplicity one in its characteristic
+    polynomial as possible; each such factor gives an eigenform, the T-eigenvector with
+    coordinates in the field of the factor.  Returns (diagnostics, [(K, d)])."""
+    N = k = prec = None
+    exps = []
+    for fn in fnames:
+        N, k, K, ds, prec1 = parse(fn)
+        assert prec is None or prec1 == prec, "files of different precisions"
+        prec = prec1
+        for d in ds:
+            if K is QQ:
+                exps.append({m: QQ(c) for m, c in d.items()})
+            else:
+                for i in range(K.degree()):
+                    e = {m: list(c)[i] for m, c in d.items() if list(c)[i] != 0}
+                    if e:
+                        exps.append(e)
+    S0 = box(N, prec)
+    A0 = Matrix(QQ, [[e.get(m, 0) for m in S0] for e in exps])
+    basis = [exps[i] for i in A0.pivot_rows()]
+    n = len(basis)
+    diag = {'level': N, 'weight': k, 'prec': prec, 'files': len(fnames), 'expansions': len(exps), 'dim_span': n, 'rank': {}, 'stable': {}}
+    Ms = {}
+    for p in (2, 3, 5):
+        if N % p == 0:
+            continue
+        Ts = [hecke(p, e, N, k, prec) for e in basis]
+        S = sorted(Ts[0])
+        A = Matrix(QQ, [[e.get(m, 0) for m in S] for e in basis])
+        diag['rank'][p] = (int(A.rank()), len(S))
+        if A.rank() < n:
+            continue
+        B = Matrix(QQ, [[T[m] for m in S] for T in Ts])
+        M = A.solve_left(B)
+        diag['stable'][p] = bool(M * A == B)
+        if diag['stable'][p]:
+            Ms[p] = M
+    assert Ms, "T(p) is determined on the span for no good p in (2, 3, 5)"
+    ps = sorted(Ms)
+    best = None
+    for cs in [(1,), (1, 1), (1, 2), (1, -1), (1, 3), (1, 1, 1), (1, 2, 3), (1, -2, 5)]:
+        if len(cs) > len(ps):
+            continue
+        T = sum(c * Ms[p] for c, p in zip(cs, ps))
+        fac = T.charpoly().factor()
+        simple = sum(g.degree() for g, e in fac if e == 1)
+        if best is None or simple > best[0]:
+            best = (simple, cs, T, fac)
+        if simple == n:
+            break
+    simple, cs, T, fac = best
+    diag['combination'] = dict(zip(map(str, ps), cs))
+    diag['charpoly_factors'] = sorted([int(g.degree()), int(e)] for g, e in fac)
+    diag['charpoly_T2_squarefree'] = bool(2 in Ms and Ms[2].charpoly().is_squarefree())
+    out = []
+    for g, e in fac:
+        if e != 1:
+            continue
+        Kg = QQ if g.degree() == 1 else NumberField(g, 'b')
+        th = -g[0] / g[1] if g.degree() == 1 else Kg.gen()
+        v = (T.change_ring(Kg) - th).left_kernel().basis()
+        assert len(v) == 1
+        v = v[0]
+        f = {}
+        for i, e2 in enumerate(basis):
+            if v[i] != 0:
+                for m, c in e2.items():
+                    f[m] = f.get(m, 0) + v[i] * c
+        out.append((Kg, {m: c for m, c in f.items() if c != 0}))
+    return diag, out
 
 
 # ---------------------------------------------------------------- the db orbit and the embedding
@@ -217,6 +350,112 @@ def zspan(vs):
     return [r / den for r in (M * den).change_ring(ZZ).echelon_form().rows() if r]
 
 
+def multiplier_ring(I, Bi):
+    """A Z-basis of {x in K : x I in I}, for I given by a Z-basis (elements of K); Bi maps power-basis
+    coordinates to H-coordinates."""
+    K = I[0].parent()
+    d = K.degree()
+    co = lambda y: vector(QQ, list(y)) * Bi
+    MIi = Matrix(QQ, [co(y) for y in I]).inverse()
+    W = [K.gen()**j for j in range(d)]
+    A = Matrix(QQ, [sum([list(co(w * y) * MIi) for y in I], []) for w in W])   # x = t.W: x I in I iff t A integral
+    den = lcm([c.denominator() for c in A.list()] + [1])
+    Lam = (A * den).change_ring(ZZ).saturation()        # Z^n meet the row space of A
+    return [sum(c * w for c, w in zip(A.solve_left(vector(QQ, l)), W)) for l in Lam.rows()]
+
+
+def power_basis_rows(O):
+    """[numerators, denominators] of a Z-basis (elements of K), in the power basis, in the format of
+    hecke_ring_numerators / hecke_ring_denominators (the basis is put in Hermite form first)."""
+    rows = zspan([vector(QQ, list(y)) for y in O])
+    dens = [int(lcm([x.denominator() for x in r] + [1])) for r in rows]
+    return [[[int(x * den) for x in r] for r, den in zip(rows, dens)], dens]
+
+
+def unit_search(I, O, beta, hco, HI, limit=2**20):
+    """A unit u of O_K with I = beta u O', given I O_K = beta O_K, or None.  With L = beta^{-1} I
+    (covolume that of O'), I = beta u O' iff u lies in L, and L must contain m O_K, m the exponent of
+    O_K / O'; so only u mod m O_K matters, and the image of the unit group in (O_K / m)^* is walked
+    breadth first (units of K under GRH; a u found is checked exactly, so only None depends on GRH)."""
+    K = beta.parent()
+    OK = K.maximal_order()
+    ob = [K(x) for x in OK.basis()]
+    Mob = Matrix(QQ, [list(x) for x in ob]); Mobi = Mob.inverse()
+    okco = lambda y: vector(QQ, list(y)) * Mobi
+    m = lcm([x.denominator() for y in ob for x in okco_rel(y, O)] + [1])
+    L = [y / beta for y in I]
+    ML = Matrix(QQ, [okco(y) for y in L])
+    if any(x.denominator() != 1 for y in ob for x in (okco(m * y) * ML.inverse())):
+        return None                       # L does not contain m O_K: I is not beta u O' for any unit u
+    MLi = ML.inverse()
+    inL = lambda r: all(x.denominator() == 1 for x in vector(QQ, r) * MLi)    # r: O_K-coordinates
+    U = K.unit_group(proof=False)
+    gens = [K(g) for g in U.gens_values()]
+    key = lambda y: tuple(int(x) % m for x in okco(y))
+    red = lambda y: sum(QQ(int(x) % m) * b for x, b in zip(okco(y), ob))
+    start = K(1)
+    seen = {key(start): []}
+    todo = [(start, [])]
+    while todo and len(seen) < limit:
+        r, ex = todo.pop(0)
+        if inL(okco(r)):
+            u = prod([g**e for g, e in zip(gens, ex + [0] * (len(gens) - len(ex)))], K(1)) if ex else K(1)
+            if zspan([hco(beta * u * y) for y in O]) == HI:
+                return u
+        for i, g in enumerate(gens):
+            r2 = red(r * g)
+            k2 = key(r2)
+            if k2 not in seen:
+                ex2 = (ex + [0] * len(gens))[:len(gens)]
+                ex2[i] += 1
+                seen[k2] = ex2
+                todo.append((r2, ex2))
+    return None
+
+
+def okco_rel(y, O):
+    """Coordinates of y in the Z-basis O (to find m with m O_K in O')."""
+    return vector(QQ, list(y)) * Matrix(QQ, [list(z) for z in O]).inverse()
+
+
+def normalize_order(co, Kd, B, Bi):
+    """Scale the coefficients (H-coordinates co, already coprime integers) so that they generate
+    c O', where O' = {x : x I in I} is the multiplier ring of the Z-module I they generate (an
+    order containing H) and c is the least positive integer with c O' in H: then I = alpha O' for
+    some alpha (searched among short elements of I and the generator of I O_K), unique up to a unit
+    of O', and the coefficients become c a(T) / alpha.  If O' = H this is unit content.  Returns the
+    new coordinates (the old ones if no alpha is found) and what was done."""
+    elt = lambda v: Kd(list(vector(QQ, v) * B))
+    hco = lambda y: vector(QQ, list(y)) * Bi
+    S = zspan(list(co.values()))
+    I = [elt(v) for v in zspan([hco(elt(v) * elt(w)) for v in S for w in Matrix.identity(QQ, B.nrows()).rows()])]   # the H-module
+    O = multiplier_ring(I, Bi)
+    MO = Matrix(QQ, [hco(y) for y in O])
+    mult = abs(1 / MO.det())                                     # [O' : H]
+    c = lcm([x.denominator() for x in MO.list()] + [1])
+    covol = abs(Matrix(QQ, [hco(y) for y in I]).det() / MO.det())  # |N(alpha)| if I = alpha O'
+    HI = zspan([hco(y) for y in I])
+    cands = list(I)
+    LL = Matrix(QQ, [hco(y) for y in I])
+    den = lcm([x.denominator() for x in LL.list()] + [1])
+    short = [elt(r / den) for r in (LL * den).change_ring(ZZ).LLL().rows()]
+    cands += short + [x + s_ * y for i, x in enumerate(short) for y in short[i + 1:] for s_ in (1, -1)]
+    gen = ideal_generator(Kd.ideal(I), I)
+    if gen is not None:
+        cands.append(gen)
+    if gen is not None:
+        u = unit_search(I, O, gen, hco, HI)
+        if u is not None:
+            cands.append(gen * u)
+    for al in cands:
+        if al == 0 or abs(al.norm()) != covol:
+            continue
+        if zspan([hco(al * y) for y in O]) == HI:
+            new = {m: [ZZ(x) for x in hco(c * elt(v) / al)] for m, v in co.items()}
+            return new, {'multiplier_index': mult, 'c': c, 'generator_found': True, 'order': power_basis_rows(O)}
+    return co, {'multiplier_index': mult, 'c': c, 'generator_found': False, 'order': power_basis_rows(O)}
+
+
 def content_index(vecs, Kd, B):
     """[H : I] for the ideal I of the Hecke ring H generated by the coefficients (coordinates vecs)."""
     if Kd is QQ:
@@ -230,12 +469,39 @@ def content_index(vecs, Kd, B):
     return abs(Matrix(QQ, I).det())
 
 
+def ideal_generator(J, els):
+    """A generator of the ideal J of O_K, or None if none is found.  First an element of norm N(J)
+    among the given generators of J and their sums and differences of two; then PARI's class group
+    under GRH (Sage's default certifies it, which takes hours in degree 10-15).  A generator found
+    either way is checked to generate J, so only a None depends on GRH."""
+    nJ = J.norm()
+    cands = list(els) + [x + s * y for i, x in enumerate(els) for y in els[i + 1:] for s in (1, -1)]
+    for x in cands:
+        if x != 0 and abs(x.norm()) == nJ and J.number_field().ideal(x) == J:
+            return x
+    if not J.is_principal(proof=False):
+        return None
+    al = J.gens_reduced(proof=False)[0]
+    assert J.number_field().ideal(al) == J
+    return al
+
+
 def process_file(fname, stats):
-    N, k, K, d, prec = parse(fname)
+    N, k, K, ds, prec = parse(fname)
+    d = ds[0] if len(ds) == 1 else eigen_from_span(ds, K, N, k, prec)
+    return normalize(N, k, K, d, prec, os.path.basename(fname))
+
+
+def normalize(N, k, K, d, prec, name):
+    """Check that the expansion d (coefficients in K) is an eigenvector, match it to a db orbit,
+    and write it in that orbit's Hecke ring basis, normalized; see the module docstring."""
     lam, nchk = {}, {}
     for p in (2, 3, 5):
         if N % p:
-            lam[p], nchk[p] = eigenvalue(p, d, N, k, prec)
+            x, nchk[p] = eigenvalue(p, d, N, k, prec)
+            if x is not None:
+                lam[p] = x
+    assert lam, "no good p in (2, 3, 5) gives an eigenvalue"
     f, h, Kd, B, s = match_orbit(N, k, K, lam)
     Bi = B.inverse()
     raw = {m: coordinates(c, Kd, B, Bi, s) for m, c in d.items() if c != 0}
@@ -247,23 +513,15 @@ def process_file(fname, stats):
     if next(x for x in co[first] if x) < 0:
         co = {m: [-x for x in v] for m, v in co.items()}
     idx = content_index(list(co.values()), Kd, B)
-    divided = False
+    order = {'multiplier_index': 1, 'c': 1, 'generator_found': True, 'order': None}   # None: O' = H
     if idx != 1:
-        # the content ideal: if its O_K-ideal is principal and the quotients stay in H, divide
-        # by a generator (unique up to a unit)
-        els = [Kd(list(vector(QQ, v) * B)) for v in zspan(list(co.values()))]
-        J = Kd.ideal(els)
-        if J.is_principal():
-            al = J.gens_reduced()[0]
-            new = {m: list(vector(QQ, list(Kd(list(vector(QQ, v) * B)) / al)) * Bi) for m, v in co.items()}
-            if all(x.denominator() == 1 for v in new.values() for x in v):
-                co = {m: [ZZ(x) for x in v] for m, v in new.items()}
-                if next(x for x in co[first] if x) < 0:
-                    co = {m: [-x for x in v] for m, v in co.items()}
-                idx, divided = content_index(list(co.values()), Kd, B), True
-    info = {'file': os.path.basename(fname), 'label': f['label'], 'level': N, 'weight': k, 'dim': B.nrows(),
+        co, order = normalize_order(co, Kd, B, Bi)
+        if next(x for x in co[first] if x) < 0:
+            co = {m: [-x for x in v] for m, v in co.items()}
+        idx = content_index(list(co.values()), Kd, B)
+    info = {'file': name, 'label': f['label'], 'level': N, 'weight': k, 'dim': B.nrows(),
             'prec': prec, 'nonzero': len(co), 'lambda_checked_at': {str(p): n for p, n in nchk.items()},
-            'content_index': int(idx), 'divided_by_generator': divided, 'max_abs': int(max(abs(x) for v in co.values() for x in v))}
+            'content_index': int(idx), 'multiplier_index': int(order['multiplier_index']), 'c': int(order['c']), 'generator_found': order['generator_found'], 'order': order['order'], 'max_abs': int(max(abs(x) for v in co.values() for x in v))}
     return N, k, f, co, prec, info
 
 
