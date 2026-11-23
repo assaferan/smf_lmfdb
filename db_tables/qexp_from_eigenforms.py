@@ -35,6 +35,8 @@ orbit the coefficient at the representative (smf_qexp_coeffs).  Nothing is writt
 """
 import json
 import os
+
+import numpy
 import re
 import sys
 from collections import Counter, defaultdict
@@ -350,26 +352,127 @@ def zspan(vs):
     return [r / den for r in (M * den).change_ring(ZZ).echelon_form().rows() if r]
 
 
-def multiplier_ring(I, Bi):
-    """A Z-basis of {x in K : x I in I}, for I given by a Z-basis (elements of K); Bi maps power-basis
-    coordinates to H-coordinates."""
+def colon(I, J):
+    """A Z-basis of (J : I) = {x in K : x I in J}, for lattices I, J of full rank given by Z-bases
+    (elements of K)."""
     K = I[0].parent()
     d = K.degree()
-    co = lambda y: vector(QQ, list(y)) * Bi
-    MIi = Matrix(QQ, [co(y) for y in I]).inverse()
+    MJi = Matrix(QQ, [list(y) for y in J]).inverse()
     W = [K.gen()**j for j in range(d)]
-    A = Matrix(QQ, [sum([list(co(w * y) * MIi) for y in I], []) for w in W])   # x = t.W: x I in I iff t A integral
+    A = Matrix(QQ, [sum([list(vector(QQ, list(w * y)) * MJi) for y in I], []) for w in W])   # x = t.W: x I in J iff t A integral
     den = lcm([c.denominator() for c in A.list()] + [1])
     Lam = (A * den).change_ring(ZZ).saturation()        # Z^n meet the row space of A
     return [sum(c * w for c, w in zip(A.solve_left(vector(QQ, l)), W)) for l in Lam.rows()]
 
 
-def power_basis_rows(O):
-    """[numerators, denominators] of a Z-basis (elements of K), in the power basis, in the format of
-    hecke_ring_numerators / hecke_ring_denominators (the basis is put in Hermite form first)."""
-    rows = zspan([vector(QQ, list(y)) for y in O])
-    dens = [int(lcm([x.denominator() for x in r] + [1])) for r in rows]
-    return [[[int(x * den) for x in r] for r, den in zip(rows, dens)], dens]
+def multiplier_ring(I, Bi=None):
+    """A Z-basis of {x in K : x I in I}, for I given by a Z-basis (elements of K)."""
+    return colon(I, I)
+
+
+def order_basis(O, B):
+    """The Z-basis of the order O (elements of K) that the coefficients are written in: 1 first, then
+    the Hermite basis of O in the coordinates of the basis B of the Hecke ring H (rows: power-basis
+    coordinates), taken from the last coordinate down, so that it is determined by O.  Since O
+    contains H with small index, these are close to the basis of H, and coordinates stay small."""
+    K = O[0].parent()
+    d = K.degree()
+    Bi = B.inverse()
+    M = Matrix(QQ, [vector(QQ, list(y)) * Bi for y in O])
+    den = lcm([x.denominator() for x in M.list()] + [1])
+    E = (M * den).change_ring(ZZ).matrix_from_columns(list(range(d - 1, -1, -1))).echelon_form()
+    rows = [K(list(vector(QQ, list(reversed(list(r)))) * B)) / den for r in E.rows()][::-1]
+    assert rows[0] == 1, "1 is not the last Hermite vector: %s" % rows[0]
+    return rows
+
+
+def coords_in(basis):
+    """y -> its coordinates in the Z-basis basis (elements of K)."""
+    Mi = Matrix(QQ, [list(y) for y in basis]).inverse()
+    return lambda y: vector(QQ, list(y)) * Mi
+
+
+def least_norm_ideals(I, O, limit=2**20):
+    """The integral ideals J = beta I (beta in K^*) of the order O of least index [O : J], with a beta
+    for each: [(index, J as Z-basis, beta), ...] (one per J), or [] if none is found.  beta I lies in O
+    iff beta lies in L = (O : I), and then a = beta I O_K is an integral ideal of O_K, in the class of
+    I O_K, with [O : J] = N(a) [O : I] / N(I O_K).  So the ideals a of O_K of norm 1, 2, ... are run
+    through; for each with a (I O_K)^{-1} = beta_0 O_K principal (PARI under GRH), the beta are beta_0 u,
+    u a unit of O_K, with beta_0 u in L.  That depends on u modulo e O_K, e the least integer with
+    e beta_0 O_K in L, and J on u modulo m O_K, m the least integer with m O_K in O (then u = u' mod m
+    gives u/u' in O^*); the image of the units in (O_K / E)^*, E = lcm(e, m), is walked breadth first.
+    Only the completeness of the list depends on GRH: each J found is checked exactly."""
+    K = I[0].parent()
+    d = K.degree()
+    OK = K.maximal_order()
+    ob = [K(x) for x in OK.basis()]
+    okco = coords_in(ob)
+    oco = coords_in(O)
+    L = colon(I, O)
+    lco = coords_in(L)
+    inL = lambda y: all(x.denominator() == 1 for x in lco(y))
+    IOK = K.ideal(I)
+    idxI = abs(Matrix(QQ, [oco(y) for y in I]).det())            # [O : I] (I need not lie in O)
+    m = lcm([x.denominator() for y in ob for x in oco(y)] + [1])
+    U = K.unit_group(proof=False)
+    gens = [K(g) for g in U.gens_values()]
+    walks = {}
+
+    def walk(E):
+        """The image of the units in (O_K / E)^*: an integer array of residues (O_K-coordinates)
+        and the exponents of a unit in each, breadth first."""
+        if E not in walks:
+            gm = [Matrix(ZZ, [okco(g * b) for b in ob]) for g in gens]     # multiplication by g on O_K-coordinates
+            start = tuple(int(x) % E for x in okco(K(1)))
+            seen = {start: (0,) * len(gens)}
+            todo = [start]
+            while todo:
+                assert len(seen) < limit, "too many unit residues mod %d" % E
+                r = todo.pop(0)
+                v = vector(ZZ, r)
+                for i, G in enumerate(gm):
+                    r2 = tuple(int(x) % E for x in v * G)
+                    if r2 not in seen:
+                        ex = seen[r]
+                        seen[r2] = ex[:i] + (ex[i] + 1,) + ex[i + 1:]
+                        todo.append(r2)
+            keys = list(seen)
+            walks[E] = (numpy.array(keys, dtype=object), [seen[k] for k in keys])
+        return walks[E]
+
+    for n in range(1, 10**6):
+        found = {}
+        for a in K.ideals_of_bdd_norm(n)[n]:
+            Q = a / IOK
+            if not Q.is_principal(proof=False):
+                continue
+            b0 = Q.gens_reduced(proof=False)[0]
+            assert K.ideal(b0) == Q
+            e = 1
+            while not all(inL(e * b0 * y) for y in ob):
+                e += 1
+            E = lcm(e, m)
+            R, EX = walk(E)
+            # b0 r in L, for r with O_K-coordinates x: x . C integral, C the matrix of y -> b0 y from
+            # O_K-coordinates to L-coordinates; as integers: x . (D C) = 0 mod D
+            C = Matrix(QQ, [lco(b0 * b) for b in ob])
+            D = lcm([c.denominator() for c in C.list()] + [1])
+            Ci = numpy.array([[int(c) for c in row] for row in (C * D).change_ring(ZZ).rows()], dtype=object)
+            ok = numpy.all((R.dot(Ci)) % int(D) == 0, axis=1)
+            for j in numpy.nonzero(ok)[0]:
+                u = prod([g**x for g, x in zip(gens, EX[j])], K(1))
+                assert inL(b0 * u)
+                J = zspan([oco(b0 * u * y) for y in I])      # in O-coordinates
+                assert all(x.denominator() == 1 for v in J for x in v)
+                found.setdefault(tuple(tuple(v) for v in J), b0 * u)
+        if found:
+            idx = n * idxI / IOK.norm()
+            out = []
+            for J, beta in sorted(found.items()):
+                assert abs(Matrix(QQ, J).det()) == idx
+                out.append((idx, [vector(QQ, v) for v in J], beta))
+            return out
+    return []
 
 
 def unit_search(I, O, beta, hco, HI, limit=2**20):
@@ -418,23 +521,43 @@ def okco_rel(y, O):
     return vector(QQ, list(y)) * Matrix(QQ, [list(z) for z in O]).inverse()
 
 
+def basis_rows(O):
+    """[numerators, denominators] of the Z-basis O (elements of K), in the power basis, in the format
+    of hecke_ring_numerators / hecke_ring_denominators."""
+    nums, dens = [], []
+    for y in O:
+        den = lcm([x.denominator() for x in list(y)] + [1])
+        nums.append([int(x * den) for x in list(y)])
+        dens.append(int(den))
+    return [nums, dens]
+
+
 def normalize_order(co, Kd, B, Bi):
-    """Scale the coefficients (H-coordinates co, already coprime integers) so that they generate
-    c O', where O' = {x : x I in I} is the multiplier ring of the Z-module I they generate (an
-    order containing H) and c is the least positive integer with c O' in H: then I = alpha O' for
-    some alpha (searched among short elements of I and the generator of I O_K), unique up to a unit
-    of O', and the coefficients become c a(T) / alpha.  If O' = H this is unit content.  Returns the
-    new coordinates (the old ones if no alpha is found) and what was done."""
+    """The coefficients (H-coordinates co, coprime integers) generate a Z-module I, which is a module
+    over H and over its multiplier ring O' = {x : x I in I}, an order containing H.  Write them in a
+    basis of O' (that of H if O' = H, order_basis otherwise) and scale them:
+    * if I = alpha O' (alpha searched among short elements of I, the generator of I O_K and its unit
+      multiples), to a(T) / alpha, which generate O' (unit content in O'), unique up to a unit of O';
+    * otherwise to beta a(T), which generate the integral ideal J = beta I of O' of least index in its
+      class (least_norm_ideals; the least in Hermite form if there are several), unique up to a unit
+      of O'.
+    Returns the new coordinates and what was done."""
     elt = lambda v: Kd(list(vector(QQ, v) * B))
     hco = lambda y: vector(QQ, list(y)) * Bi
     S = zspan(list(co.values()))
     I = [elt(v) for v in zspan([hco(elt(v) * elt(w)) for v in S for w in Matrix.identity(QQ, B.nrows()).rows()])]   # the H-module
-    O = multiplier_ring(I, Bi)
-    MO = Matrix(QQ, [hco(y) for y in O])
-    mult = abs(1 / MO.det())                                     # [O' : H]
-    c = lcm([x.denominator() for x in MO.list()] + [1])
-    covol = abs(Matrix(QQ, [hco(y) for y in I]).det() / MO.det())  # |N(alpha)| if I = alpha O'
-    HI = zspan([hco(y) for y in I])
+    O = multiplier_ring(I)
+    mult = abs(1 / Matrix(QQ, [hco(y) for y in O]).det())       # [O' : H]
+    if mult == 1:
+        O = [elt(r) for r in Matrix.identity(QQ, B.nrows()).rows()]
+        oco = hco
+        order = None
+    else:
+        O = order_basis(O, B)
+        oco = coords_in(O)
+        order = basis_rows(O)
+    covol = abs(Matrix(QQ, [oco(y) for y in I]).det())          # [O' : I] = |N(alpha)| if I = alpha O'
+    OI = zspan([oco(y) for y in I])
     cands = list(I)
     LL = Matrix(QQ, [hco(y) for y in I])
     den = lcm([x.denominator() for x in LL.list()] + [1])
@@ -443,17 +566,24 @@ def normalize_order(co, Kd, B, Bi):
     gen = ideal_generator(Kd.ideal(I), I)
     if gen is not None:
         cands.append(gen)
-    if gen is not None:
-        u = unit_search(I, O, gen, hco, HI)
+        u = unit_search(I, O, gen, oco, OI)
         if u is not None:
             cands.append(gen * u)
+    info = {'multiplier_index': int(mult), 'order': order}
     for al in cands:
         if al == 0 or abs(al.norm()) != covol:
             continue
-        if zspan([hco(al * y) for y in O]) == HI:
-            new = {m: [ZZ(x) for x in hco(c * elt(v) / al)] for m, v in co.items()}
-            return new, {'multiplier_index': mult, 'c': c, 'generator_found': True, 'order': power_basis_rows(O)}
-    return co, {'multiplier_index': mult, 'c': c, 'generator_found': False, 'order': power_basis_rows(O)}
+        if zspan([oco(al * y) for y in O]) == OI:
+            new = {m: [ZZ(x) for x in oco(elt(v) / al)] for m, v in co.items()}
+            info.update({'generator_found': True, 'ideal_index': 1, 'ideal': None, 'least_ideals': 1})
+            return new, info
+    res = least_norm_ideals(I, O)
+    assert res, "no integral ideal found in the class of I"
+    idx, J, beta = res[0]
+    new = {m: [ZZ(x) for x in oco(beta * elt(v))] for m, v in co.items()}
+    assert zspan(list(new.values()) + [list(oco(y * z)) for y in O for z in [beta * elt(v) for v in S]]) == J
+    info.update({'generator_found': False, 'ideal_index': int(idx), 'ideal': [[int(x) for x in v] for v in J], 'least_ideals': len(res)})
+    return new, info
 
 
 def content_index(vecs, Kd, B):
@@ -513,15 +643,15 @@ def normalize(N, k, K, d, prec, name):
     if next(x for x in co[first] if x) < 0:
         co = {m: [-x for x in v] for m, v in co.items()}
     idx = content_index(list(co.values()), Kd, B)
-    order = {'multiplier_index': 1, 'c': 1, 'generator_found': True, 'order': None}   # None: O' = H
+    order = {'multiplier_index': 1, 'order': None, 'generator_found': True, 'ideal_index': 1, 'ideal': None, 'least_ideals': 1}
     if idx != 1:
-        co, order = normalize_order(co, Kd, B, Bi)
+        co, order = normalize_order(co, Kd, B, Bi)       # now in O'-coordinates
         if next(x for x in co[first] if x) < 0:
             co = {m: [-x for x in v] for m, v in co.items()}
-        idx = content_index(list(co.values()), Kd, B)
     info = {'file': name, 'label': f['label'], 'level': N, 'weight': k, 'dim': B.nrows(),
             'prec': prec, 'nonzero': len(co), 'lambda_checked_at': {str(p): n for p, n in nchk.items()},
-            'content_index': int(idx), 'multiplier_index': int(order['multiplier_index']), 'c': int(order['c']), 'generator_found': order['generator_found'], 'order': order['order'], 'max_abs': int(max(abs(x) for v in co.values() for x in v))}
+            'content_index': int(idx), 'max_abs': int(max(abs(x) for v in co.values() for x in v))}
+    info.update(order)
     return N, k, f, co, prec, info
 
 
