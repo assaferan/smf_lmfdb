@@ -4,9 +4,12 @@ quinary orthogonal modular forms (family K, aut_rep_type G).
 
 These were loaded from omf5_data, whose atkin_lehner_eigenvals encoded the
 spinor-character conductor d rather than the paramodular Atkin-Lehner signs.
-The stored atkin_lehner_string is correct for weight (3,0); for the single
-forms of weight (3,2), level 19 and weight (4,0), level 31 the string was wrong
-too (d = 1 at a prime level p_0 gives sign -1, see DPRT Theorem 10.1).
+The stored atkin_lehner_string is correct for weight (3,0). For the single
+form of weight (3,2), level 19 the string was wrong too: its spinor conductor
+is d = 1, and d = 1 at a prime level gives sign -1 (DPRT Theorem 10.1).
+The form of weight (4,0), level 31 has d = 31, so its sign is +1: its
+L-function has root number (-1)^4 eps_31 = +1 (PARI lfuncheckfeq on 199
+coefficients, error 2^-57; root number -1 fails).
 
 smf_newforms: atkin_lehner_string, atkin_lehner_eigenvals and fricke_eigenval
 are rewritten from the (corrected) string.
@@ -24,7 +27,7 @@ from sage.all import divisors, is_squarefree, prod
 from lmfdb import db
 from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_paramodular import al_str_to_eigenvals, al_str_to_num
 
-STRING_FIXES = {'2.K.19.3.2.a.a': '-', '2.K.31.4.0.a.a': '-'}
+STRING_FIXES = {'2.K.19.3.2.a.a': '-', '2.K.31.4.0.a.a': '+'}
 
 
 def corrected(rec):
