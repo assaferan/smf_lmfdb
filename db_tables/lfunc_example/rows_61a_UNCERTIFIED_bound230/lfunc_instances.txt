@@ -1,0 +1,4 @@
+Lhash	Lhash_array	factors	label	type	url
+text	text[]	text[]	text	text	text
+
+7686572585447217821584906518528	{"7686572585447217821584906518528"}	{"4-61-1.1-c1c3-0-0"}	4-61-1.1-c1c3-0-0	SMF	ModularForm/GSp/Q/2/K/61/3.0/a/a
