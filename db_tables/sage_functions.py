@@ -198,7 +198,9 @@ def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):
                     if (level % p != 0):
                         Q = 1 - ap[i] * t + (ap[i]**2 - ap2[i] - p**(mu-1))*t**2 - p**mu * ap[i]*t**3 + p**(2*mu)*t**4
                     else:
-                        Q = (1 - (ap[i]+eps[p]*p) * t + p**3 * t**2)*(1+eps[p]*p*t)
+                        # p || N (bad_primes_local.py, case 1): a + 1 = (mu - 1)/2 for omf5's weight (a, b)
+                        e = (mu - 1) // 2
+                        Q = (1 - (ap[i]+eps[p]*p**e) * t + p**mu * t**2)*(1+eps[p]*p**e*t)
                     an = (1/Q).dict().get(r,F(0))
             else:  # a_m*a_r := a_{mr} and we know all a_i for i<n.
                 m  = fac[0][0]**fac[0][1]

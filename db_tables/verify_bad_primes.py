@@ -7,11 +7,12 @@ For each smf_hecke_nf row in the output (with its smf_newforms row):
              if the ring did not change, the basis is the stored one;
   good       at every n prime to N and every good p, lambda_p, lambda_p_square, lambda_p_square_i
              and a_n are the stored field elements;
-  bad        at p | N: p || N:  mu = -eps lambda - 1 - p, a_p = lambda + eps,
-                                 a_{p^2} = a_p^2 - p^3 - eps p a_p ... from the Euler factor
-                                 (1 - (c + eps p) x + p^3 x^2)(1 + eps p x), c = lambda + eps;
-                       p^2 | N: a_p = lambda, a_{p^2} = lambda^2 - p^3 - p mu;
-                       Ramanujan at p || N: |c + eps p| <= 2 p^{3/2} (exact, 1000-bit roots);
+  bad        at p | N, for the weight (k, j), a = k - 3 + j/2, w = 2k + j - 3 (a = 0, w = 3 for (3, 0)):
+                       p || N:  mu = -eps p^a lambda - p^(2a) - p^(2a+1), a_p = c = lambda + eps p^a,
+                                 a_{p^2}, a_{p^3} from the Euler factor
+                                 (1 - (c + eps p^(a+1)) x + p^w x^2)(1 + eps p^(a+1) x);
+                       p^2 | N: a_p = lambda, a_{p^2} = lambda^2 - p^w - p mu;
+                       Ramanujan at p || N: |c + eps p^(a+1)| <= 2 p^(w/2) (exact, 1000-bit roots);
              T(p^2, i) stays NULL at p | N;
   multiplicativity  a_{mn} = a_m a_n for coprime m, n (all n stored);
   traces     smf_newforms traces[n] = Tr(a_n), trace_lambda_p[i] = Tr(lambda_p), trace_lambda_p_square;
@@ -71,6 +72,7 @@ for k, hl in enumerate(labels):
     if nfn is None:
         fail('no newforms row', hl); continue
     D = f['level']; d = f['dim']
+    a = f['weight'][0] - 3 + f['weight'][1] // 2; w = 2 * a + 3
     poly = Qx([QQ(c) for c in h['field_poly']])
     K = None if poly.degree() == 1 else NumberField(poly, 'b')
     Bo = basis(h['hecke_ring_numerators'], h['hecke_ring_denominators'], K)
@@ -114,7 +116,7 @@ for k, hl in enumerate(labels):
         lam = E('lambda_p', i)
         mu = E('lambda_p_square', i) if i < len(new['lambda_p_square'] or []) else None
         if lam is not None and mu is None and (D // p) % p:
-            mu = -eps[p] * lam - 1 - p        # beyond maxp_square: implied by lambda at p || N
+            mu = -eps[p] * p**a * lam - p**(2 * a) - p**(2 * a + 1)   # beyond maxp_square: implied by lambda at p || N
             stats['bad p beyond maxp_square (p||N)'] += 1
         elif mu is None and lam is not None:
             stats['bad p beyond maxp_square (p^2|N): Euler factor not checked'] += 1
@@ -123,21 +125,21 @@ for k, hl in enumerate(labels):
         if lam is None or mu is None: fail('bad value missing', hl, p); continue
         e_ = eps[p]
         if (D // p) % p:                      # p || N
-            c = lam + e_
-            if mu != -e_ * lam - 1 - p: fail('mu relation (p||N)', hl, p)
+            c = lam + e_ * p**a
+            if mu != -e_ * p**a * lam - p**(2 * a) - p**(2 * a + 1): fail('mu relation (p||N)', hl, p)
             ap, ap2 = c, None
-            # 1/((1 - (c + e p) x + p^3 x^2)(1 + e p x)): a_p = c, a_{p^2} = c^2 - p^3 - e p c ... computed by recursion
-            b = [1, -c, p**3 - (c + e_ * p) * e_ * p, p**3 * e_ * p]
+            # 1/((1 - (c + e p^(a+1)) x + p^w x^2)(1 + e p^(a+1) x)): a_p = c, ... computed by recursion
+            b = [1, -c, p**w - (c + e_ * p**(a + 1)) * e_ * p**(a + 1), p**w * e_ * p**(a + 1)]
             a_ = [1]
             for kk in range(1, 4):
                 a_.append(-sum(b[j] * a_[kk - j] for j in range(1, min(kk, 3) + 1)))
-            y = c + e_ * p
+            y = c + e_ * p**(a + 1)
             vals = [CF(y)] if K is None else [CF(r) for r, _ in y.minpoly().roots(CF)] if y not in QQ else [CF(y)]
             if f['aut_rep_type'] == 'G':
-                if max(abs(v) for v in vals) > 2 * R(p) ** 1.5 * (1 + R(10)**-50): fail('Ramanujan at p||N (G)', hl, p)
+                if max(abs(v) for v in vals) > 2 * R(p) ** (R(w) / 2) * (1 + R(10)**-50): fail('Ramanujan at p||N (G)', hl, p)
                 else: stats['Ramanujan ok (G, p||N)'] += 1
         else:
-            b = [1, -lam, p**3 + p * mu, 0]
+            b = [1, -lam, p**w + p * mu, 0]
             a_ = [1]
             for kk in range(1, 4):
                 a_.append(-sum(b[j] * a_[kk - j] for j in range(1, min(kk, 3) + 1)))
