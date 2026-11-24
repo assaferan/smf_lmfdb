@@ -1,16 +1,18 @@
 """
 Add the Hecke eigenvalues at the primes p dividing the level N of the paramodular newforms of
-weight (3, 0), in the Roberts-Schmidt conventions (bad_primes_local.py):
+weight (k, j) (--weight, default 3,0), in the Roberts-Schmidt conventions (bad_primes_local.py),
+with omf5's weight (a, b) = (k - 3 + j/2, j/2):
 
-  p || N:  lambda_p = c - eps, lambda_p_square = mu = -eps c - p, with c the value omf5 prints;
+  p || N:  lambda_p = c - eps p^a, lambda_p_square = mu = -eps p^a c - p^(2a+1), with c the value
+           omf5 prints;
   p^2 | N: lambda_p = T_p, lambda_p_square = T_{p^2} / 2;
 
 and the Dirichlet coefficients a_n with n not prime to N from the Euler factors.  The columns
 T(p^2, i) are NULL at p | N (the SK rows held the good-prime formulas there; those are nulled).
 
 Sources:
-  * Saito-Kurokawa lifts (type P): the classical form, a_p(f) = -eps p at p || N and 0 at
-    p^2 | N.  Their stored values at p | N (the printed c) are replaced;
+  * Saito-Kurokawa lifts (type P, j = 0): the classical form, a_p(f) = -eps p^(k-2) at p || N
+    and 0 at p^2 | N.  Their stored values at p | N (the printed c) are replaced;
   * type G at a level with a full omf5 run (--runs-full, -prec=100: the good primes, used to
     identify the orbit): the bad-prime sweep --sweep1 (omf5 -p=p -square at each p | N);
   * type G at the other levels: --sweep2 (omf5 at the bad primes and three good primes).
@@ -40,7 +42,7 @@ output before --apply, and fix_newspace_traces.py after it.
 
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_bad_primes --runs-full DIR --sweep1 DIR --sweep2 DIR
-        --cases FILE [--datafile PREFIX] [N ...]                   # dry run (all levels if none)
+        --cases FILE [--weight K,J] [--datafile PREFIX] [N ...]    # dry run (all levels if none)
     ... --apply
 A sweep directory holds out/D.p.dat and a done.txt with lines "D p rc=0 ..." (rc=0: finished).
 """
@@ -203,8 +205,10 @@ def find_sigma(rf, ring, target):
     return False
 
 
-def convert_level(src, D, out, stats, notes, current):
-    forms = list(db.smf_newforms.search({'space_label': '2.K.%d.3.0.a' % D},
+def convert_level(src, D, out, stats, notes, current, weight=(3, 0)):
+    k, j = weight
+    a = k - 3 + j // 2
+    forms = list(db.smf_newforms.search({'space_label': '2.K.%d.%d.%d.a' % (D, k, j)},
                                         ['id', 'label', 'dim', 'aut_rep_type', 'hecke_orbit_code', 'atkin_lehner_eigenvals',
                                          'related_objects'] + NF_COLS))
     hnf = {h['hecke_orbit_code']: h for h in db.smf_hecke_nf.search(
@@ -222,7 +226,7 @@ def convert_level(src, D, out, stats, notes, current):
         if f['aut_rep_type'] == 'P':
             for p in bad_ps:
                 case = src.case_of(D, p)
-                local[p] = local_from_sk(case, p, eps[p], QQ(-eps[p] * p) if case == 1 else QQ(0))
+                local[p] = local_from_sk(case, p, eps[p], QQ(-eps[p] * p**(k - 2)) if case == 1 else QQ(0), k=k)
             how = 'classical'
         elif f['aut_rep_type'] == 'G':
             if runs is None:
@@ -262,9 +266,9 @@ def convert_level(src, D, out, stats, notes, current):
                 tp, tp2 = rf['bad'][p]
                 K = rf['K']
                 if src.case_of(D, p) == 1:
-                    local[p] = local_from_omf5(1, p, eps[p], c=to_db(elt(tp, K)))
+                    local[p] = local_from_omf5(1, p, eps[p], c=to_db(elt(tp, K)), a=a)
                 else:
-                    local[p] = local_from_omf5(2, p, eps[p], Tp=to_db(elt(tp, K)), Tp2=to_db(elt(tp2, K)))
+                    local[p] = local_from_omf5(2, p, eps[p], Tp=to_db(elt(tp, K)), Tp2=to_db(elt(tp2, K)), a=a)
             how = 'omf5'
         else:
             stats['type %s skipped' % f['aut_rep_type']] += 1
@@ -379,9 +383,9 @@ def convert_level(src, D, out, stats, notes, current):
         notes.append(('run form used twice', D, [k for k, n in used.items() if n > 1]))
 
 
-def newspace_sums(D, out, stats, notes):
+def newspace_sums(D, out, stats, notes, weight=(3, 0)):
     """The smf_newspaces row of level D with the G and P sums at p | N recomputed, or None."""
-    sp = '2.K.%d.3.0.a' % D
+    sp = '2.K.%d.%d.%d.a' % (D, weight[0], weight[1])
     s = db.smf_newspaces.lucky({'label': sp}, ['label'] + SP_COLS)
     if s is None:
         return None
@@ -432,24 +436,26 @@ def main():
     parser.add_argument("--sweep2", required=True)
     parser.add_argument("--cases", required=True)
     parser.add_argument("--datafile", default="smf_bad_primes")
+    parser.add_argument("--weight", default="3,0", help="the paramodular weight k,j")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("levels", nargs="*", type=int)
     args = parser.parse_args()
     pari.allocatemem(16 * 10**9, silent=True)
     src = Sources(args.runs_full, args.sweep1, args.sweep2, args.cases)
-    levels = args.levels or sorted({r for r in db.smf_newforms.search({'family': 'K', 'weight': [3, 0], 'level': {'$gt': 1}}, 'level')})
+    weight = tuple(int(x) for x in args.weight.split(","))
+    levels = args.levels or sorted({r for r in db.smf_newforms.search({'family': 'K', 'weight': list(weight), 'level': {'$gt': 1}}, 'level')})
     out = {'newforms': {}, 'hecke_nf': {}, 'ring_changes': {}}
     stats, notes, current = Counter(), [], [None]
     for D in levels:
         t0 = time.time()
         try:
-            convert_level(src, D, out, stats, notes, current)
+            convert_level(src, D, out, stats, notes, current, weight)
         except Exception as e:
             stats['level failed'] += 1
             notes.append(('level failed', D, current[0], '%s: %s' % (type(e).__name__, str(e)[:120]),
                           traceback.format_exc().splitlines()[-4:-1]))
         print("level %d: %.1fs" % (D, time.time() - t0), file=sys.stderr, flush=True)
-    sp_rows = [s for s in (newspace_sums(D, out, stats, notes) for D in levels) if s is not None]
+    sp_rows = [s for s in (newspace_sums(D, out, stats, notes, weight) for D in levels) if s is not None]
     out['newspaces'] = {s['label']: s for s in sp_rows}
     print(dict(stats), flush=True)
     for x in notes[:20]:
