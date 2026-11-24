@@ -12,6 +12,8 @@
 //                                 [--target-prec BITS]
 //   --self-dual    tell glfunc the L-function is self-dual (Lparams.self_dual=YES);
 //                  otherwise DK, as in rational.c.
+//   --rh-method buthe|turing|both  RH-completeness verifier (glfunc with
+//                  Lfunc_set_rh_method, edgarcosta/lfunctions PR #40; default: the library's)
 //   --plot-points  number of Z(t) samples requested on [0, max_t] (default 2048;
 //                  glfunc caps max_t at 512/(8*degree) and the density at its grid).
 //
@@ -44,6 +46,14 @@ static const struct { uint64_t bit; const char *name; } ERRNAMES[] = {
   {ERR_SPEC_VALUE, "ERR_SPEC_VALUE"}, {ERR_G_INFILE, "ERR_G_INFILE"},
   {ERR_BAD_DEGREE, "ERR_BAD_DEGREE"}, {ERR_SPEC_NZ, "ERR_SPEC_NZ"},
   {ERR_G_EXTENT, "ERR_G_EXTENT"},
+#ifdef ERR_BUT_ERROR
+  {ERR_BUT_ERROR, "ERR_BUT_ERROR"},
+#endif
+#ifdef ERR_RH_METHODS_DISAGREE
+  {ERR_RH_METHODS_DISAGREE, "ERR_RH_METHODS_DISAGREE"},
+  {ERR_BUTHE_PARAMS, "ERR_BUTHE_PARAMS"},
+  {ERR_BAD_RH_METHOD, "ERR_BAD_RH_METHOD"},
+#endif
   {ERR_SOME_DATA, "ERR_SOME_DATA"}, {ERR_ZERO_PREC, "ERR_ZERO_PREC"},
   {ERR_RH_ERROR, "ERR_RH_ERROR"}, {ERR_INSUFF_EULER, "ERR_INSUFF_EULER"},
   {ERR_NO_RANK, "ERR_NO_RANK"}, {ERR_CONFLICT_RANK, "ERR_CONFLICT_RANK"},
@@ -136,7 +146,7 @@ static int64_t parse_factors(int64_t **out, int d, const char *s) {
 }
 
 static int run_line(FILE *out, char *line, int self_dual, uint64_t plot_points,
-                    int64_t target_prec) {
+                    int64_t target_prec, int rh_method) {
   char *tok[6];
   int nt = 0;
   char *p = line;
@@ -185,6 +195,17 @@ static int run_line(FILE *out, char *line, int self_dual, uint64_t plot_points,
     return -1;
   }
 
+#ifdef ERR_BAD_RH_METHOD
+  if (rh_method >= 0)
+    ecode |= Lfunc_set_rh_method(L, (Lfunc_rh_method)rh_method);
+#else
+  if (rh_method >= 0) {
+    fprintf(stderr, "%s: --rh-method needs glfunc with Lfunc_set_rh_method\n", label);
+    Lfunc_clear(L);
+    free(ef);
+    return -1;
+  }
+#endif
   uint64_t nmax_required = Lfunc_nmax(L);
   size_t nprimes;
   uint64_t *primes = (uint64_t *)primesieve_generate_primes(0, nmax_required, &nprimes, UINT64_PRIMES);
@@ -229,8 +250,10 @@ static int run_line(FILE *out, char *line, int self_dual, uint64_t plot_points,
           ", \"motivic_weight\": %d, \"normalisation\": %.1f, \"mus\": [",
           label, degree, conductor, weight, 0.5 * weight);
   for (int i = 0; i < degree; i++) fprintf(out, "%s%g", i ? ", " : "", mus[i]);
-  fprintf(out, "], \"self_dual_hint\": %s, \"target_prec\": %" PRId64,
-          self_dual ? "true" : "false", target_prec);
+  static const char *RH_NAMES[] = {"buthe", "turing", "both"};
+  fprintf(out, "], \"self_dual_hint\": %s, \"target_prec\": %" PRId64 ", \"rh_method\": \"%s\"",
+          self_dual ? "true" : "false", target_prec,
+          rh_method >= 0 ? RH_NAMES[rh_method] : "default");
   fprintf(out, ", \"nmax_required\": %" PRIu64 ", \"nmax_used\": %" PRIu64
           ", \"primes_required\": %zu, \"euler_factors_given\": %" PRId64
           ", \"euler_factors_used\": %zu, \"last_prime_given\": %" PRIu64,
@@ -289,15 +312,21 @@ int main(int argc, char **argv) {
   int self_dual = 0;
   uint64_t plot_points = 2048;
   int64_t target_prec = DEFAULT_TARGET_PREC;
+  int rh_method = -1;
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--self-dual")) self_dual = 1;
     else if (!strcmp(argv[i], "--plot-points") && i + 1 < argc) plot_points = strtoull(argv[++i], NULL, 10);
+    else if (!strcmp(argv[i], "--rh-method") && i + 1 < argc) {
+      const char *m = argv[++i];
+      rh_method = !strcmp(m, "buthe") ? 0 : !strcmp(m, "turing") ? 1 : !strcmp(m, "both") ? 2 : -2;
+      if (rh_method == -2) { fprintf(stderr, "unknown --rh-method %s\n", m); return 2; }
+    }
     else if (!strcmp(argv[i], "--target-prec") && i + 1 < argc) target_prec = strtoll(argv[++i], NULL, 10);
     else if (!in) in = argv[i];
     else if (!outname) outname = argv[i];
   }
   if (!in) {
-    fprintf(stderr, "usage: %s input [output.json] [--self-dual] [--plot-points N] [--target-prec B]\n", argv[0]);
+    fprintf(stderr, "usage: %s input [output.json] [--self-dual] [--plot-points N] [--target-prec B] [--rh-method buthe|turing|both]\n", argv[0]);
     return 2;
   }
   FILE *input = fopen(in, "r");
@@ -311,7 +340,7 @@ int main(int argc, char **argv) {
     size_t l = strlen(line);
     while (l && (line[l - 1] == '\n' || line[l - 1] == '\r')) line[--l] = 0;
     if (!l || line[0] == '#') continue;
-    if (run_line(out, line, self_dual, plot_points, target_prec)) status = 1;
+    if (run_line(out, line, self_dual, plot_points, target_prec, rh_method)) status = 1;
   }
   free(line);
   fclose(input);
