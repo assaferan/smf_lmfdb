@@ -42,7 +42,7 @@ output before --apply, and fix_newspace_traces.py after it.
 
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_bad_primes --runs-full DIR --sweep1 DIR --sweep2 DIR
-        --cases FILE [--weight K,J] [--datafile PREFIX] [N ...]    # dry run (all levels if none)
+        --cases FILE [--weight K,J] [--types P,G] [--datafile PREFIX] [N ...]    # dry run (all levels if none)
     ... --apply
 A sweep directory holds out/D.p.dat and a done.txt with lines "D p rc=0 ..." (rc=0: finished).
 """
@@ -205,7 +205,7 @@ def find_sigma(rf, ring, target):
     return False
 
 
-def convert_level(src, D, out, stats, notes, current, weight=(3, 0)):
+def convert_level(src, D, out, stats, notes, current, weight=(3, 0), types=('P', 'G')):
     k, j = weight
     a = k - 3 + j // 2
     forms = list(db.smf_newforms.search({'space_label': '2.K.%d.%d.%d.a' % (D, k, j)},
@@ -218,6 +218,8 @@ def convert_level(src, D, out, stats, notes, current, weight=(3, 0)):
     runs = None
     used = Counter()
     for f in forms:
+        if f['aut_rep_type'] not in types:
+            continue
         current[0] = f['label']
         eps = dict(f['atkin_lehner_eigenvals'])
         h = hnf.get(f['hecke_orbit_code'])
@@ -437,6 +439,9 @@ def main():
     parser.add_argument("--cases", required=True)
     parser.add_argument("--datafile", default="smf_bad_primes")
     parser.add_argument("--weight", default="3,0", help="the paramodular weight k,j")
+    parser.add_argument("--types", default="P,G",
+                        help="the types to convert; G alone leaves the P orbits of a level whose sweep finished"
+                             " after an earlier --apply as they are (that conversion is not idempotent)")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("levels", nargs="*", type=int)
     args = parser.parse_args()
@@ -449,7 +454,7 @@ def main():
     for D in levels:
         t0 = time.time()
         try:
-            convert_level(src, D, out, stats, notes, current, weight)
+            convert_level(src, D, out, stats, notes, current, weight, tuple(args.types.split(",")))
         except Exception as e:
             stats['level failed'] += 1
             notes.append(('level failed', D, current[0], '%s: %s' % (type(e).__name__, str(e)[:120]),
