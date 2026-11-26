@@ -63,9 +63,11 @@ def common_entry_values(k,j,N,F):
     return entry
 
 def Nk2(level, weight):
-    """N(2k+j-2)^2 for the level N and the weight (k, j): the analogue of Nk^2 for classical forms"""
-    k, j = weight
-    return int(level) * (2 * int(k) + int(j) - 2)**2
+    """N(2k+j-3)^2(j+1)^2 for the level N and the weight (k, j), the analogue of Nk^2 for classical
+    forms: the analytic conductor of the spin L-function is about N(2k+j-3)^2(j+1)^2 / (256 pi^4)
+    (its gamma factors are Gamma_C(s + (2k+j-3)/2) Gamma_C(s + (j+1)/2))"""
+    k, j = (int(x) for x in weight)
+    return int(level) * (2 * k + j - 3)**2 * (j + 1)**2
 
 def entry_add_common_columns(e, ext_data):
     e['char_conductor'] = 1
