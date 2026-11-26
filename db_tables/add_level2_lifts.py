@@ -27,6 +27,9 @@ relabelling to PREFIX_newforms_update.txt and PREFIX_hecke_nf_update.txt.
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_level2_lifts [--datafile PREFIX] [--spaces LABEL,...]          # dry run
     sage -python -m smf_lmfdb.db_tables.add_level2_lifts [--datafile PREFIX] --apply
+
+After --apply, run fill_trace_tables.py, which adds the new forms to smf_hecke_traces and
+smf_hecke_newspace_traces (the trace search pages).
 """
 import argparse
 import sys

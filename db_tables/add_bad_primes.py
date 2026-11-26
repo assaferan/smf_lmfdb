@@ -38,7 +38,7 @@ and PREFIX_values.json, PREFIX_notes.json for verify_bad_primes.py.
 
 Checks: a G value only replaces a NULL; the stored newspace sums at p prime to N are the sums
 over the stored forms; the checks of bad_primes_ring.enlarge.  Run verify_bad_primes.py on the
-output before --apply, and fix_newspace_traces.py after it.
+output before --apply, and fill_trace_tables.py after it.
 
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_bad_primes --runs-full DIR --sweep1 DIR --sweep2 DIR
@@ -484,7 +484,7 @@ def main():
     db.smf_newforms.update_from_file(nf_file, label_col='id')
     db.smf_hecke_nf.update_from_file(hnf_file, label_col='id')
     db.smf_newspaces.update_from_file(sp_file, label_col='label')
-    print("updated; now run fix_newspace_traces.py")
+    print("updated; now run fill_trace_tables.py")
 
 
 if __name__ == '__main__':

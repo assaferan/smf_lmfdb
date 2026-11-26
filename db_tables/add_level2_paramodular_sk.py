@@ -26,6 +26,9 @@ The new rows are written to PREFIX_newforms.json and PREFIX_hecke_nf.json.
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_level2_paramodular_sk [--datafile PREFIX]          # dry run
     sage -python -m smf_lmfdb.db_tables.add_level2_paramodular_sk [--datafile PREFIX] --apply
+
+After --apply, run fill_trace_tables.py, which adds the new forms to smf_hecke_traces and
+smf_hecke_newspace_traces (the trace search pages).
 """
 import argparse
 import json
