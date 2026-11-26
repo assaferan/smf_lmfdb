@@ -62,6 +62,11 @@ def common_entry_values(k,j,N,F):
     entry['Nk2'] = N * (2*k+j-2)**2
     return entry
 
+def Nk2(level, weight):
+    """N(2k+j-2)^2 for the level N and the weight (k, j): the analogue of Nk^2 for classical forms"""
+    k, j = weight
+    return int(level) * (2 * int(k) + int(j) - 2)**2
+
 def entry_add_common_columns(e, ext_data):
     e['char_conductor'] = 1
     e['prim_orbit_index'] = e['char_orbit_index']
@@ -72,6 +77,7 @@ def entry_add_common_columns(e, ext_data):
     e['conrey_indexes'] = conrey_indexes(e['char_orbit_index'])
     e['id'] = ext_data['id']
     e['level_radical'] = radical(e['level'])
+    e['Nk2'] = Nk2(e['level'], e['weight'])
     e['char_parity'] = 3-2*e['char_orbit_index']
     e['char_is_minimal'] = True
     e['char_is_real'] = True
