@@ -1,11 +1,17 @@
 """
 The eigenvalues of T(p^2) of the paramodular newforms of omf5_data.
 
-omf5_data stores, for p <= 7 (weight (3,0); p <= 29 in the other weights), the eigenvalues of T(p,2) in 'lambda_p_square' and
+omf5_data stores, for p <= 7 (weight (3,0); p <= 13 in hecke_evs_4_0 and hecke_evs_3_2), the eigenvalues of T(p,2) in 'lambda_p_square' and
 their traces in 'trace_lambda_p_square' (see its README), while smf_newforms and
 smf_hecke_nf store eigenvalues of T(p^2):
 
-    T(p^2) = T(p)^2 - p^(mu-1) - (T(p,2) + p^2 + 1) p^(mu-2),    mu = j + 2k - 3.
+    T(p^2) = T(p)^2 - p^(mu-1) - p T(p,2) - (p^2 + 1) p^(mu-2),    mu = j + 2k - 3.
+
+This is the coefficient p (T(p,2) + p^(2a) (p^2 + 1)) of x^2 in the Euler factor, with
+omf5's normalization of T(p,2) (divided by p^(2a), a = k - 3 + j/2; mu - 2 = 2a + 1), and
+a_(p^2) = T(p^2) + p^(mu-1).  (Before, T(p,2) was multiplied by p^(mu-2) instead of p,
+which is the same only for a = 0: 2.K.31.4.0.a.a got a_4 = 49, against 117 from the
+factor that satisfies the Ramanujan bound.)
 
 For an orbit with eigenvalue coordinates this is computed at each embedding.  The
 trace of T(p^2) over an orbit also needs the sum of lambda_p^2 over its embeddings,
@@ -44,14 +50,14 @@ def mu(k, j):
 def T_p_square(ap, bp2, p, k, j):
     """The eigenvalue of T(p^2) from those of T(p) and T(p,2)."""
     m = mu(k, j)
-    return ap**2 - p**(m-1) - (bp2 + p**2 + 1)*p**(m-2)
+    return ap**2 - p**(m-1) - p*bp2 - (p**2 + 1)*p**(m-2)
 
 
 def trace_T_p_square(sum_sq, trace_bp2, dim, p, k, j):
     """The trace of T(p^2) over an orbit of dimension dim, from the sum of the
     squares of the eigenvalues of T(p) and the trace of T(p,2)."""
     m = mu(k, j)
-    return sum_sq - dim*p**(m-1) - (trace_bp2 + dim*(p**2 + 1))*p**(m-2)
+    return sum_sq - dim*p**(m-1) - p*trace_bp2 - dim*(p**2 + 1)*p**(m-2)
 
 
 def _load(fname):
@@ -189,6 +195,9 @@ def sums_of_squares(orbit, N, k, j, folder=OMF5_DIR):
     """{p: sum of lambda_p^2 over the orbit}, p in SQUARE_PRIMES not dividing N."""
     if has_coordinates(orbit):
         return sums_of_squares_from_coordinates(orbit, N)
+    if orbit.get('trace_lambda_p_squared'):
+        # the orbits of hecke_evs_4_0 and hecke_evs_3_2 without coordinates (degree > 20)
+        return {PRIMES[i]: ZZ(t) for i, t in enumerate(orbit['trace_lambda_p_squared']) if t not in ('NULL', None)}
     if (k, j) != (3, 0):
         raise OrbitNotPlaced("no eigenvalue coordinates and no Hecke matrices for weight %s" % ((k, j),))
     try:

@@ -1,5 +1,6 @@
 # import pickle
 import json
+import os
 from sage.all import (Matrix, ZZ, gcd, is_prime, NumberField, nth_prime, pari, PolynomialRing, prime_divisors, prime_range, QQ, primes_first_n, sqrt, factor, floor, divisors, is_squarefree, prod)
 from smf_lmfdb.db_tables.common_create_table import SUBSPACE_TYPES, HECKE_TYPES
 from smf_lmfdb.db_tables.common_populate import MAX_P
@@ -10,10 +11,19 @@ from smf_lmfdb.Hecke_Eigenvalues.paramodular.Hecke_Eigenvalues_Saito_Kurokawa im
 
 from lmfdb import db
 
+OMF5_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "omf5_data")
+
+def weight_folder(k, j):
+    '''omf5_data's folder for the weight (k, j) other than (3, 0) (hecke_evs_4_0, hecke_evs_3_2), or None.'''
+    folder = os.path.join(OMF5_DATA, "hecke_evs_%d_%d" % (k, j))
+    return folder if (k, j) != (3, 0) and os.path.isdir(folder) else None
+
 def parse_omf5(k,j,N):
     if (k == 3) and (j == 0):
         folder = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/data/"
         fname = folder + "hecke_ev_%d_%d_%d.dat" %(k,j,N)
+    elif weight_folder(k, j):
+        fname = os.path.join(weight_folder(k, j), "data", "hecke_ev_%d_%d_%d.dat" % (k, j, N))
     else:
         weight_str = str(k) + "_" + str(j)
         folder = "smf_lmfdb/Eigenforms_Weight" + weight_str + "_omf/"
@@ -38,19 +48,19 @@ def parse_omf5(k,j,N):
     return forms
 
 FIELDS = "smf_lmfdb/Hecke_Eigenvalues/paramodular/omf5_data/hecke_evs_3_0/fields.json"
-_fields = None
+_fields = {}
 
-def field_record(N, field_poly):
+def field_record(N, field_poly, k=3, j=0):
     '''
-    For the orbits of dimension 14-20, the record of omf5_data's hecke_evs_3_0/fields.json:
-    field_disc, field_disc_factorization, polredabs, and hecke_ring_disc_factorization (the
-    certificate they come from).
+    For the orbits of dimension 14-20, the record of omf5_data's hecke_evs_3_0/fields.json
+    (or the fields.json of the weight's folder): field_disc, field_disc_factorization,
+    polredabs, and hecke_ring_disc_factorization (the certificate they come from).
     '''
-    global _fields
-    if _fields is None:
-        with open(FIELDS) as f:
-            _fields = {(r['level'], tuple(r['field_poly'])): r for r in json.load(f)}
-    return _fields[(N, tuple(int(c) for c in field_poly))]
+    if (k, j) not in _fields:
+        fname = FIELDS if (k, j) == (3, 0) else os.path.join(weight_folder(k, j), "fields.json")
+        with open(fname) as f:
+            _fields[(k, j)] = {(r['level'], tuple(r['field_poly'])): r for r in json.load(f)}
+    return _fields[(k, j)][(N, tuple(int(c) for c in field_poly))]
 
 def al_str_to_num(al_str, N):
     ps = prime_divisors(N)
@@ -177,7 +187,7 @@ def Hecke_Eigenforms_paramodular(k,j,N):
             # the discriminant of the field_poly (hundreds of digits) is not factored; the
             # field comes from omf5_data's hecke_evs_3_0/fields.json, which omf5_data's
             # verify_fields.py checks from a factorization of the discriminant of the Hecke ring
-            r = field_record(N, orbit['field_poly'])
+            r = field_record(N, orbit['field_poly'], k, j)
             orbit['nf_label'] = db.nf_fields.lucky({'coeffs' : r['polredabs']}, 'label')
             orbit['field_disc'] = ZZ(r['field_disc'])
             orbit['field_disc_factorization'] = [[ZZ(p), e] for p, e in r['field_disc_factorization']]
