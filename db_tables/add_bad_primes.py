@@ -302,7 +302,7 @@ def convert_level(src, D, out, stats, notes, current, weight=(3, 0), types=('P',
                 for col, val in (('lambda_p', lam), ('lambda_p_square', mu)):
                     if i < len(h_new[col]):
                         old = h_new[col][i]
-                        if f['aut_rep_type'] == 'G' and old != 'NULL':
+                        if f['aut_rep_type'] == 'G' and old not in (None, 'NULL'):
                             notes.append(('G hecke value not NULL', f['label'], col, p, old))
                             stats['G: overwrote a stored value'] += 1
                         try:
@@ -318,10 +318,10 @@ def convert_level(src, D, out, stats, notes, current, weight=(3, 0), types=('P',
                 if gcd(n, D) == 1:
                     continue
                 m, val = n, 1
-                for p, k in factor(n):
+                for p, e in factor(n):
                     if D % p == 0:
-                        val *= ppc[p][k]
-                        m //= p**k
+                        val *= ppc[p][e]
+                        m //= p**e
                 am = 1 if m == 1 else ring.elt(h['an'][m - 1])
                 if am is None:
                     stats['an: cofactor missing'] += 1
@@ -342,17 +342,17 @@ def convert_level(src, D, out, stats, notes, current, weight=(3, 0), types=('P',
                     if gcd(n, D) == 1 or nf_new['traces'][n - 1] is not None:
                         continue
                     m, val = n, QQ(1)
-                    for p, k in factor(n):
+                    for p, e in factor(n):
                         if D % p == 0:
-                            val *= ppc[p][k]
-                            m //= p**k
+                            val *= ppc[p][e]
+                            m //= p**e
                     am = 1 if m == 1 else nf_new['traces'][m - 1]
                     if am is not None:
                         nf_new['traces'][n - 1] = int(am * val)
         nf_new['trace_display'] = nf_new['trace_lambda_p'][:4]
         out['newforms'][f['label']] = nf_new
         if h_new and outside:
-            new, nf_ring, info = enlarge(D, f, h, ring, {p: local[p][:2] for p in local}, an_el)
+            new, nf_ring, info = enlarge(D, f, h, ring, {p: local[p][:2] for p in local}, an_el, weight)
             new['id'] = h['id']
             for col in HNF_COLS:
                 new.setdefault(col, h.get(col))          # columns that are NULL stay NULL

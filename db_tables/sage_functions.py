@@ -145,13 +145,14 @@ def T_p_square_from_T_p_2(ap, bp2, wt):
     """
     Convert eigenvalues (or traces) of T(p,2), indexed by the primes in order,
     to eigenvalues of T(p^2), the ap2 that Get_All_Dirichlet_Coeffs_Up_To expects:
-        T(p^2) = T(p)^2 - p^(mu-1) - (T(p,2) + p^2 + 1) p^(mu-2),  mu = j + 2k - 3.
+        T(p^2) = T(p)^2 - p^(mu-1) - p T(p,2) - (p^2 + 1) p^(mu-2),  mu = j + 2k - 3,
+    with omf5's T(p,2) (see Hecke_Eigenvalues/paramodular/omf5_squares.py).
     'NULL' entries stay 'NULL'.
     """
     k, j = wt
     mu = j + 2*k - 3
     return ['NULL' if (bp2[i] == 'NULL' or ap[i] == 'NULL') else
-            ap[i]**2 - nth_prime(i+1)**(mu-1) - (bp2[i] + nth_prime(i+1)**2 + 1)*nth_prime(i+1)**(mu-2)
+            ap[i]**2 - nth_prime(i+1)**(mu-1) - nth_prime(i+1)*bp2[i] - (nth_prime(i+1)**2 + 1)*nth_prime(i+1)**(mu-2)
             for i in range(len(bp2))]
 
 def Get_All_Dirichlet_Coeffs_Up_To(prec, ap, ap2, wt, level, eps):

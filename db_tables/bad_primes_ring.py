@@ -21,15 +21,16 @@ from smf_lmfdb.db_tables.fix_hecke_ring_basis import reduced_basis
 
 # the omf5_data submodule, found from this file (not the working directory)
 OMF5 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                    "Hecke_Eigenvalues", "paramodular", "omf5_data", "hecke_evs_3_0", "data", "hecke_ev_3_0_%d.dat")
+                    "Hecke_Eigenvalues", "paramodular", "omf5_data", "hecke_evs_%d_%d", "data", "hecke_ev_%d_%d_%d.dat")
 PS100 = prime_range(100)
 _cache = {}
 
 
-def omf5_entries(D):
-    if D not in _cache:
-        _cache[D] = ast.literal_eval(re.sub(r'(\d)L', r'\1', open(OMF5 % D).read()))     # raises if missing
-    return _cache[D]
+def omf5_entries(D, weight=(3, 0)):
+    k, j = weight
+    if (D, k, j) not in _cache:
+        _cache[(D, k, j)] = ast.literal_eval(re.sub(r'(\d)L', r'\1', open(OMF5 % (k, j, k, j, D)).read()))     # raises if missing
+    return _cache[(D, k, j)]
 
 
 def zspan(vs):
@@ -53,7 +54,7 @@ def vol(M):
     return abs(Matrix(QQ, M).det())
 
 
-def enlarge(D, f, h, ring, local, an_el):
+def enlarge(D, f, h, ring, local, an_el, weight=(3, 0)):
     """New smf_hecke_nf coordinate/basis columns and smf_newforms ring columns, or raise."""
     K = ring.K
     d = K.degree()
@@ -67,7 +68,7 @@ def enlarge(D, f, h, ring, local, an_el):
     # the generators in omf5_data's convention, matched by field polynomial and the good lambda_p
     good_lam = {q: ring.elt(h['lambda_p'][i]) for i, q in enumerate(PS100) if D % q and i < len(h['lambda_p'])}
     cands = []
-    for e in omf5_entries(D):
+    for e in omf5_entries(D, weight):
         if [int(c) for c in e['field_poly']] != [int(c) for c in h['field_poly']]:
             continue
         a = K.gen()

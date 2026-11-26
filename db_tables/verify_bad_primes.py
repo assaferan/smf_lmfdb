@@ -18,8 +18,8 @@ For each smf_hecke_nf row in the output (with its smf_newforms row):
   traces     smf_newforms traces[n] = Tr(a_n), trace_lambda_p[i] = Tr(lambda_p), trace_lambda_p_square;
   ring       the coordinates of the lambda_j (j = p, p^2, all p) generate the new ring: the Z-module
              of the closure of their coordinates has index 1; nbound is minimal for that, with the
-             good p^2 generator being lambda_p_square... (only checked to be an upper bound: the
-             converter uses omf5's T(p,2), which smf_hecke_nf does not store);
+             good p^2 generators lambda_p_square = T(p^2) and omf5's T(p,2), recovered from it (only
+             checked to be an upper bound);
              for degree <= 8: [O_K : H] = the stored index (disc(H) = index^2 disc(K)).
 For each smf_newforms row: the values at the good primes / coprime n are the stored ones.
 For each smf_newspaces row: at p | N, cusp_G/P_lambda_p(_square) is the sum over the forms of the
@@ -165,7 +165,11 @@ for k, hl in enumerate(labels):
         Mi = Mn.inverse()
         co = lambda x: vector(QQ, list(K(x))) * Mi
         gens = sorted([(PS[i], E('lambda_p', i)) for i in range(len(new['lambda_p']))] +
-                      [(PS[i] ** 2, E('lambda_p_square', i)) for i in range(len(new['lambda_p_square'] or []))], key=lambda t: t[0])
+                      [(PS[i] ** 2, E('lambda_p_square', i)) for i in range(len(new['lambda_p_square'] or []))] +
+                      # omf5's T(p,2) at a good p, from T(p^2) = T_p^2 - p^(w-1) - p T(p,2) - p^(w-2) (p^2 + 1):
+                      # the Hecke rings of omf5_data are generated with it, and T(p^2) only gives p T(p,2)
+                      [(PS[i] ** 2, (E('lambda_p', i)**2 - E('lambda_p_square', i) - PS[i]**(w - 1) - PS[i]**(w - 2) * (PS[i]**2 + 1)) / PS[i])
+                       for i in range(len(new['lambda_p_square'] or [])) if D % PS[i]], key=lambda t: t[0])
         nb = nfn['hecke_ring_generator_nbound']
         def gen_ok(bound):
             M = zspan([co(K(1))] + [co(x) for j, x in gens if x is not None and j <= bound])
@@ -175,8 +179,8 @@ for k, hl in enumerate(labels):
                 if M2 == M: break
                 M = M2
             return len(M) == d and abs(Matrix(QQ, M).det()) == 1
-        if gen_ok(nb): stats['nbound ok (with T(p^2))'] += 1
-        elif gen_ok(10**9): stats['generated with all lambda_j, not by j <= nbound with T(p^2) (nbound uses T(p,2))'] += 1
+        if gen_ok(nb): stats['nbound ok (with T(p^2) and T(p,2))'] += 1
+        elif gen_ok(10**9): stats['generated with all lambda_j, not by j <= nbound'] += 1
         else: fail('the eigenvalues do not generate the new ring', hl)
         idx = prod([ZZ(p) ** e2 for p, e2 in nfn['hecke_ring_index_factorization']]) if nfn['hecke_ring_index_factorization'] else ZZ(1)
         if d <= 8:
