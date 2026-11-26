@@ -45,6 +45,7 @@ Usage (from the lmfdb root, with write access to the db):
         --cases FILE [--weight K,J] [--types P,G] [--datafile PREFIX] [N ...]    # dry run (all levels if none)
     ... --apply
 A sweep directory holds out/D.p.dat and a done.txt with lines "D p rc=0 ..." (rc=0: finished).
+At p || N only T_p is used, so the run at such a p may omit -square (T_{p^2} costs about p^4).
 """
 import argparse
 import ast
@@ -127,7 +128,8 @@ class Sources:
                     if D % p:
                         rf['good'][p] = elt(f['lambda_p'][0], rf['K'])
                     else:
-                        rf['bad'][p] = (f['lambda_p'][0], f['lambda_p_square'][0])
+                        # a run without -square prints no T_{p^2}: enough at p || N (case 1 uses T_p only)
+                        rf['bad'][p] = (f['lambda_p'][0], f['lambda_p_square'][0] if f.get('lambda_p_square') else None)
         return list(forms.values())
 
 
@@ -270,6 +272,7 @@ def convert_level(src, D, out, stats, notes, current, weight=(3, 0), types=('P',
                 if src.case_of(D, p) == 1:
                     local[p] = local_from_omf5(1, p, eps[p], c=to_db(elt(tp, K)), a=a)
                 else:
+                    assert tp2 is not None, "%s: T_{p^2} needed at p = %d (p^2 | N): run omf5 with -square" % (f['label'], p)
                     local[p] = local_from_omf5(2, p, eps[p], Tp=to_db(elt(tp, K)), Tp2=to_db(elt(tp2, K)), a=a)
             how = 'omf5'
         else:
