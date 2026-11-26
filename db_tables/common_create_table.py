@@ -21,6 +21,7 @@ def generate_common_column_types():
     col_type['degree'] = 'smallint'
     col_type['family'] = 'text'
     col_type['level'] = 'integer'
+    col_type['Nk2'] = 'integer'
     col_type['level_radical'] = 'integer'
     col_type['weight'] = 'smallint[]'
     col_type['char_orbit_index'] = 'smallint'
@@ -58,6 +59,7 @@ def generate_common_col_desc():
     family_str = ','.join(["'"+FAMILY_DICT[k]+"' = " + k for k in FAMILY_DICT.keys()])
     col_desc['family'] = "Family of arithmetic subgroups (" + family_str + ")"
     col_desc['level'] = 'Level N in the family'
+    col_desc['Nk2'] = 'N(2k+j-3)^2(j+1)^2, for the level N and the weight (k,j): the analogue of Nk^2 for classical modular forms, proportional to the analytic conductor of the spin L-function up to a bounded factor'
     col_desc['level_is_prime'] = 'true if N is prime (1 is not prime)'
     col_desc['level_is_prime_power'] = 'true if N is a prime power (1 is not a prime power)'
     col_desc['level_is_square'] = 'true if N is square'
