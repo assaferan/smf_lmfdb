@@ -1,4 +1,8 @@
 """
+RETIRED 2026-11-26: use fill_trace_tables.py, which rebuilds smf_hecke_newspace_traces (and
+smf_hecke_traces) from the traces of the Dirichlet coefficients a_n over the whole newspace.
+The description below is of the old convention.
+
 Correct smf_hecke_newspace_traces.
 
 smf_hecke_newspace_traces_populate stored, for each space and each prime p up
@@ -70,6 +74,9 @@ def find_changes(table):
 
 
 def main(apply=False, datafile=None):
+    raise SystemExit("Retired (2026-11-26): smf_hecke_newspace_traces now holds the traces of a_n over the whole "
+                     "newspace, as for classical forms. Rebuild it with fill_trace_tables.py; this script would "
+                     "compare it with the traces of lambda_p over the forms of general type.")
     table = db.smf_hecke_newspace_traces
     changes = find_changes(table)
     if not changes:

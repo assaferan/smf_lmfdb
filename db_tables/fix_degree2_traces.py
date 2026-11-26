@@ -264,8 +264,8 @@ def main(apply=False, datafile=None, new_traces=None):
         return relabelled
     # Each update_from_file builds a replacement table; undo with <table>.reload_revert().
     # The updates are not atomic: if one fails, reload_revert() the tables already
-    # updated and rerun.  Run fix_newspace_traces.py afterwards: it derives
-    # smf_hecke_newspace_traces from the cusp_G sums written here.
+    # updated and rerun.  Run fill_trace_tables.py afterwards: it rebuilds
+    # smf_hecke_traces and smf_hecke_newspace_traces from the traces of a_n.
     for table, fname, key in todo:
         table.update_from_file(fname, label_col=key)
     return relabelled

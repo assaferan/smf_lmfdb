@@ -37,6 +37,9 @@ space whose forms are then all stored gets num_forms.
 Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_level1_cbs DATADIR [--datafile PREFIX] [--spaces k_j,...]          # dry run
     sage -python -m smf_lmfdb.db_tables.add_level1_cbs DATADIR [--datafile PREFIX] --apply
+
+After --apply, run fill_trace_tables.py, which adds the new forms to smf_hecke_traces and
+smf_hecke_newspace_traces (the trace search pages).
 """
 import argparse
 import json

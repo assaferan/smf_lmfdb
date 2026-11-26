@@ -51,8 +51,8 @@ Checks, before writing:
     stored row in every other column, the new traces agree with the stored ones
     where those are not NULL, and the traces of `an` are the new traces.
 
-Afterwards run fix_newspace_traces.py, which derives smf_hecke_newspace_traces
-from the cusp_G sums.
+Afterwards run fill_trace_tables.py, which rebuilds smf_hecke_traces and
+smf_hecke_newspace_traces from the traces of a_n.
 
 Usage (from the lmfdb root, with write access to the db; omf5_data at the new commit):
     sage -python -m smf_lmfdb.db_tables.update_hecke_rings [--datafile PREFIX] [--procs N] [--old-rev REV]          # dry run

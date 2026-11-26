@@ -28,6 +28,9 @@ Usage (from the lmfdb root, with write access to the db):
     sage -python -m smf_lmfdb.db_tables.add_paramodular_weights --weight K,J [--datafile PREFIX] [N ...]            # dry run
     sage -python -m smf_lmfdb.db_tables.add_paramodular_weights --weight K,J [--datafile PREFIX] [N ...] --apply
 Without levels, every level of the weight's folder of omf5_data.
+
+After --apply, run fill_trace_tables.py, which adds the new forms to smf_hecke_traces and
+smf_hecke_newspace_traces (the trace search pages).
 """
 import argparse
 import json
