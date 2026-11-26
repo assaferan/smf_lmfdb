@@ -13,7 +13,8 @@ Columns: hecke_orbit_code, qf = [n, r, N m], trace = n + N m, index = 0 (scalar 
 the coordinates of a(T), as in smf_qexp_coeffs.
 
 Dry run: writes PREFIX.txt and prints the counts.  --apply: reloads smf_qexp_short from it and
-reads it back.  The column coeff must be bigint[] (as smf_qexp_coeffs.coeff).
+reads it back; the first time it changes coeff from integer[] to bigint[] (as
+smf_qexp_coeffs.coeff) and indexes hecke_orbit_code.
 
     sage -python -m smf_lmfdb.db_tables.fill_qexp_short [--bmax B] [--datafile PREFIX] [--procs P] [--apply]
 """
@@ -97,11 +98,18 @@ def main(bmax=7, datafile='smf_qexp_short', procs=8, apply=False):
         print("dry run; pass --apply to reload smf_qexp_short")
         return
     table = db.smf_qexp_short
-    assert table.col_type['coeff'] == 'bigint[]', "smf_qexp_short.coeff must be bigint[] first"
-    table.reload(fname)
-    got = table.count()
-    print("smf_qexp_short: %d rows (expected %d)" % (got, len(rows)))
-    assert got == len(rows)
+    # coeff was integer[]; the coefficients need bigint[] (as smf_qexp_coeffs.coeff): reload with the
+    # file's column types
+    table.reload(fname, adjust_schema=(table.col_type.get('coeff') != 'bigint[]'))
+    if not table.list_indexes():
+        table.create_index(['hecke_orbit_code'])
+    want = {(code, tuple(qf)): [int(x) for x in v] for code, qf, tr, idx, v in rows}
+    got = {(r['hecke_orbit_code'], tuple(r['qf'])): [int(x) for x in r['coeff']]
+           for r in table.search({}, ['hecke_orbit_code', 'qf', 'coeff'])}
+    bad = [key for key in want if got.get(key) != want[key]] + [key for key in got if key not in want]
+    print("smf_qexp_short: read back %d rows, %d mismatches; column types %s; indexes %s"
+          % (len(got), len(bad), table.col_type, list(table.list_indexes())))
+    assert not bad, bad[:10]
 
 
 if __name__ == "__main__":
