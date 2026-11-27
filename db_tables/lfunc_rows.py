@@ -15,12 +15,13 @@ Two steps:
      tab-separated upload files (header: column names, column types, blank line).
 
 Conventions, for weight (k, j), w = 2k + j - 3 (the motivic weight):
-  good p:  1 - l x + p^(w-2) (b + p^2 + 1) x^2 - p^w l x^3 + p^(2w) x^4,
+  good p:  1 - l x + (p b + p^(w-2) (p^2 + 1)) x^2 - p^w l x^3 + p^(2w) x^4,
            l = T(p) and b = T(p,2) eigenvalues from omf5 (b only needed when
            p^2 <= the coefficient bound; above it the x^2 coefficient does not affect
            a_n for n <= bound, and glfunc is given 0 there)
-  p || N:  (1 - (c + eps p) x + p^3 x^2)(1 + eps p x)          [bad_primes_local, case 1]
-  p^2 | N: 1 - lam x + (p^3 + p mu) x^2                        [bad_primes_local, case 2]
+  p || N:  (1 - (c + eps p^(a+1)) x + p^w x^2)(1 + eps p^(a+1) x)   [bad_primes_local, case 1]
+  p^2 | N: 1 - lam x + (p^w + p mu) x^2                              [bad_primes_local, case 2]
+           (a = (w - 3) / 2 is omf5's weight; c is omf5's printed T_p)
   gamma:   Gamma_C(s) Gamma_C(s - (k - 2)), i.e. Gamma_R shifts mus = [0, 1, 2-k, 3-k]
            (arithmetic normalisation), nu_real_doubled = [j + 1, w] (analytic).
 
@@ -138,19 +139,22 @@ def analytic_conductor(N, mu_real, nu_real_doubled):
 
 def good_factor(p, l, b, k, j):
     """Spinor factor at a good prime, b = T(p,2) eigenvalue or None if unknown."""
+    # omf5's README: 1 - T x + p (T2 + p^(2a) (p^2 + 1)) x^2 - p^w T x^3 + p^(2w) x^4, w = 2a + 3
     w = 2 * k + j - 3
-    b2 = None if b is None else p ** (w - 2) * (b + p ** 2 + 1)
+    b2 = None if b is None else p * b + p ** (w - 2) * (p ** 2 + 1)
     return [1, -l, b2, -p ** w * l, p ** (2 * w)]
 
 
-def bad_factor(case, p, eps=None, c=None, lam=None, mu=None):
-    """Factor at p | N, as in bad_primes_local.local_from_omf5 (weight (3,0))."""
+def bad_factor(case, p, eps=None, c=None, lam=None, mu=None, w=3):
+    """Factor at p | N, as in bad_primes_local.local_from_omf5, w = 2a + 3 the motivic weight."""
+    a = (w - 3) // 2
     if case == 1:
-        # (1 - (c + eps p) x + p^3 x^2)(1 + eps p x)
-        return trim([1, -c, p ** 3 - (c + eps * p) * eps * p, p ** 4 * eps])
+        # (1 - (c + eps p^(a+1)) x + p^w x^2)(1 + eps p^(a+1) x)
+        e = eps * p ** (a + 1)
+        return trim([1, -c, p ** w - (c + e) * e, p ** w * e])
     if case == 2:
         mu = Fraction(mu)
-        b2 = p ** 3 + p * mu
+        b2 = p ** w + p * mu
         assert b2.denominator == 1
         return trim([1, -lam, int(b2)])
     raise ValueError(case)
@@ -177,15 +181,16 @@ def read_omf5(path, field_poly):
 
 
 def omf5_file(directory, p):
-    """The newest omf5 output for p: q<p>.txt (full run) before p<p>.txt (pilot)."""
-    for name in ['q%d.txt' % p, 'p%d.txt' % p]:
+    """The omf5 output for p: s<p>.txt (-square run of the sweep), q<p>.txt (full run),
+    then p<p>.txt (T(p) only)."""
+    for name in ['s%d.txt' % p, 'q%d.txt' % p, 'p%d.txt' % p]:
         path = os.path.join(directory, name)
         if os.path.exists(path):
             return path
     return None
 
 
-def parse_bad(spec):
+def parse_bad(spec, w=3):
     """'p:1:c:eps' (p || N) or 'p:2:lam:mu' (p^2 | N) or 'p:f0,f1,...' (explicit factor)."""
     parts = spec.split(':')
     p = int(parts[0])
@@ -193,8 +198,8 @@ def parse_bad(spec):
         return p, trim([int(c) for c in parts[1].split(',')])
     case = int(parts[1])
     if case == 1:
-        return p, bad_factor(1, p, eps=int(parts[3]), c=int(parts[2]))
-    return p, bad_factor(2, p, lam=int(parts[2]), mu=Fraction(parts[3]))
+        return p, bad_factor(1, p, eps=int(parts[3]), c=int(parts[2]), w=w)
+    return p, bad_factor(2, p, lam=int(parts[2]), mu=Fraction(parts[3]), w=w)
 
 
 def gamma_data(k, j):
@@ -222,7 +227,7 @@ def spec_line(name, N, k, j, factors, nprimes=None):
 def cmd_input(args):
     k, j = args.weight
     N = args.level
-    bad = dict(parse_bad(s) for s in args.bad)
+    bad = dict(parse_bad(s, 2 * k + j - 3) for s in args.bad)
     assert sorted(bad) == [p for p, _ in prime_factors(N)], "need a --bad for each p | N"
     factors, missing = {}, []
     for p in primes_upto(args.bound):
